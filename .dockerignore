@@ -20,3 +20,11 @@
 
 # Directories created by us at runtime
 /data
+
+# Other stuff not meant to go into the image
+.dockerignore
+.gitignore
+azure-pipelines.yml
+Dockerfile
+LICENSE
+README.md

@@ -13,6 +13,19 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// GetHomeDirectory returns the Fablet home directory.
+func GetHomeDirectory() (string, error) {
+	home, ok := os.LookupEnv("FABLET_HOME")
+	if !ok {
+		var err error
+		home, err = os.Getwd()
+		if err != nil {
+			return "", err
+		}
+	}
+	return home, nil
+}
+
 // MarshalOrPanic marshals the specified Protocol Buffer message into a byte array, and panics on failure.
 func MarshalOrPanic(pb proto.Message) []byte {
 	res, err := proto.Marshal(pb)

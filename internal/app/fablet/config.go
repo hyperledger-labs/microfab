@@ -32,14 +32,18 @@ type Config struct {
 
 // DefaultConfig returns the default configuration.
 func DefaultConfig() (*Config, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
+	home, ok := os.LookupEnv("FABLET_HOME")
+	if !ok {
+		var err error
+		home, err = os.Getwd()
+		if err != nil {
+			return nil, err
+		}
 	}
 	config := &Config{
 		Domain:    "127-0-0-1.nip.io",
 		Port:      8080,
-		Directory: path.Join(wd, "fablet"),
+		Directory: path.Join(home, "data"),
 		OrderingOrganization: Organization{
 			Name: "Orderer",
 		},
@@ -47,12 +51,24 @@ func DefaultConfig() (*Config, error) {
 			{
 				Name: "Org1",
 			},
+			{
+				Name: "Org2",
+			},
+			{
+				Name: "Org3",
+			},
+			{
+				Name: "Org4",
+			},
 		},
 		Channels: []Channel{
 			{
 				Name: "channel1",
 				Organizations: []string{
 					"Org1",
+					"Org2",
+					"Org3",
+					"Org4",
 				},
 			},
 		},

@@ -38,6 +38,8 @@ type Fablet struct {
 	orderer                *orderer.Orderer
 	peers                  []*peer.Peer
 	genesisBlocks          map[string]*common.Block
+	console                *console.Console
+	proxy                  *proxy.Proxy
 }
 
 // New creates an instance of the Fablet application.
@@ -58,6 +60,9 @@ func (f *Fablet) Run() error {
 	// Grab the start time and say hello.
 	startTime := time.Now()
 	log.Print("Starting Fablet ...")
+
+	// Ensure anything we start is stopped.
+	defer f.stop()
 
 	// Ensure the directory exists and is empty.
 	err := f.ensureDirectory()
@@ -117,6 +122,7 @@ func (f *Fablet) Run() error {
 	if err != nil {
 		return err
 	}
+	f.console = console
 	go console.Start()
 
 	// Create and start the proxy.
@@ -124,6 +130,7 @@ func (f *Fablet) Run() error {
 	if err != nil {
 		return err
 	}
+	f.proxy = proxy
 	go proxy.Start()
 
 	// Connect to all of the components.
@@ -160,28 +167,7 @@ func (f *Fablet) Run() error {
 	log.Printf("Fablet started in %vms", startupDuration.Milliseconds())
 	<-sigs
 	log.Printf("Stopping Fablet due to signal ...")
-
-	// Stop the proxy and the console.
-	err = proxy.Stop()
-	if err != nil {
-		return err
-	}
-	err = console.Stop()
-	if err != nil {
-		return err
-	}
-
-	// Stop all of the components (orderer, peers).
-	for _, peer := range f.peers {
-		err := peer.Stop()
-		if err != nil {
-			return err
-		}
-	}
-	err = f.orderer.Stop()
-	if err != nil {
-		return err
-	}
+	f.stop()
 	log.Printf("Fablet stopped")
 	return nil
 
@@ -395,5 +381,37 @@ func (f *Fablet) createAndJoinChannel(config Channel) error {
 		return err
 	}
 	log.Printf("Created and joined channel %s", config.Name)
+	return nil
+}
+
+func (f *Fablet) stop() error {
+	if f.proxy != nil {
+		err := f.proxy.Stop()
+		if err != nil {
+			return err
+		}
+		f.proxy = nil
+	}
+	if f.console != nil {
+		err := f.console.Stop()
+		if err != nil {
+			return err
+		}
+		f.console = nil
+	}
+	for _, peer := range f.peers {
+		err := peer.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	f.peers = []*peer.Peer{}
+	if f.orderer != nil {
+		err := f.orderer.Stop()
+		if err != nil {
+			return err
+		}
+		f.orderer = nil
+	}
 	return nil
 }
