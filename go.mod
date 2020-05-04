@@ -12,4 +12,5 @@ require (
 	golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	google.golang.org/grpc v1.29.1
+	gopkg.in/yaml.v2 v2.2.8
 )

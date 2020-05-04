@@ -402,7 +402,6 @@ func (o *Orderer) Start(consortium []*organization.Organization) error {
 	cmd := exec.Command("orderer", "start")
 	cmd.Env = os.Environ()
 	extraEnvs := []string{
-		"FABRIC_CFG_PATH=/usr/local/config",
 		fmt.Sprintf("ORDERER_GENERAL_LOCALMSPDIR=%s", mspDirectory),
 		fmt.Sprintf("ORDERER_GENERAL_LOCALMSPID=%s", o.mspID),
 		"ORDERER_GENERAL_BOOTSTRAPMETHOD=file",
