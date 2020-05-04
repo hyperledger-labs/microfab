@@ -20,7 +20,7 @@ steps:
     displayName: Use Go 1.14
   - script: |
       set -ex
-      go get github.com/golang/lint/golint
+      go get golang.org/x/lint/golint
       go get sourcegraph.com/sqs/goreturns
     displayName: Install Go tools
   - script: |
