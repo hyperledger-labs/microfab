@@ -17,3 +17,6 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Directories created by us at runtime
+/fablet
