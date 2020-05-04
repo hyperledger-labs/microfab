@@ -291,19 +291,31 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 	}
 	chaincode["externalBuilders"] = []map[interface{}]interface{}{
 		{
-			"path":                 path.Join(homeDirectory, "builders", "golang"),
-			"name":                 "golang",
-			"environmentWhitelist": []string{},
+			"path": path.Join(homeDirectory, "builders", "golang"),
+			"name": "golang",
+			"environmentWhitelist": []string{
+				"GOCACHE",
+				"GOENV",
+				"GOROOT",
+				"HOME",
+			},
 		},
 		{
-			"path":                 path.Join(homeDirectory, "builders", "java"),
-			"name":                 "java",
-			"environmentWhitelist": []string{},
+			"path": path.Join(homeDirectory, "builders", "java"),
+			"name": "java",
+			"environmentWhitelist": []string{
+				"HOME",
+				"JAVA_HOME",
+				"MAVEN_OPTS",
+			},
 		},
 		{
-			"path":                 path.Join(homeDirectory, "builders", "node"),
-			"name":                 "node",
-			"environmentWhitelist": []string{},
+			"path": path.Join(homeDirectory, "builders", "node"),
+			"name": "node",
+			"environmentWhitelist": []string{
+				"HOME",
+				"npm_config_cache",
+			},
 		},
 	}
 	configData, err = yaml.Marshal(config)
