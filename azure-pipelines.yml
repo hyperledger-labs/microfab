@@ -1,0 +1,34 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+---
+trigger:
+  branches:
+    include:
+      - "*"
+    exclude:
+      - gh-pages
+  tags:
+    include:
+      - "*"
+pool:
+  vmImage: "ubuntu-latest"
+steps:
+  - task: GoTool@0
+    inputs:
+      version: "1.14"
+    displayName: Use Go 1.14
+  - script: |
+      set -ex
+      go get github.com/golang/lint/golint
+      go get sourcegraph.com/sqs/goreturns
+    displayName: Install Go tools
+  - script: |
+      set -ex
+      test -z $(gofmt -l -s .)
+      golint -set_exit_status ./...
+      test -z $(goreturns -l .)
+      go vet ./...
+    displayName: Run Go formatters and linters
+  - script: go test ./...
+    displayName: Run Go unit tests
