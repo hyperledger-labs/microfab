@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS base
-RUN microdnf install git gzip shadow-utils tar xz \
+RUN microdnf install gcc gcc-c++ git gzip make python3 shadow-utils tar xz \
     && groupadd -g 7051 ibp-user \
     && useradd -u 7051 -g ibp-user -s /bin/bash ibp-user \
     && microdnf remove shadow-utils \
@@ -21,10 +21,13 @@ ENV GOENV=/tmp/goenv
 ENV GOPATH=/tmp/go
 ENV JAVA_HOME=/opt/java
 ENV MAVEN_OPTS="-Dmaven.repo.local=/tmp/maven"
-ENV npm_config_cache=/tmp/npm
+ENV npm_config_cache=/tmp/npm-cache
+ENV npm_config_devdir=/tmp/npm-devdir
 ENV PATH=/opt/go/bin:/opt/node/bin:/opt/java/bin:${PATH}
 RUN mkdir -p /opt/fabric \
-    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.1.0/hyperledger-fabric-linux-amd64-2.1.0.tar.gz | tar xzf - -C /opt/fabric
+    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.1.0/hyperledger-fabric-linux-amd64-2.1.0.tar.gz | tar xzf - -C /opt/fabric  \
+    && npm install --unsafe-perm -g fabric-shim@2.1.0 \
+    && rm -rf /tmp/gocache /tmp/goenv /tmp/go /tmp/maven /tmp/npm-cache /tmp/npm-devdir
 ENV FABRIC_CFG_PATH=/opt/fabric/config
 ENV PATH=/opt/fabric/bin:${PATH}
 
