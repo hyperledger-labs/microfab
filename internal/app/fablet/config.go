@@ -5,6 +5,7 @@
 package fablet
 
 import (
+	"encoding/json"
 	"os"
 	"path"
 )
@@ -60,6 +61,12 @@ func DefaultConfig() (*Config, error) {
 				},
 			},
 		},
+	}
+	if env, ok := os.LookupEnv("FABLET_CONFIG"); ok {
+		err := json.Unmarshal([]byte(env), config)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return config, nil
 }
