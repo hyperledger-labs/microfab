@@ -16,8 +16,8 @@ type Organization struct {
 
 // Channel represents a channel in the configuration.
 type Channel struct {
-	Name          string   `json:"name"`
-	Organizations []string `json:"organizations"`
+	Name                   string   `json:"name"`
+	EndorsingOrganizations []string `json:"endorsing_organizations"`
 }
 
 // Config represents the configuration.
@@ -51,24 +51,12 @@ func DefaultConfig() (*Config, error) {
 			{
 				Name: "Org1",
 			},
-			{
-				Name: "Org2",
-			},
-			{
-				Name: "Org3",
-			},
-			{
-				Name: "Org4",
-			},
 		},
 		Channels: []Channel{
 			{
 				Name: "channel1",
-				Organizations: []string{
+				EndorsingOrganizations: []string{
 					"Org1",
-					"Org2",
-					"Org3",
-					"Org4",
 				},
 			},
 		},

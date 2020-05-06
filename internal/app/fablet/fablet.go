@@ -303,7 +303,7 @@ func (f *Fablet) createChannel(config Channel) (*common.Block, error) {
 	opts := []channel.Option{}
 	for _, endorsingOrganization := range f.endorsingOrganizations {
 		found := false
-		for _, organizationName := range config.Organizations {
+		for _, organizationName := range config.EndorsingOrganizations {
 			if endorsingOrganization.Name() == organizationName {
 				found = true
 				break
@@ -329,7 +329,7 @@ func (f *Fablet) createChannel(config Channel) (*common.Block, error) {
 	opts = []channel.Option{}
 	for _, peer := range f.peers {
 		found := false
-		for _, organizationName := range config.Organizations {
+		for _, organizationName := range config.EndorsingOrganizations {
 			if peer.Organization().Name() == organizationName {
 				found = true
 				break
@@ -358,7 +358,7 @@ func (f *Fablet) createAndJoinChannel(config Channel) error {
 	for i := range f.peers {
 		peer := f.peers[i]
 		found := false
-		for _, organizationName := range config.Organizations {
+		for _, organizationName := range config.EndorsingOrganizations {
 			if peer.Organization().Name() == organizationName {
 				found = true
 				break
