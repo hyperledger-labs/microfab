@@ -7,15 +7,15 @@ package main
 import (
 	"log"
 
-	"github.com/IBM-Blockchain/fablet/internal/app/fablet"
+	"github.com/IBM-Blockchain/microfab/internal/app/microfabd"
 )
 
 func main() {
-	fablet, err := fablet.New()
+	microfabd, err := microfabd.New()
 	if err != nil {
 		log.Fatalf("Failed to create application: %v", err)
 	}
-	err = fablet.Run()
+	err = microfabd.Run()
 	if err != nil {
 		log.Fatalf("Failed to run application: %v", err)
 	}

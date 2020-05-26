@@ -4,7 +4,7 @@
 
 package node
 
-import "github.com/IBM-Blockchain/fablet/internal/pkg/identity"
+import "github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 
 // Node represents a connection to a node.
 type Node interface {

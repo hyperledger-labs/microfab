@@ -12,9 +12,9 @@ import (
 	"net/http/httputil"
 	"regexp"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/console"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/orderer"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/peer"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )

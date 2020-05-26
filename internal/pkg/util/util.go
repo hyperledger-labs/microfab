@@ -9,13 +9,13 @@ import (
 	"os"
 	"path"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/identity"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/golang/protobuf/proto"
 )
 
-// GetHomeDirectory returns the Fablet home directory.
+// GetHomeDirectory returns the Microfab home directory.
 func GetHomeDirectory() (string, error) {
-	home, ok := os.LookupEnv("FABLET_HOME")
+	home, ok := os.LookupEnv("MICROFAB_HOME")
 	if !ok {
 		var err error
 		home, err = os.Getwd()

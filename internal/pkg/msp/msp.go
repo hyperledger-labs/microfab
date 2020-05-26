@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/identity/certificate"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
 )
 
 // MSP represents a loaded MSP definition.

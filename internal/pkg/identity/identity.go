@@ -20,8 +20,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/identity/certificate"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/identity/privatekey"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/privatekey"
 )
 
 // Identity represents a loaded identity (X509 certificate and ECDSA private key pair).

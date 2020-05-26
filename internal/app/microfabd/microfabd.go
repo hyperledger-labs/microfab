@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package fablet
+package microfabd
 
 import (
 	"fmt"
@@ -16,20 +16,20 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/blocks"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/channel"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/console"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/orderer"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/organization"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/peer"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/proxy"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/channel"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/proxy"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
 )
 
-// Fablet represents an instance of the Fablet application.
-type Fablet struct {
+// Microfab represents an instance of the Microfab application.
+type Microfab struct {
 	sync.Mutex
 	config                 *Config
 	ordererOrganization    *organization.Organization
@@ -42,30 +42,30 @@ type Fablet struct {
 	proxy                  *proxy.Proxy
 }
 
-// New creates an instance of the Fablet application.
-func New() (*Fablet, error) {
+// New creates an instance of the Microfab application.
+func New() (*Microfab, error) {
 	config, err := DefaultConfig()
 	if err != nil {
 		return nil, err
 	}
-	fablet := &Fablet{
+	fablet := &Microfab{
 		config: config,
 	}
 	return fablet, nil
 }
 
 // Run runs the Fablet application.
-func (f *Fablet) Run() error {
+func (m *Microfab) Run() error {
 
 	// Grab the start time and say hello.
 	startTime := time.Now()
-	log.Print("Starting Fablet ...")
+	log.Print("Starting Microfab ...")
 
 	// Ensure anything we start is stopped.
-	defer f.stop()
+	defer m.stop()
 
 	// Ensure the directory exists and is empty.
-	err := f.ensureDirectory()
+	err := m.ensureDirectory()
 	if err != nil {
 		return err
 	}
@@ -74,12 +74,12 @@ func (f *Fablet) Run() error {
 	ctx := context.Background()
 	eg, _ := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		return f.createOrderingOrganization(f.config.OrderingOrganization)
+		return m.createOrderingOrganization(m.config.OrderingOrganization)
 	})
-	for i := range f.config.EndorsingOrganizations {
-		organization := f.config.EndorsingOrganizations[i]
+	for i := range m.config.EndorsingOrganizations {
+		organization := m.config.EndorsingOrganizations[i]
 		eg.Go(func() error {
-			return f.createEndorsingOrganization(organization)
+			return m.createEndorsingOrganization(organization)
 		})
 	}
 	err = eg.Wait()
@@ -88,23 +88,23 @@ func (f *Fablet) Run() error {
 	}
 
 	// Sort the list of organizations by name, and then join all the organizations together.
-	sort.Slice(f.endorsingOrganizations, func(i, j int) bool {
-		return f.endorsingOrganizations[i].Name() < f.endorsingOrganizations[j].Name()
+	sort.Slice(m.endorsingOrganizations, func(i, j int) bool {
+		return m.endorsingOrganizations[i].Name() < m.endorsingOrganizations[j].Name()
 	})
-	f.organizations = append(f.organizations, f.ordererOrganization)
-	f.organizations = append(f.organizations, f.endorsingOrganizations...)
+	m.organizations = append(m.organizations, m.ordererOrganization)
+	m.organizations = append(m.organizations, m.endorsingOrganizations...)
 
 	// Create and start all of the components (orderer, peers).
 	eg.Go(func() error {
-		return f.createAndStartOrderer(f.ordererOrganization, 7050, 7051)
+		return m.createAndStartOrderer(m.ordererOrganization, 7050, 7051)
 	})
-	for i := range f.endorsingOrganizations {
-		organization := f.endorsingOrganizations[i]
+	for i := range m.endorsingOrganizations {
+		organization := m.endorsingOrganizations[i]
 		apiPort := 7052 + (i * 3)
 		chaincodePort := 7053 + (i * 3)
 		operationsPort := 7054 + (i * 3)
 		eg.Go(func() error {
-			return f.createAndStartPeer(organization, apiPort, chaincodePort, operationsPort)
+			return m.createAndStartPeer(organization, apiPort, chaincodePort, operationsPort)
 		})
 	}
 	err = eg.Wait()
@@ -113,34 +113,34 @@ func (f *Fablet) Run() error {
 	}
 
 	// Sort the list of peers by their organization name.
-	sort.Slice(f.peers, func(i, j int) bool {
-		return f.peers[i].Organization().Name() < f.peers[j].Organization().Name()
+	sort.Slice(m.peers, func(i, j int) bool {
+		return m.peers[i].Organization().Name() < m.peers[j].Organization().Name()
 	})
 
 	// Create and start the console.
-	console, err := console.New(f.organizations, f.orderer, f.peers, 8081, fmt.Sprintf("http://console.%s:%d", f.config.Domain, f.config.Port))
+	console, err := console.New(m.organizations, m.orderer, m.peers, 8081, fmt.Sprintf("http://console.%s:%d", m.config.Domain, m.config.Port))
 	if err != nil {
 		return err
 	}
-	f.console = console
+	m.console = console
 	go console.Start()
 
 	// Create and start the proxy.
-	proxy, err := proxy.New(console, f.orderer, f.peers, f.config.Port)
+	proxy, err := proxy.New(console, m.orderer, m.peers, m.config.Port)
 	if err != nil {
 		return err
 	}
-	f.proxy = proxy
+	m.proxy = proxy
 	go proxy.Start()
 
 	// Connect to all of the components.
-	channelCreator := f.endorsingOrganizations[0]
-	err = f.orderer.Connect(channelCreator.MSP().ID(), channelCreator.Admin())
+	channelCreator := m.endorsingOrganizations[0]
+	err = m.orderer.Connect(channelCreator.MSP().ID(), channelCreator.Admin())
 	if err != nil {
 		return err
 	}
-	defer f.orderer.Close()
-	for _, peer := range f.peers {
+	defer m.orderer.Close()
+	for _, peer := range m.peers {
 		err = peer.Connect(peer.Organization().MSP().ID(), peer.Organization().Admin())
 		if err != nil {
 			return err
@@ -148,10 +148,10 @@ func (f *Fablet) Run() error {
 	}
 
 	// Create and join all of the channels.
-	for i := range f.config.Channels {
-		channel := f.config.Channels[i]
+	for i := range m.config.Channels {
+		channel := m.config.Channels[i]
 		eg.Go(func() error {
-			return f.createAndJoinChannel(channel)
+			return m.createAndJoinChannel(channel)
 		})
 	}
 	err = eg.Wait()
@@ -164,23 +164,23 @@ func (f *Fablet) Run() error {
 	startupDuration := readyTime.Sub(startTime)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	log.Printf("Fablet started in %vms", startupDuration.Milliseconds())
+	log.Printf("Microfab started in %vms", startupDuration.Milliseconds())
 	<-sigs
-	log.Printf("Stopping Fablet due to signal ...")
-	f.stop()
-	log.Printf("Fablet stopped")
+	log.Printf("Stopping Microfab due to signal ...")
+	m.stop()
+	log.Printf("Microfab stopped")
 	return nil
 
 }
 
-func (f *Fablet) ensureDirectory() error {
-	if f.directoryExists() {
-		err := f.removeDirectory()
+func (m *Microfab) ensureDirectory() error {
+	if m.directoryExists() {
+		err := m.removeDirectory()
 		if err != nil {
 			return err
 		}
 	} else {
-		err := f.createDirectory()
+		err := m.createDirectory()
 		if err != nil {
 			return err
 		}
@@ -188,19 +188,19 @@ func (f *Fablet) ensureDirectory() error {
 	return nil
 }
 
-func (f *Fablet) directoryExists() bool {
-	if _, err := os.Stat(f.config.Directory); os.IsNotExist(err) {
+func (m *Microfab) directoryExists() bool {
+	if _, err := os.Stat(m.config.Directory); os.IsNotExist(err) {
 		return false
 	}
 	return true
 }
 
-func (f *Fablet) createDirectory() error {
-	return os.MkdirAll(f.config.Directory, 0755)
+func (m *Microfab) createDirectory() error {
+	return os.MkdirAll(m.config.Directory, 0755)
 }
 
-func (f *Fablet) removeDirectory() error {
-	file, err := os.Open(f.config.Directory)
+func (m *Microfab) removeDirectory() error {
+	file, err := os.Open(m.config.Directory)
 	if err != nil {
 		return err
 	}
@@ -210,7 +210,7 @@ func (f *Fablet) removeDirectory() error {
 		return err
 	}
 	for _, name := range names {
-		err = os.RemoveAll(path.Join(f.config.Directory, name))
+		err = os.RemoveAll(path.Join(m.config.Directory, name))
 		if err != nil {
 			return err
 		}
@@ -218,71 +218,71 @@ func (f *Fablet) removeDirectory() error {
 	return nil
 }
 
-func (f *Fablet) createOrderingOrganization(config Organization) error {
+func (m *Microfab) createOrderingOrganization(config Organization) error {
 	log.Printf("Creating ordering organization %s ...", config.Name)
 	organization, err := organization.New(config.Name)
 	if err != nil {
 		return err
 	}
-	f.Lock()
-	defer f.Unlock()
-	f.ordererOrganization = organization
+	m.Lock()
+	defer m.Unlock()
+	m.ordererOrganization = organization
 	log.Printf("Created ordering organization %s", config.Name)
 	return nil
 }
 
-func (f *Fablet) createEndorsingOrganization(config Organization) error {
+func (m *Microfab) createEndorsingOrganization(config Organization) error {
 	log.Printf("Creating endorsing organization %s ...", config.Name)
 	organization, err := organization.New(config.Name)
 	if err != nil {
 		return err
 	}
-	f.Lock()
-	defer f.Unlock()
-	f.endorsingOrganizations = append(f.endorsingOrganizations, organization)
+	m.Lock()
+	defer m.Unlock()
+	m.endorsingOrganizations = append(m.endorsingOrganizations, organization)
 	log.Printf("Created endorsing organization %s", config.Name)
 	return nil
 }
 
-func (f *Fablet) createAndStartOrderer(organization *organization.Organization, apiPort, operationsPort int) error {
+func (m *Microfab) createAndStartOrderer(organization *organization.Organization, apiPort, operationsPort int) error {
 	log.Printf("Creating and starting orderer for ordering organization %s ...", organization.Name())
-	directory := path.Join(f.config.Directory, "orderer")
+	directory := path.Join(m.config.Directory, "orderer")
 	orderer, err := orderer.New(
 		organization,
 		directory,
 		apiPort,
-		fmt.Sprintf("grpc://orderer-api.%s:%d", f.config.Domain, f.config.Port),
+		fmt.Sprintf("grpc://orderer-api.%s:%d", m.config.Domain, m.config.Port),
 		operationsPort,
-		fmt.Sprintf("http://orderer-operations.%s:%d", f.config.Domain, f.config.Port),
+		fmt.Sprintf("http://orderer-operations.%s:%d", m.config.Domain, m.config.Port),
 	)
 	if err != nil {
 		return err
 	}
-	err = orderer.Start(f.endorsingOrganizations)
+	err = orderer.Start(m.endorsingOrganizations)
 	if err != nil {
 		return err
 	}
-	f.Lock()
-	defer f.Unlock()
-	f.orderer = orderer
+	m.Lock()
+	defer m.Unlock()
+	m.orderer = orderer
 	log.Printf("Created and started orderer for ordering organization %s", organization.Name())
 	return nil
 }
 
-func (f *Fablet) createAndStartPeer(organization *organization.Organization, apiPort, chaincodePort, operationsPort int) error {
+func (m *Microfab) createAndStartPeer(organization *organization.Organization, apiPort, chaincodePort, operationsPort int) error {
 	log.Printf("Creating and starting peer for ordering organization %s ...", organization.Name())
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
-	peerDirectory := path.Join(f.config.Directory, fmt.Sprintf("peer-%s", lowerOrganizationName))
+	peerDirectory := path.Join(m.config.Directory, fmt.Sprintf("peer-%s", lowerOrganizationName))
 	peer, err := peer.New(
 		organization,
 		peerDirectory,
 		int32(apiPort),
-		fmt.Sprintf("grpc://%speer-api.%s:%d", lowerOrganizationName, f.config.Domain, f.config.Port),
+		fmt.Sprintf("grpc://%speer-api.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
 		int32(chaincodePort),
-		fmt.Sprintf("grpc://%speer-chaincode.%s:%d", lowerOrganizationName, f.config.Domain, f.config.Port),
+		fmt.Sprintf("grpc://%speer-chaincode.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
 		int32(operationsPort),
-		fmt.Sprintf("http://%speer-operations.%s:%d", lowerOrganizationName, f.config.Domain, f.config.Port),
+		fmt.Sprintf("http://%speer-operations.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
 	)
 	if err != nil {
 		return err
@@ -291,17 +291,17 @@ func (f *Fablet) createAndStartPeer(organization *organization.Organization, api
 	if err != nil {
 		return err
 	}
-	f.Lock()
-	defer f.Unlock()
-	f.peers = append(f.peers, peer)
+	m.Lock()
+	defer m.Unlock()
+	m.peers = append(m.peers, peer)
 	log.Printf("Created and started peer for endorsing organization %s", organization.Name())
 	return nil
 }
 
-func (f *Fablet) createChannel(config Channel) (*common.Block, error) {
+func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 	log.Printf("Creating channel %s ...", config.Name)
 	opts := []channel.Option{}
-	for _, endorsingOrganization := range f.endorsingOrganizations {
+	for _, endorsingOrganization := range m.endorsingOrganizations {
 		found := false
 		for _, organizationName := range config.EndorsingOrganizations {
 			if endorsingOrganization.Name() == organizationName {
@@ -313,13 +313,13 @@ func (f *Fablet) createChannel(config Channel) (*common.Block, error) {
 			opts = append(opts, channel.AddMSPID(endorsingOrganization.MSP().ID()))
 		}
 	}
-	err := channel.CreateChannel(f.orderer, config.Name, opts...)
+	err := channel.CreateChannel(m.orderer, config.Name, opts...)
 	if err != nil {
 		return nil, err
 	}
 	var genesisBlock *common.Block
 	for {
-		genesisBlock, err = blocks.GetGenesisBlock(f.orderer, config.Name)
+		genesisBlock, err = blocks.GetGenesisBlock(m.orderer, config.Name)
 		if err != nil {
 			time.Sleep(100 * time.Millisecond)
 			continue
@@ -327,7 +327,7 @@ func (f *Fablet) createChannel(config Channel) (*common.Block, error) {
 		break
 	}
 	opts = []channel.Option{}
-	for _, peer := range f.peers {
+	for _, peer := range m.peers {
 		found := false
 		for _, organizationName := range config.EndorsingOrganizations {
 			if peer.Organization().Name() == organizationName {
@@ -339,7 +339,7 @@ func (f *Fablet) createChannel(config Channel) (*common.Block, error) {
 			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.Hostname(), peer.Port()))
 		}
 	}
-	err = channel.UpdateChannel(f.orderer, config.Name, opts...)
+	err = channel.UpdateChannel(m.orderer, config.Name, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -347,16 +347,16 @@ func (f *Fablet) createChannel(config Channel) (*common.Block, error) {
 	return genesisBlock, nil
 }
 
-func (f *Fablet) createAndJoinChannel(config Channel) error {
+func (m *Microfab) createAndJoinChannel(config Channel) error {
 	log.Printf("Creating and joining channel %s ...", config.Name)
-	genesisBlock, err := f.createChannel(config)
+	genesisBlock, err := m.createChannel(config)
 	if err != nil {
 		return err
 	}
 	ctx := context.Background()
 	eg, _ := errgroup.WithContext(ctx)
-	for i := range f.peers {
-		peer := f.peers[i]
+	for i := range m.peers {
+		peer := m.peers[i]
 		found := false
 		for _, organizationName := range config.EndorsingOrganizations {
 			if peer.Organization().Name() == organizationName {
@@ -384,34 +384,34 @@ func (f *Fablet) createAndJoinChannel(config Channel) error {
 	return nil
 }
 
-func (f *Fablet) stop() error {
-	if f.proxy != nil {
-		err := f.proxy.Stop()
+func (m *Microfab) stop() error {
+	if m.proxy != nil {
+		err := m.proxy.Stop()
 		if err != nil {
 			return err
 		}
-		f.proxy = nil
+		m.proxy = nil
 	}
-	if f.console != nil {
-		err := f.console.Stop()
+	if m.console != nil {
+		err := m.console.Stop()
 		if err != nil {
 			return err
 		}
-		f.console = nil
+		m.console = nil
 	}
-	for _, peer := range f.peers {
+	for _, peer := range m.peers {
 		err := peer.Stop()
 		if err != nil {
 			return err
 		}
 	}
-	f.peers = []*peer.Peer{}
-	if f.orderer != nil {
-		err := f.orderer.Stop()
+	m.peers = []*peer.Peer{}
+	if m.orderer != nil {
+		err := m.orderer.Stop()
 		if err != nil {
 			return err
 		}
-		f.orderer = nil
+		m.orderer = nil
 	}
 	return nil
 }

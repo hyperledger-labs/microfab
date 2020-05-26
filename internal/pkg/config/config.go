@@ -14,8 +14,8 @@ package config
 import (
 	"fmt"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/blocks"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/configtxlator"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/configtxlator"
 	"github.com/gogo/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 )
