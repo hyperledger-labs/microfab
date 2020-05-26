@@ -32,19 +32,19 @@ ENV FABRIC_CFG_PATH=/opt/fabric/config
 ENV PATH=/opt/fabric/bin:${PATH}
 
 FROM base AS builder
-ADD . /tmp/fablet
-RUN cd /tmp/fablet \
-    && mkdir -p /opt/fablet/bin /opt/fablet/data \
-    && chown ibp-user:ibp-user /opt/fablet/data \
-    && go build -o /opt/fablet/bin/fablet cmd/fablet/main.go \
-    && cp -rf builders /opt/fablet/builders
+ADD . /tmp/microfab
+RUN cd /tmp/microfab \
+    && mkdir -p /opt/microfab/bin /opt/microfab/data \
+    && chown ibp-user:ibp-user /opt/microfab/data \
+    && go build -o /opt/microfab/bin/microfabd cmd/microfabd/main.go \
+    && cp -rf builders /opt/microfab/builders
 
 FROM base
-COPY --from=builder /opt/fablet /opt/fablet
-ENV FABLET_HOME=/opt/fablet
-ENV PATH=/opt/fablet/bin:${PATH}
+COPY --from=builder /opt/microfab /opt/microfab
+ENV MICROFAB_HOME=/opt/microfab
+ENV PATH=/opt/microfab/bin:${PATH}
 EXPOSE 8080
 USER ibp-user
-VOLUME /opt/fablet/data
+VOLUME /opt/microfab/data
 ENTRYPOINT [ "/tini", "--" ]
-CMD [ "/opt/fablet/bin/fablet" ]
+CMD [ "/opt/microfab/bin/microfabd" ]

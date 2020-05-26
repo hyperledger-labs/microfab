@@ -8,9 +8,9 @@ import (
 	"crypto/sha256"
 	"time"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/organization"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/txid"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/util"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/hyperledger/fabric-protos-go/common"

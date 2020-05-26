@@ -10,9 +10,9 @@ import (
 	"io/ioutil"
 	"regexp"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/identity"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/identity/certificate"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/msp"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/msp"
 )
 
 // Organization represents a loaded organization definition.

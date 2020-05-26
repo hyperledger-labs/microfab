@@ -1,4 +1,4 @@
-module github.com/IBM-Blockchain/fablet
+module github.com/IBM-Blockchain/microfab
 
 go 1.14
 

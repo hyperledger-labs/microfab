@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package fablet
+package microfabd
 
 import (
 	"encoding/json"
@@ -33,7 +33,7 @@ type Config struct {
 
 // DefaultConfig returns the default configuration.
 func DefaultConfig() (*Config, error) {
-	home, ok := os.LookupEnv("FABLET_HOME")
+	home, ok := os.LookupEnv("MICROFAB_HOME")
 	if !ok {
 		var err error
 		home, err = os.Getwd()
@@ -62,7 +62,7 @@ func DefaultConfig() (*Config, error) {
 			},
 		},
 	}
-	if env, ok := os.LookupEnv("FABLET_CONFIG"); ok {
+	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)
 		if err != nil {
 			return nil, err

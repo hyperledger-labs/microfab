@@ -7,9 +7,9 @@ package blocks
 import (
 	"fmt"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/node"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/protoutil"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/txid"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/node"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/protoutil"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"

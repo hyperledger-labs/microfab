@@ -11,9 +11,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/IBM-Blockchain/fablet/internal/pkg/orderer"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/organization"
-	"github.com/IBM-Blockchain/fablet/internal/pkg/peer"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
 	"github.com/gorilla/mux"
 )
 
