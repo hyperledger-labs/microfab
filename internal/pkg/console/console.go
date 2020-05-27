@@ -17,43 +17,43 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Health struct {
+type jsonHealth struct {
 }
 
-type Options struct {
+type jsonOptions struct {
 	DefaultAuthority      string `json:"grpc.default_authority"`
 	SSLTargetNameOverride string `json:"grpc.ssl_target_name_override"`
 }
 
-type Peer struct {
-	ID                string   `json:"id"`
-	DisplayName       string   `json:"display_name"`
-	Type              string   `json:"type"`
-	APIURL            string   `json:"api_url"`
-	APIOptions        *Options `json:"api_options"`
-	ChaincodeURL      string   `json:"chaincode_url"`
-	ChaincodeOptions  *Options `json:"chaincode_options"`
-	OperationsURL     string   `json:"operations_url"`
-	OperationsOptions *Options `json:"operations_options"`
-	MSPID             string   `json:"msp_id"`
-	Wallet            string   `json:"wallet"`
-	Identity          string   `json:"identity"`
+type jsonPeer struct {
+	ID                string       `json:"id"`
+	DisplayName       string       `json:"display_name"`
+	Type              string       `json:"type"`
+	APIURL            string       `json:"api_url"`
+	APIOptions        *jsonOptions `json:"api_options"`
+	ChaincodeURL      string       `json:"chaincode_url"`
+	ChaincodeOptions  *jsonOptions `json:"chaincode_options"`
+	OperationsURL     string       `json:"operations_url"`
+	OperationsOptions *jsonOptions `json:"operations_options"`
+	MSPID             string       `json:"msp_id"`
+	Wallet            string       `json:"wallet"`
+	Identity          string       `json:"identity"`
 }
 
-type Orderer struct {
-	ID                string   `json:"id"`
-	DisplayName       string   `json:"display_name"`
-	Type              string   `json:"type"`
-	APIURL            string   `json:"api_url"`
-	APIOptions        *Options `json:"api_options"`
-	OperationsURL     string   `json:"operations_url"`
-	OperationsOptions *Options `json:"operations_options"`
-	MSPID             string   `json:"msp_id"`
-	Wallet            string   `json:"wallet"`
-	Identity          string   `json:"identity"`
+type jsonOrderer struct {
+	ID                string       `json:"id"`
+	DisplayName       string       `json:"display_name"`
+	Type              string       `json:"type"`
+	APIURL            string       `json:"api_url"`
+	APIOptions        *jsonOptions `json:"api_options"`
+	OperationsURL     string       `json:"operations_url"`
+	OperationsOptions *jsonOptions `json:"operations_options"`
+	MSPID             string       `json:"msp_id"`
+	Wallet            string       `json:"wallet"`
+	Identity          string       `json:"identity"`
 }
 
-type Identity struct {
+type jsonIdentity struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"display_name"`
 	Type        string `json:"type"`
@@ -63,25 +63,27 @@ type Identity struct {
 	Wallet      string `json:"wallet"`
 }
 
-type Components map[string]interface{}
+type components map[string]interface{}
 
+// Console represents an instance of a console.
 type Console struct {
-	HTTPServer       *http.Server
-	StaticComponents Components
-	Orderer          *orderer.Orderer
-	Peers            []*peer.Peer
+	httpServer       *http.Server
+	staticComponents components
+	orderer          *orderer.Orderer
+	peers            []*peer.Peer
 	port             int32
 	url              *url.URL
 }
 
-func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, port int32, url_ string) (*Console, error) {
-	staticComponents := Components{}
+// New creates a new instance of a console.
+func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, port int32, curl string) (*Console, error) {
+	staticComponents := components{}
 	for _, organization := range organizations {
 		orgName := organization.Name()
 		lowerOrgName := strings.ToLower(orgName)
 		id := fmt.Sprintf("%sadmin", lowerOrgName)
 		admin := organization.Admin()
-		staticComponents[id] = &Identity{
+		staticComponents[id] = &jsonIdentity{
 			ID:          id,
 			DisplayName: admin.Name(),
 			Type:        "identity",
@@ -91,66 +93,37 @@ func New(organizations []*organization.Organization, orderer *orderer.Orderer, p
 			Wallet:      organization.Name(),
 		}
 	}
-	parsedURL, err := url.Parse(url_)
+	parsedURL, err := url.Parse(curl)
 	if err != nil {
 		return nil, err
 	}
 	console := &Console{
-		StaticComponents: staticComponents,
+		staticComponents: staticComponents,
 		port:             port,
 		url:              parsedURL,
-		Orderer:          orderer,
-		Peers:            peers,
+		orderer:          orderer,
+		peers:            peers,
 	}
 	router := mux.NewRouter()
-	router.HandleFunc("/ak/api/v1/health", console.GetHealth).Methods("GET")
-	router.HandleFunc("/ak/api/v1/components", console.GetComponents).Methods("GET")
-	router.HandleFunc("/ak/api/v1/components/{id}", console.GetComponent).Methods("GET")
+	router.HandleFunc("/ak/api/v1/health", console.getHealth).Methods("GET")
+	router.HandleFunc("/ak/api/v1/components", console.getComponents).Methods("GET")
+	router.HandleFunc("/ak/api/v1/components/{id}", console.getComponent).Methods("GET")
 	HTTPServer := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
 		Handler: router,
 	}
-	console.HTTPServer = HTTPServer
+	console.httpServer = HTTPServer
 	return console, nil
 }
 
+// Start starts the console.
 func (c *Console) Start() error {
-	return c.HTTPServer.ListenAndServe()
+	return c.httpServer.ListenAndServe()
 }
 
+// Stop stops the console.
 func (c *Console) Stop() error {
-	return c.HTTPServer.Close()
-}
-
-func (c *Console) GetHealth(rw http.ResponseWriter, req *http.Request) {
-	rw.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(&Health{})
-}
-
-func (c *Console) GetComponents(rw http.ResponseWriter, req *http.Request) {
-	components := []interface{}{}
-	for _, component := range c.StaticComponents {
-		components = append(components, component)
-	}
-	for _, component := range c.getDynamicComponents(req) {
-		components = append(components, component)
-	}
-	rw.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(components)
-}
-
-func (c *Console) GetComponent(rw http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
-	component, ok := c.StaticComponents[id]
-	if !ok {
-		component, ok = c.getDynamicComponents(req)[id]
-		if !ok {
-			rw.WriteHeader(404)
-			return
-		}
-	}
-	rw.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(rw).Encode(component)
+	return c.httpServer.Close()
 }
 
 // Port returns the port of the console.
@@ -163,6 +136,37 @@ func (c *Console) URL() *url.URL {
 	return c.url
 }
 
+func (c *Console) getHealth(rw http.ResponseWriter, req *http.Request) {
+	rw.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(&jsonHealth{})
+}
+
+func (c *Console) getComponents(rw http.ResponseWriter, req *http.Request) {
+	components := []interface{}{}
+	for _, component := range c.staticComponents {
+		components = append(components, component)
+	}
+	for _, component := range c.getDynamicComponents(req) {
+		components = append(components, component)
+	}
+	rw.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(components)
+}
+
+func (c *Console) getComponent(rw http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+	component, ok := c.staticComponents[id]
+	if !ok {
+		component, ok = c.getDynamicComponents(req)[id]
+		if !ok {
+			rw.WriteHeader(404)
+			return
+		}
+	}
+	rw.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(component)
+}
+
 func (c *Console) getDynamicURL(req *http.Request, target *url.URL) string {
 	usingDNS := req.Host == c.url.Host
 	if usingDNS {
@@ -173,46 +177,46 @@ func (c *Console) getDynamicURL(req *http.Request, target *url.URL) string {
 	return updatedTarget.String()
 }
 
-func (c *Console) getDynamicComponents(req *http.Request) Components {
-	dynamicComponents := Components{}
-	dynamicComponents["orderer"] = &Orderer{
+func (c *Console) getDynamicComponents(req *http.Request) components {
+	dynamicComponents := components{}
+	dynamicComponents["orderer"] = &jsonOrderer{
 		ID:          "orderer",
 		DisplayName: "Orderer",
 		Type:        "fabric-orderer",
-		APIURL:      c.getDynamicURL(req, c.Orderer.APIURL()),
-		APIOptions: &Options{
-			DefaultAuthority:      c.Orderer.APIURL().Host,
-			SSLTargetNameOverride: c.Orderer.APIURL().Host,
+		APIURL:      c.getDynamicURL(req, c.orderer.APIURL()),
+		APIOptions: &jsonOptions{
+			DefaultAuthority:      c.orderer.APIURL().Host,
+			SSLTargetNameOverride: c.orderer.APIURL().Host,
 		},
-		OperationsURL: c.getDynamicURL(req, c.Orderer.OperationsURL()),
-		OperationsOptions: &Options{
-			DefaultAuthority:      c.Orderer.OperationsURL().Host,
-			SSLTargetNameOverride: c.Orderer.OperationsURL().Host,
+		OperationsURL: c.getDynamicURL(req, c.orderer.OperationsURL()),
+		OperationsOptions: &jsonOptions{
+			DefaultAuthority:      c.orderer.OperationsURL().Host,
+			SSLTargetNameOverride: c.orderer.OperationsURL().Host,
 		},
 		MSPID:    "OrdererMSP",
-		Identity: c.Orderer.Organization().Admin().Name(),
-		Wallet:   c.Orderer.Organization().Name(),
+		Identity: c.orderer.Organization().Admin().Name(),
+		Wallet:   c.orderer.Organization().Name(),
 	}
-	for _, peer := range c.Peers {
+	for _, peer := range c.peers {
 		orgName := peer.Organization().Name()
 		lowerOrgName := strings.ToLower(orgName)
 		id := fmt.Sprintf("%speer", lowerOrgName)
-		dynamicComponents[id] = &Peer{
+		dynamicComponents[id] = &jsonPeer{
 			ID:          id,
 			DisplayName: fmt.Sprintf("%s Peer", orgName),
 			Type:        "fabric-peer",
 			APIURL:      c.getDynamicURL(req, peer.APIURL()),
-			APIOptions: &Options{
+			APIOptions: &jsonOptions{
 				DefaultAuthority:      peer.APIURL().Host,
 				SSLTargetNameOverride: peer.APIURL().Host,
 			},
 			ChaincodeURL: c.getDynamicURL(req, peer.ChaincodeURL()),
-			ChaincodeOptions: &Options{
+			ChaincodeOptions: &jsonOptions{
 				DefaultAuthority:      peer.ChaincodeURL().Host,
 				SSLTargetNameOverride: peer.ChaincodeURL().Host,
 			},
 			OperationsURL: c.getDynamicURL(req, peer.OperationsURL()),
-			OperationsOptions: &Options{
+			OperationsOptions: &jsonOptions{
 				DefaultAuthority:      peer.OperationsURL().Host,
 				SSLTargetNameOverride: peer.OperationsURL().Host,
 			},

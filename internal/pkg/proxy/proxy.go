@@ -19,31 +19,33 @@ import (
 	"golang.org/x/net/http2/h2c"
 )
 
-type Route struct {
+type route struct {
 	SourceHost string
 	TargetHost string
 	UseHTTP2   bool
 }
 
-type RouteMap map[string]*Route
+type routeMap map[string]*route
 
+// Proxy represents an instance of a proxy.
 type Proxy struct {
-	HTTPServer *http.Server
+	httpServer *http.Server
 }
 
-type H2CTransportWrapper struct {
+type h2cTransportWrapper struct {
 	*http2.Transport
 }
 
-func (tw *H2CTransportWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (tw *h2cTransportWrapper) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.URL.Scheme = "http"
 	return tw.Transport.RoundTrip(req)
 }
 
 var portRegex = regexp.MustCompile(":\\d+$")
 
+// New creates a new instance of a proxy.
 func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer, port int) (*Proxy, error) {
-	routes := []*Route{
+	routes := []*route{
 		{
 			SourceHost: console.URL().Host,
 			TargetHost: fmt.Sprintf("localhost:%d", console.Port()),
@@ -61,7 +63,7 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 		},
 	}
 	for _, peer := range peers {
-		orgRoutes := []*Route{
+		orgRoutes := []*route{
 			{
 				SourceHost: peer.APIURL().Host,
 				TargetHost: fmt.Sprintf("localhost:%d", peer.APIPort()),
@@ -80,16 +82,16 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 		}
 		routes = append(routes, orgRoutes...)
 	}
-	routeMap := RouteMap{}
+	rm := routeMap{}
 	for _, route := range routes {
-		routeMap[route.SourceHost] = route
+		rm[route.SourceHost] = route
 	}
 	director := func(req *http.Request) {
 		host := req.Host
 		if !portRegex.MatchString(host) {
 			host += fmt.Sprintf(":%d", port)
 		}
-		route, ok := routeMap[host]
+		route, ok := rm[host]
 		if !ok {
 			route = routes[0]
 		}
@@ -101,7 +103,7 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 		req.URL.Host = route.TargetHost
 	}
 	httpTransport := &http.Transport{}
-	httpTransport.RegisterProtocol("h2c", &H2CTransportWrapper{
+	httpTransport.RegisterProtocol("h2c", &h2cTransportWrapper{
 		Transport: &http2.Transport{
 			AllowHTTP: true,
 			DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
@@ -126,13 +128,15 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 	if err != nil {
 		return nil, err
 	}
-	return &Proxy{HTTPServer: httpServer}, nil
+	return &Proxy{httpServer: httpServer}, nil
 }
 
+// Start starts the proxy.
 func (p *Proxy) Start() error {
-	return p.HTTPServer.ListenAndServe()
+	return p.httpServer.ListenAndServe()
 }
 
+// Stop stops the proxy.
 func (p *Proxy) Stop() error {
-	return p.HTTPServer.Close()
+	return p.httpServer.Close()
 }
