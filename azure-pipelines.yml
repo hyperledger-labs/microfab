@@ -14,6 +14,8 @@ trigger:
 pool:
   vmImage: "ubuntu-latest"
 steps:
+  - script: sudo apt-get update && sudo apt-get install -y shellcheck
+    displayName: Install Ubuntu dependencies
   - task: GoTool@0
     inputs:
       version: "1.14"
@@ -36,3 +38,7 @@ steps:
       export PATH=$(go env GOPATH)/bin:$PATH
       go test ./...
     displayName: Run Go unit tests
+  - script: |
+      set -ex
+      shellcheck builders/*/bin/*
+    displayName: Run ShellCheck
