@@ -23,6 +23,7 @@ type jsonHealth struct {
 type jsonOptions struct {
 	DefaultAuthority      string `json:"grpc.default_authority"`
 	SSLTargetNameOverride string `json:"grpc.ssl_target_name_override"`
+	RequestTimeout        int    `json:"request-timeout"`
 }
 
 type jsonPeer struct {
@@ -187,11 +188,13 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 		APIOptions: &jsonOptions{
 			DefaultAuthority:      c.orderer.APIURL().Host,
 			SSLTargetNameOverride: c.orderer.APIURL().Host,
+			RequestTimeout:        300 * 1000,
 		},
 		OperationsURL: c.getDynamicURL(req, c.orderer.OperationsURL()),
 		OperationsOptions: &jsonOptions{
 			DefaultAuthority:      c.orderer.OperationsURL().Host,
 			SSLTargetNameOverride: c.orderer.OperationsURL().Host,
+			RequestTimeout:        300 * 1000,
 		},
 		MSPID:    "OrdererMSP",
 		Identity: c.orderer.Organization().Admin().Name(),
@@ -209,16 +212,19 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 			APIOptions: &jsonOptions{
 				DefaultAuthority:      peer.APIURL().Host,
 				SSLTargetNameOverride: peer.APIURL().Host,
+				RequestTimeout:        300 * 1000,
 			},
 			ChaincodeURL: c.getDynamicURL(req, peer.ChaincodeURL()),
 			ChaincodeOptions: &jsonOptions{
 				DefaultAuthority:      peer.ChaincodeURL().Host,
 				SSLTargetNameOverride: peer.ChaincodeURL().Host,
+				RequestTimeout:        300 * 1000,
 			},
 			OperationsURL: c.getDynamicURL(req, peer.OperationsURL()),
 			OperationsOptions: &jsonOptions{
 				DefaultAuthority:      peer.OperationsURL().Host,
 				SSLTargetNameOverride: peer.OperationsURL().Host,
+				RequestTimeout:        300 * 1000,
 			},
 			MSPID:    peer.MSPID(),
 			Identity: peer.Organization().Admin().Name(),

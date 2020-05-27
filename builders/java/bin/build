@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+set -euo pipefail
+CHAINCODE_SOURCE_DIR="$1"
+# CHAINCODE_METADATA_DIR="$2"
+BUILD_OUTPUT_DIR="$3"
+cd "${CHAINCODE_SOURCE_DIR}/src"
+if [ -f build.gradle ] || [ -f build.gradle.kts ]; then
+    if [ -f ./gradlew ]; then
+        chmod +x ./gradlew
+        ./gradlew build shadowJar
+    else
+        gradle build shadowJar
+    fi
+    cp build/libs/chaincode.jar "${BUILD_OUTPUT_DIR}/"
+    touch "${BUILD_OUTPUT_DIR}/.uberjar"
+elif [ -f pom.xml ]; then
+    mvn compile package
+    cp target/chaincode.jar "${BUILD_OUTPUT_DIR}/"
+    touch "${BUILD_OUTPUT_DIR}/.uberjar"
+else
+    NUM_JARS=$(find . -name "*.jar" | wc -l)
+    if [ "${NUM_JARS}" -eq 0 ]; then
+        echo Cannot build chaincode as no Gradle or Maven build files or compiled JAR files >&2
+        exit 1
+    fi
+    tar cf - . | (cd "${BUILD_OUTPUT_DIR}" && tar xf -)
+fi

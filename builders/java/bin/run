@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+set -euo pipefail
+BUILD_OUTPUT_DIR="$1"
+RUN_METADATA_DIR="$2"
+CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "${RUN_METADATA_DIR}/chaincode.json")"
+CORE_PEER_LOCALMSPID="$(jq -r .mspid "${RUN_METADATA_DIR}/chaincode.json")"
+export CORE_CHAINCODE_ID_NAME CORE_PEER_LOCALMSPID
+cd "${BUILD_OUTPUT_DIR}"
+LIB_DIR=/opt/fabric-chaincode-java/lib
+LIB_JARS=$(find ${LIB_DIR} -name "*.jar" | paste -s -d ":" -)
+CHAINCODE_JARS=$(find "${BUILD_OUTPUT_DIR}" -name "*.jar" | paste -s -d ":" -)
+NUM_CHAINCODE_JARS=$(find "${BUILD_OUTPUT_DIR}" -name "*.jar" | wc -l)
+if [ -f "${BUILD_OUTPUT_DIR}/.uberjar" ]; then
+    if [ "${NUM_CHAINCODE_JARS}" -ne 1 ]; then
+        echo Cannot start uber JAR as more than one JAR file was found in the chaincode directory >&2
+        exit 1
+    fi
+    exec java -jar "${CHAINCODE_JARS}" --peerAddress="$(jq -r .peer_address "${RUN_METADATA_DIR}/chaincode.json")"
+else
+    exec java -cp "${CHAINCODE_JARS}:${LIB_JARS}" org.hyperledger.fabric.contract.ContractRouter --peerAddress="$(jq -r .peer_address "${RUN_METADATA_DIR}/chaincode.json")"
+fi
