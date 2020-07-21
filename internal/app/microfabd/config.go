@@ -29,6 +29,7 @@ type Config struct {
 	OrderingOrganization   Organization   `json:"ordering_organization"`
 	EndorsingOrganizations []Organization `json:"endorsing_organizations"`
 	Channels               []Channel      `json:"channels"`
+	CapabilityLevel        string         `json:"capability_level"`
 }
 
 // DefaultConfig returns the default configuration.
@@ -61,6 +62,7 @@ func DefaultConfig() (*Config, error) {
 				},
 			},
 		},
+		CapabilityLevel: "V2_0",
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)

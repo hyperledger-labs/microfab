@@ -331,6 +331,18 @@ func AddAnchorPeer(mspID string, hostname string, port int32) Option {
 	}
 }
 
+// WithCapabilityLevel set the specified capability level for the channel.
+func WithCapabilityLevel(capabilityLevel string) Option {
+	return func(operation *channelOperation) error {
+		operation.config.GetChannelGroup().Groups["Application"].Values["Capabilities"].Value = util.MarshalOrPanic(&common.Capabilities{
+			Capabilities: map[string]*common.Capability{
+				capabilityLevel: {},
+			},
+		})
+		return nil
+	}
+}
+
 // UsingMSPID uses the specified MSP ID to create or update the channel.
 func UsingMSPID(mspID string) Option {
 	return func(operation *channelOperation) error {
@@ -396,7 +408,7 @@ func CreateChannel(o *orderer.Orderer, channel string, opts ...Option) error {
 							ModPolicy: "Admins",
 							Value: util.MarshalOrPanic(&common.Capabilities{
 								Capabilities: map[string]*common.Capability{
-									"V1_4_2": {},
+									"V2_0": {},
 								},
 							}),
 						},

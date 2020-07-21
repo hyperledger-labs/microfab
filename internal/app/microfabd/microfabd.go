@@ -300,7 +300,9 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 
 func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 	log.Printf("Creating channel %s ...", config.Name)
-	opts := []channel.Option{}
+	opts := []channel.Option{
+		channel.WithCapabilityLevel(m.config.CapabilityLevel),
+	}
 	for _, endorsingOrganization := range m.endorsingOrganizations {
 		found := false
 		for _, organizationName := range config.EndorsingOrganizations {
