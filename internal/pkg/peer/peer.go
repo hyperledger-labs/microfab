@@ -317,6 +317,13 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 				"npm_config_cache",
 			},
 		},
+		{
+			"path": path.Join(homeDirectory, "builders", "external"),
+			"name": "external-service-builder",
+			"environmentWhitelist": []string{
+				"HOME",
+			},
+		},
 	}
 	configData, err = yaml.Marshal(config)
 	if err != nil {
