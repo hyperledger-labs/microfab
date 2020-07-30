@@ -6,8 +6,8 @@
 
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
 
-# shellcheck source=builders/common/utils.sh
-source "${SCRIPT_DIR}/../../common/utils.sh"
+# shellcheck source=builders/external/bin/utils.sh
+source "${SCRIPT_DIR}/utils.sh"
 
 # The peer invokes build with three arguments: CHAINCODE_SOURCE_DIR CHAINCODE_METADATA_DIR BUILD_OUTPUT_DIR
 CHAINCODE_SOURCE_DIR=$1
