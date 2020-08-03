@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+
+# shellcheck source=builders/external/bin/utils.sh
+source "${SCRIPT_DIR}/utils.sh"
+
+# The peer invokes detect with two arguments: CHAINCODE_SOURCE_DIR CHAINCODE_METADATA_DIR
+CHAINCODE_METADATA_DIR="$2"
+
+check_chaincode_type "$CHAINCODE_METADATA_DIR" "external"

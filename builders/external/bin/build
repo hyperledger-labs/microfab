@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+
+# shellcheck source=builders/external/bin/utils.sh
+source "${SCRIPT_DIR}/utils.sh"
+
+# The peer invokes build with three arguments: CHAINCODE_SOURCE_DIR CHAINCODE_METADATA_DIR BUILD_OUTPUT_DIR
+CHAINCODE_SOURCE_DIR=$1
+BUILD_OUTPUT_DIR=$3
+
+# External chaincodes must include server connection information
+if [ ! -f "$CHAINCODE_SOURCE_DIR/connection.json" ]; then
+    error_exit "$CHAINCODE_SOURCE_DIR/connection.json not found"
+fi
+
+copy_build_metadata_artifacts "$CHAINCODE_SOURCE_DIR" "$BUILD_OUTPUT_DIR"
