@@ -293,7 +293,7 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		{
 			"path": path.Join(homeDirectory, "builders", "golang"),
 			"name": "golang",
-			"environmentWhitelist": []string{
+			"propagateEnvironment": []string{
 				"GOCACHE",
 				"GOENV",
 				"GOROOT",
@@ -303,7 +303,7 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		{
 			"path": path.Join(homeDirectory, "builders", "java"),
 			"name": "java",
-			"environmentWhitelist": []string{
+			"propagateEnvironment": []string{
 				"HOME",
 				"JAVA_HOME",
 				"MAVEN_OPTS",
@@ -312,7 +312,7 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		{
 			"path": path.Join(homeDirectory, "builders", "node"),
 			"name": "node",
-			"environmentWhitelist": []string{
+			"propagateEnvironment": []string{
 				"HOME",
 				"npm_config_cache",
 			},
@@ -320,7 +320,7 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		{
 			"path": path.Join(homeDirectory, "builders", "external"),
 			"name": "external-service-builder",
-			"environmentWhitelist": []string{
+			"propagateEnvironment": []string{
 				"HOME",
 			},
 		},
