@@ -35,6 +35,14 @@ func MarshalOrPanic(pb proto.Message) []byte {
 	return res
 }
 
+// UnmarshalOrPanic unmarshals the specified byte array into a Protocol Buffer message, and panics on failure.
+func UnmarshalOrPanic(b []byte, m proto.Message) {
+	err := proto.Unmarshal(b, m)
+	if err != nil {
+		panic(err)
+	}
+}
+
 const config = `NodeOUs:
   Enable: true
   ClientOUIdentifier:

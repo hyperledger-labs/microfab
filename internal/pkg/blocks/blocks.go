@@ -5,33 +5,23 @@
 package blocks
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/node"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/protoutil"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
-	"github.com/golang/protobuf/proto"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
-	"github.com/hyperledger/fabric-protos-go/peer"
 )
 
 // DeliverCallback is a callback function called for every block returned by Deliver.
 type DeliverCallback func(*common.Block) error
 
-// DeliverFilteredCallback is a callback function called for every filtered block returned by DeliverFiltered.
-type DeliverFilteredCallback func(*peer.FilteredBlock) error
-
 // Deliverer can be implemented by types that can deliver one or more blocks.
 type Deliverer interface {
 	node.Node
 	Deliver(envelope *common.Envelope, callback DeliverCallback) error
-}
-
-// FilteredDeliverer can be implemented by types that can deliver one or more blocks.
-type FilteredDeliverer interface {
-	node.Node
-	DeliverFiltered(envelope *common.Envelope, callback DeliverFilteredCallback) error
 }
 
 // GetConfigBlock gets the latest config block from the specified channel.
@@ -42,15 +32,9 @@ func GetConfigBlock(deliverer Deliverer, channel string) (*common.Block, error) 
 	}
 	metadataBytes := newestBlock.GetMetadata().GetMetadata()[common.BlockMetadataIndex_LAST_CONFIG]
 	metadata := &common.Metadata{}
-	err = proto.Unmarshal(metadataBytes, metadata)
-	if err != nil {
-		return nil, err
-	}
+	util.UnmarshalOrPanic(metadataBytes, metadata)
 	lastConfig := &common.LastConfig{}
-	err = proto.Unmarshal(metadata.Value, lastConfig)
-	if err != nil {
-		return nil, err
-	}
+	util.UnmarshalOrPanic(metadata.Value, lastConfig)
 	return GetSpecificBlock(deliverer, channel, lastConfig.Index)
 }
 
@@ -106,31 +90,20 @@ func buildEnvelope(deliverer Deliverer, channel string, seekInfo *orderer.SeekIn
 	return protoutil.BuildEnvelope(payload, txID)
 }
 
-func getBlocks(deliverer Deliverer, channel string, seekInfo *orderer.SeekInfo) ([]*common.Block, error) {
-	envelope := buildEnvelope(deliverer, channel, seekInfo)
-	result := make([]*common.Block, 0)
-	err := deliverer.Deliver(envelope, func(block *common.Block) error {
-		result = append(result, block)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func getBlock(deliverer Deliverer, channel string, seekInfo *orderer.SeekInfo) (*common.Block, error) {
 	envelope := buildEnvelope(deliverer, channel, seekInfo)
 	var result *common.Block
 	err := deliverer.Deliver(envelope, func(block *common.Block) error {
 		if result != nil {
-			return fmt.Errorf("No blocks or too many blocks returned by seek info request")
+			return errors.New("Multiple blocks returned by seek info request")
 		}
 		result = block
 		return nil
 	})
 	if err != nil {
 		return nil, err
+	} else if result == nil {
+		return nil, errors.New("No blocks returned by seek info request")
 	}
 	return result, nil
 }
