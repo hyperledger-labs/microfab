@@ -9,7 +9,6 @@ import (
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/config"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/msp"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/protoutil"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
@@ -42,88 +41,6 @@ func AddMSPIDs(mspIDs ...string) Option {
 	return func(operation *channelOperation) error {
 		for _, mspID := range mspIDs {
 			err := AddMSPID(mspID)(operation)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
-
-// AddMSP adds the specified MSP to the channel.
-func AddMSP(msp *msp.MSP) Option {
-	return func(operation *channelOperation) error {
-		rootCerts := [][]byte{}
-		for _, rootCert := range msp.RootCertificates() {
-			rootCerts = append(rootCerts, rootCert.Bytes())
-		}
-		tlsRootCerts := [][]byte{}
-		adminCerts := [][]byte{}
-		for _, adminCert := range msp.AdminCertificates() {
-			adminCerts = append(adminCerts, adminCert.Bytes())
-		}
-		emptySignaturePolicy := &common.Policy{
-			Type: int32(common.Policy_SIGNATURE),
-			Value: util.MarshalOrPanic(&common.SignaturePolicyEnvelope{
-				Identities: []*fmsp.MSPPrincipal{},
-				Rule: &common.SignaturePolicy{
-					Type: &common.SignaturePolicy_NOutOf_{
-						NOutOf: &common.SignaturePolicy_NOutOf{
-							N:     1,
-							Rules: []*common.SignaturePolicy{},
-						},
-					},
-				},
-			}),
-		}
-		mspGroup := &common.ConfigGroup{
-			Groups:    map[string]*common.ConfigGroup{},
-			ModPolicy: "Admins",
-			Policies: map[string]*common.ConfigPolicy{
-				"Admins": {
-					ModPolicy: "Admins",
-					Policy:    proto.Clone(emptySignaturePolicy).(*common.Policy),
-				},
-				"Writers": {
-					ModPolicy: "Admins",
-					Policy:    proto.Clone(emptySignaturePolicy).(*common.Policy),
-				},
-				"Readers": {
-					ModPolicy: "Admins",
-					Policy:    proto.Clone(emptySignaturePolicy).(*common.Policy),
-				},
-			},
-			Values: map[string]*common.ConfigValue{
-				"MSP": {
-					ModPolicy: "Admins",
-					Value: util.MarshalOrPanic(&fmsp.MSPConfig{
-						Config: util.MarshalOrPanic(&fmsp.FabricMSPConfig{
-							Name: msp.ID(),
-							CryptoConfig: &fmsp.FabricCryptoConfig{
-								SignatureHashFamily:            "SHA2",
-								IdentityIdentifierHashFunction: "SHA256",
-							},
-							RootCerts:    rootCerts,
-							TlsRootCerts: tlsRootCerts,
-							Admins:       adminCerts,
-						}),
-					}),
-				},
-			},
-		}
-		addToPolicy(mspGroup.Policies["Admins"].Policy, msp.ID(), fmsp.MSPRole_ADMIN)
-		addToPolicy(mspGroup.Policies["Writers"].Policy, msp.ID(), fmsp.MSPRole_MEMBER)
-		addToPolicy(mspGroup.Policies["Readers"].Policy, msp.ID(), fmsp.MSPRole_MEMBER)
-		operation.config.GetChannelGroup().Groups["Application"].Groups[msp.ID()] = mspGroup
-		return nil
-	}
-}
-
-// AddMSPs adds the specified MSPs to the channel.
-func AddMSPs(msps ...*msp.MSP) Option {
-	return func(operation *channelOperation) error {
-		for _, msp := range msps {
-			err := AddMSP(msp)(operation)
 			if err != nil {
 				return err
 			}

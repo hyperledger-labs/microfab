@@ -90,7 +90,7 @@ func New(organizations []*organization.Organization, orderer *orderer.Orderer, p
 			Type:        "identity",
 			Certificate: admin.Certificate().Bytes(),
 			PrivateKey:  admin.PrivateKey().Bytes(),
-			MSPID:       organization.MSP().ID(),
+			MSPID:       organization.MSPID(),
 			Wallet:      organization.Name(),
 		}
 	}

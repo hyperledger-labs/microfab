@@ -137,14 +137,14 @@ func (m *Microfab) Run() error {
 
 	// Connect to all of the components.
 	channelCreator := m.endorsingOrganizations[0]
-	ordererConnection, err := orderer.Connect(m.orderer, channelCreator.MSP().ID(), channelCreator.Admin())
+	ordererConnection, err := orderer.Connect(m.orderer, channelCreator.MSPID(), channelCreator.Admin())
 	if err != nil {
 		return err
 	}
 	m.ordererConnection = ordererConnection
 	defer m.ordererConnection.Close()
 	for _, p := range m.peers {
-		peerConnection, err := peer.Connect(p, p.Organization().MSP().ID(), p.Organization().Admin())
+		peerConnection, err := peer.Connect(p, p.Organization().MSPID(), p.Organization().Admin())
 		if err != nil {
 			return err
 		}
@@ -321,7 +321,7 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			}
 		}
 		if found {
-			opts = append(opts, channel.AddMSPID(endorsingOrganization.MSP().ID()))
+			opts = append(opts, channel.AddMSPID(endorsingOrganization.MSPID()))
 		}
 	}
 	err := channel.CreateChannel(m.ordererConnection, config.Name, opts...)

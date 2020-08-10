@@ -170,23 +170,21 @@ func BuildFabricCryptoConfig() *msp.FabricCryptoConfig {
 // BuildFabricMSPConfig builds the Fabric MSP configuration for an organization.
 func BuildFabricMSPConfig(organization *organization.Organization) *msp.FabricMSPConfig {
 	mspConfig := &msp.FabricMSPConfig{
-		Name:                          organization.MSP().ID(),
-		RootCerts:                     [][]byte{},
-		IntermediateCerts:             [][]byte{},
-		TlsRootCerts:                  [][]byte{},
-		TlsIntermediateCerts:          [][]byte{},
-		Admins:                        [][]byte{},
+		Name: organization.MSPID(),
+		RootCerts: [][]byte{
+			organization.CA().Certificate().Bytes(),
+		},
+		IntermediateCerts:    [][]byte{},
+		TlsRootCerts:         [][]byte{},
+		TlsIntermediateCerts: [][]byte{},
+		Admins: [][]byte{
+			organization.Admin().Certificate().Bytes(),
+		},
 		RevocationList:                [][]byte{},
 		SigningIdentity:               nil,
 		OrganizationalUnitIdentifiers: []*msp.FabricOUIdentifier{},
 		CryptoConfig:                  BuildFabricCryptoConfig(),
 		FabricNodeOus:                 BuildFabricNodeOUs(),
-	}
-	for _, rootCert := range organization.MSP().RootCertificates() {
-		mspConfig.RootCerts = append(mspConfig.RootCerts, rootCert.Bytes())
-	}
-	for _, adminCert := range organization.MSP().AdminCertificates() {
-		mspConfig.Admins = append(mspConfig.Admins, adminCert.Bytes())
 	}
 	return mspConfig
 }
@@ -212,7 +210,7 @@ func BuildFabricNodeOUs() *msp.FabricNodeOUs {
 
 // BuildConfigGroupFromOrganization builds a config group from an organization.
 func BuildConfigGroupFromOrganization(organization *organization.Organization) *common.ConfigGroup {
-	signaturePolicyEnvelope := BuildSignaturePolicyEnvelope(organization.MSP().ID(), msp.MSPRole_MEMBER)
+	signaturePolicyEnvelope := BuildSignaturePolicyEnvelope(organization.MSPID(), msp.MSPRole_MEMBER)
 	configPolicy := &common.ConfigPolicy{
 		ModPolicy: "Admins",
 		Policy: &common.Policy{

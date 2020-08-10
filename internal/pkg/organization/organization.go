@@ -9,8 +9,6 @@ import (
 	"regexp"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/msp"
 )
 
 // Organization represents a loaded organization definition.
@@ -18,7 +16,7 @@ type Organization struct {
 	name  string
 	ca    *identity.Identity
 	admin *identity.Identity
-	msp   *msp.MSP
+	mspID string
 }
 
 // New creates a new organization.
@@ -36,11 +34,7 @@ func New(name string) (*Organization, error) {
 	safeRegex := regexp.MustCompile("[^a-zA-Z0-9]+")
 	safeName := safeRegex.ReplaceAllString(name, "")
 	mspID := fmt.Sprintf("%sMSP", safeName)
-	msp, err := msp.New(mspID, []*certificate.Certificate{ca.Certificate()}, []*certificate.Certificate{admin.Certificate()})
-	if err != nil {
-		return nil, err
-	}
-	return &Organization{name, ca, admin, msp}, nil
+	return &Organization{name, ca, admin, mspID}, nil
 }
 
 // Name returns the name of the organization.
@@ -58,7 +52,7 @@ func (o *Organization) Admin() *identity.Identity {
 	return o.admin
 }
 
-// MSP returns the MSP for the organization.
-func (o *Organization) MSP() *msp.MSP {
-	return o.msp
+// MSPID returns the MSP ID for the organization.
+func (o *Organization) MSPID() string {
+	return o.mspID
 }

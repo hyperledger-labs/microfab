@@ -58,7 +58,7 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	if err != nil {
 		return nil, err
 	}
-	return &Peer{organization, identity, organization.MSP().ID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, nil}, nil
+	return &Peer{organization, identity, organization.MSPID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, nil}, nil
 }
 
 // Organization returns the organization of the peer.

@@ -54,7 +54,7 @@ func New(organization *organization.Organization, directory string, apiPort int,
 	if err != nil {
 		return nil, err
 	}
-	return &Orderer{organization, organization.MSP().ID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil}, nil
+	return &Orderer{organization, organization.MSPID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil}, nil
 }
 
 // Organization returns the organization of the orderer.
@@ -256,9 +256,9 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 		},
 		Sequence: 0,
 	}
-	config.ChannelGroup.Groups["Orderer"].Groups[o.organization.MSP().ID()] = protoutil.BuildConfigGroupFromOrganization(o.organization)
+	config.ChannelGroup.Groups["Orderer"].Groups[o.organization.MSPID()] = protoutil.BuildConfigGroupFromOrganization(o.organization)
 	for _, organization := range consortium {
-		config.ChannelGroup.Groups["Consortiums"].Groups["SampleConsortium"].Groups[organization.MSP().ID()] = protoutil.BuildConfigGroupFromOrganization(organization)
+		config.ChannelGroup.Groups["Consortiums"].Groups["SampleConsortium"].Groups[organization.MSPID()] = protoutil.BuildConfigGroupFromOrganization(organization)
 	}
 	configEnvelope := &common.ConfigEnvelope{
 		Config:     config,
