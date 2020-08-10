@@ -7,7 +7,7 @@ package blocks
 import (
 	"errors"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/node"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/protoutil"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
@@ -20,7 +20,8 @@ type DeliverCallback func(*common.Block) error
 
 // Deliverer can be implemented by types that can deliver one or more blocks.
 type Deliverer interface {
-	node.Node
+	ConnectionMSPID() string
+	ConnectionIdentity() *identity.Identity
 	Deliver(envelope *common.Envelope, callback DeliverCallback) error
 }
 
