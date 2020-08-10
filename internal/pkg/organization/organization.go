@@ -21,13 +21,6 @@ type Organization struct {
 	msp   *msp.MSP
 }
 
-type jsonOrganization struct {
-	Name  string `json:"name"`
-	CA    string `json:"ca"`
-	Admin string `json:"admin"`
-	MSP   string `json:"msp"`
-}
-
 // New creates a new organization.
 func New(name string) (*Organization, error) {
 	caName := fmt.Sprintf("%s CA", name)

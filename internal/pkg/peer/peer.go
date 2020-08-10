@@ -43,12 +43,6 @@ type Peer struct {
 	command        *exec.Cmd
 }
 
-type jsonPeer struct {
-	APIURL string `json:"api_url"`
-	MSPID  string `json:"msp_id"`
-	PEM    string `json:"pem"`
-}
-
 // New creates a new peer.
 func New(organization *organization.Organization, directory string, apiPort int32, apiURL string, chaincodePort int32, chaincodeURL string, operationsPort int32, operationsURL string) (*Peer, error) {
 	identityName := fmt.Sprintf("%s Peer", organization.Name())

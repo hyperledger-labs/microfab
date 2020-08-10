@@ -15,12 +15,6 @@ type MSP struct {
 	adminCertificates []*certificate.Certificate
 }
 
-type jsonMSP struct {
-	MSPID             string   `json:"msp_id"`
-	RootCertificates  []string `json:"root_certs"`
-	AdminCertificates []string `json:"admins"`
-}
-
 // New creates a new MSP.
 func New(mspID string, rootCertificates, adminCertificates []*certificate.Certificate) (*MSP, error) {
 	return &MSP{mspID, rootCertificates, adminCertificates}, nil
