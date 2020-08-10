@@ -5,7 +5,6 @@
 package peer
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -70,36 +69,6 @@ func New(organization *organization.Organization, directory string, apiPort int3
 		return nil, err
 	}
 	return &Peer{organization, identity, organization.MSP().ID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, nil, nil, "", nil}, nil
-}
-
-// FromBytes creates a new connection to a peer from JSON data.
-func FromBytes(data []byte) (*Peer, error) {
-	// parsedJSON := &jsonPeer{}
-	// err := json.Unmarshal(data, &parsedJSON)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// apiURL, err := url.Parse(parsedJSON.APIURL)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// port, err := strconv.Atoi(apiURL.Port())
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// secure := apiURL.Scheme == "grpcs"
-	// pem, err := base64.StdEncoding.DecodeString(parsedJSON.PEM)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return &Peer{parsedJSON.APIURL, apiURL.Host, apiURL.Hostname(), int32(port), secure, parsedJSON.MSPID, pem, nil, nil}, nil
-	return nil, nil
-}
-
-// ToBytes saves the peer to JSON data.
-func (p *Peer) ToBytes() ([]byte, error) {
-	serializedJSON := jsonPeer{}
-	return json.Marshal(serializedJSON)
 }
 
 // Organization returns the organization of the peer.

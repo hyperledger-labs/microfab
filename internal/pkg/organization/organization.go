@@ -5,7 +5,6 @@
 package organization
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -49,46 +48,6 @@ func New(name string) (*Organization, error) {
 		return nil, err
 	}
 	return &Organization{name, ca, admin, msp}, nil
-}
-
-// FromBytes loads an organization from JSON data.
-func FromBytes(data []byte) (*Organization, error) {
-	parsedJSON := jsonOrganization{}
-	err := json.Unmarshal(data, &parsedJSON)
-	if err != nil {
-		return nil, err
-	}
-	ca, err := identity.FromBase64(parsedJSON.CA)
-	if err != nil {
-		return nil, err
-	}
-	admin, err := identity.FromBase64(parsedJSON.Admin)
-	if err != nil {
-		return nil, err
-	}
-	msp, err := msp.FromBase64(parsedJSON.MSP)
-	if err != nil {
-		return nil, err
-	}
-	return &Organization{parsedJSON.Name, ca, admin, msp}, nil
-}
-
-// ToBytes saves the organization to JSON data.
-func (o *Organization) ToBytes() ([]byte, error) {
-	ca, err := o.ca.ToBase64()
-	if err != nil {
-		return nil, err
-	}
-	admin, err := o.admin.ToBase64()
-	if err != nil {
-		return nil, err
-	}
-	msp, err := o.msp.ToBase64()
-	if err != nil {
-		return nil, err
-	}
-	serializedJSON := jsonOrganization{o.name, ca, admin, msp}
-	return json.Marshal(serializedJSON)
 }
 
 // Name returns the name of the organization.

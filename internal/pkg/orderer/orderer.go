@@ -61,64 +61,6 @@ func New(organization *organization.Organization, directory string, apiPort int,
 	return &Orderer{organization, organization.MSP().ID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil, "", nil}, nil
 }
 
-// FromBytes creates a new connection to an orderer from JSON data.
-func FromBytes(data []byte) (*Orderer, error) {
-	// var unknown interface{}
-	// err := json.Unmarshal(data, &unknown)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if _, ok := unknown.([]interface{}); !ok {
-	// 	var parsedJSON struct {
-	// 		APIURL string `json:"api_url"`
-	// 		MSPID  string `json:"msp_id"`
-	// 		PEM    string `json:"pem"`
-	// 	}
-	// 	err := json.Unmarshal(data, &parsedJSON)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	apiURL, err := url.Parse(parsedJSON.APIURL)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	port, err := strconv.Atoi(apiURL.Port())
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	secure := apiURL.Scheme == "grpcs"
-	// 	pem, err := base64.StdEncoding.DecodeString(parsedJSON.PEM)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	return &Orderer{apiURL.Host, apiURL.Hostname(), int32(port), secure, parsedJSON.MSPID, pem, nil, nil}, nil
-	// }
-	// var parsedJSON []struct {
-	// 	APIURL string `json:"api_url"`
-	// 	MSPID  string `json:"msp_id"`
-	// 	PEM    string `json:"pem"`
-	// }
-	// err = json.Unmarshal(data, &parsedJSON)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// apiURL, err := url.Parse(parsedJSON[0].APIURL)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// port, err := strconv.Atoi(apiURL.Port())
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// secure := apiURL.Scheme == "grpcs"
-	// pem, err := base64.StdEncoding.DecodeString(parsedJSON[0].PEM)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return &Orderer{apiURL.Host, apiURL.Hostname(), int32(port), secure, parsedJSON[0].MSPID, pem, nil, nil}, nil
-	return nil, nil
-}
-
 // Organization returns the organization of the orderer.
 func (o *Orderer) Organization() *organization.Organization {
 	return o.organization
