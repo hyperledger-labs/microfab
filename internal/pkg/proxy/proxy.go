@@ -52,31 +52,31 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 			UseHTTP2:   false,
 		},
 		{
-			SourceHost: orderer.APIURL().Host,
-			TargetHost: fmt.Sprintf("localhost:%d", orderer.APIPort()),
+			SourceHost: orderer.APIHost(true),
+			TargetHost: orderer.APIHost(false),
 			UseHTTP2:   true,
 		},
 		{
-			SourceHost: orderer.OperationsURL().Host,
-			TargetHost: fmt.Sprintf("localhost:%d", orderer.OperationsPort()),
+			SourceHost: orderer.OperationsHost(true),
+			TargetHost: orderer.OperationsHost(false),
 			UseHTTP2:   false,
 		},
 	}
 	for _, peer := range peers {
 		orgRoutes := []*route{
 			{
-				SourceHost: peer.APIURL().Host,
-				TargetHost: fmt.Sprintf("localhost:%d", peer.APIPort()),
+				SourceHost: peer.APIHost(false),
+				TargetHost: peer.APIHost(true),
 				UseHTTP2:   true,
 			},
 			{
-				SourceHost: peer.ChaincodeURL().Host,
-				TargetHost: fmt.Sprintf("localhost:%d", peer.ChaincodePort()),
+				SourceHost: peer.ChaincodeHost(false),
+				TargetHost: peer.ChaincodeHost(true),
 				UseHTTP2:   true,
 			},
 			{
-				SourceHost: peer.OperationsURL().Host,
-				TargetHost: fmt.Sprintf("localhost:%d", peer.OperationsPort()),
+				SourceHost: peer.OperationsHost(false),
+				TargetHost: peer.OperationsHost(true),
 				UseHTTP2:   false,
 			},
 		}

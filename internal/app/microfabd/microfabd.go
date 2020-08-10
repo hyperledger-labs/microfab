@@ -259,9 +259,9 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 	orderer, err := orderer.New(
 		organization,
 		directory,
-		apiPort,
+		int32(apiPort),
 		fmt.Sprintf("grpc://orderer-api.%s:%d", m.config.Domain, m.config.Port),
-		operationsPort,
+		int32(operationsPort),
 		fmt.Sprintf("http://orderer-operations.%s:%d", m.config.Domain, m.config.Port),
 	)
 	if err != nil {
@@ -347,7 +347,7 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			}
 		}
 		if found {
-			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.Hostname(), peer.Port()))
+			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(false), peer.APIPort(false)))
 		}
 	}
 	err = channel.UpdateChannel(m.ordererConnection, config.Name, opts...)
