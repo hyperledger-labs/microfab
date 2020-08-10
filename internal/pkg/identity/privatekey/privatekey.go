@@ -10,22 +10,12 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 )
 
 // PrivateKey represents a loaded ECDSA private key.
 type PrivateKey struct {
 	privateKey *ecdsa.PrivateKey
 	bytes      []byte
-}
-
-// FromFile loads an ECDSA private key from a PEM file.
-func FromFile(file string) (*PrivateKey, error) {
-	bytes, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(bytes)
 }
 
 // FromBase64 loads an ECDSA private key from a base64 encoded string.

@@ -16,7 +16,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
-	"io/ioutil"
 	"math/big"
 	"time"
 
@@ -140,15 +139,6 @@ func New(name string, opts ...Option) (*Identity, error) {
 	return &Identity{name, cert, pk, ca, isCA}, nil
 }
 
-// FromFile loads an identity from a JSON file.
-func FromFile(file string) (*Identity, error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(data)
-}
-
 // FromBase64 loads an identity from a base64 encoded string.
 func FromBase64(data string) (*Identity, error) {
 	bytes, err := base64.StdEncoding.DecodeString(data)
@@ -212,15 +202,6 @@ func (i *Identity) ToBase64() (string, error) {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(bytes), nil
-}
-
-// ToFile saves the identity to a JSON file.
-func (i *Identity) ToFile(file string) error {
-	data, err := i.ToBytes()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(file, data, 0644)
 }
 
 // Name returns the name of the identity.

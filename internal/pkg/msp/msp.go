@@ -7,7 +7,6 @@ package msp
 import (
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
 )
@@ -28,15 +27,6 @@ type jsonMSP struct {
 // New creates a new MSP.
 func New(mspID string, rootCertificates, adminCertificates []*certificate.Certificate) (*MSP, error) {
 	return &MSP{mspID, rootCertificates, adminCertificates}, nil
-}
-
-// FromFile loads an MSP from a JSON file.
-func FromFile(file string) (*MSP, error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(data)
 }
 
 // FromBase64 loads an MSP from a base64 encoded string.
@@ -81,15 +71,6 @@ func (m *MSP) ToBase64() (string, error) {
 		return "", err
 	}
 	return base64.StdEncoding.EncodeToString(bytes), nil
-}
-
-// ToFile saves the MSP to a JSON file.
-func (m *MSP) ToFile(file string) error {
-	data, err := m.ToBytes()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(file, data, 0644)
 }
 
 // ID returns the ID of the MSP.

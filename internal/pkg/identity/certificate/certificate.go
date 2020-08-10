@@ -9,22 +9,12 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"io/ioutil"
 )
 
 // Certificate represents a loaded X509 certificate.
 type Certificate struct {
 	certificate *x509.Certificate
 	bytes       []byte
-}
-
-// FromFile loads an X509 certificate from a PEM file.
-func FromFile(file string) (*Certificate, error) {
-	bytes, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(bytes)
 }
 
 // FromBase64 loads an X509 certificate from a base64 encoded string.

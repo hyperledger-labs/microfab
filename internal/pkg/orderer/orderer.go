@@ -61,15 +61,6 @@ func New(organization *organization.Organization, directory string, apiPort int,
 	return &Orderer{organization, organization.MSP().ID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil, "", nil}, nil
 }
 
-// FromFile creates a new connection to an orderer from a JSON file.
-func FromFile(file string) (*Orderer, error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(data)
-}
-
 // FromBytes creates a new connection to an orderer from JSON data.
 func FromBytes(data []byte) (*Orderer, error) {
 	// var unknown interface{}

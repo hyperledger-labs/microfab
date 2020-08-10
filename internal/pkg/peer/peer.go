@@ -72,15 +72,6 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	return &Peer{organization, identity, organization.MSP().ID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, nil, nil, "", nil}, nil
 }
 
-// FromFile creates a new connection to a peer from a JSON file.
-func FromFile(file string) (*Peer, error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(data)
-}
-
 // FromBytes creates a new connection to a peer from JSON data.
 func FromBytes(data []byte) (*Peer, error) {
 	// parsedJSON := &jsonPeer{}
@@ -109,15 +100,6 @@ func FromBytes(data []byte) (*Peer, error) {
 func (p *Peer) ToBytes() ([]byte, error) {
 	serializedJSON := jsonPeer{}
 	return json.Marshal(serializedJSON)
-}
-
-// ToFile saves the peer to a JSON file.
-func (p *Peer) ToFile(file string) error {
-	data, err := p.ToBytes()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(file, data, 0644)
 }
 
 // Organization returns the organization of the peer.

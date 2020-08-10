@@ -7,7 +7,6 @@ package organization
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"regexp"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
@@ -52,15 +51,6 @@ func New(name string) (*Organization, error) {
 	return &Organization{name, ca, admin, msp}, nil
 }
 
-// FromFile loads an organization from a JSON file.
-func FromFile(file string) (*Organization, error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(data)
-}
-
 // FromBytes loads an organization from JSON data.
 func FromBytes(data []byte) (*Organization, error) {
 	parsedJSON := jsonOrganization{}
@@ -99,15 +89,6 @@ func (o *Organization) ToBytes() ([]byte, error) {
 	}
 	serializedJSON := jsonOrganization{o.name, ca, admin, msp}
 	return json.Marshal(serializedJSON)
-}
-
-// ToFile saves the organization to a JSON file.
-func (o *Organization) ToFile(file string) error {
-	data, err := o.ToBytes()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(file, data, 0644)
 }
 
 // Name returns the name of the organization.
