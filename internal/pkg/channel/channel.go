@@ -360,7 +360,7 @@ func UsingIdentity(identity *identity.Identity) Option {
 }
 
 // CreateChannel creates a new channel on the specified ordering service.
-func CreateChannel(o *orderer.Orderer, channel string, opts ...Option) error {
+func CreateChannel(o *orderer.Connection, channel string, opts ...Option) error {
 	_ = &common.Policy{
 		Type: int32(common.Policy_SIGNATURE),
 		Value: util.MarshalOrPanic(&common.SignaturePolicyEnvelope{
@@ -429,8 +429,8 @@ func CreateChannel(o *orderer.Orderer, channel string, opts ...Option) error {
 		&common.Config{
 			ChannelGroup: configUpdate.WriteSet,
 		},
-		o.ConnectionMSPID(),
-		o.ConnectionIdentity(),
+		o.MSPID(),
+		o.Identity(),
 	}
 	for _, opt := range opts {
 		err := opt(operation)
@@ -445,7 +445,7 @@ func CreateChannel(o *orderer.Orderer, channel string, opts ...Option) error {
 }
 
 // UpdateChannel updates an existing channel on the specified ordering service.
-func UpdateChannel(o *orderer.Orderer, channel string, opts ...Option) error {
+func UpdateChannel(o *orderer.Connection, channel string, opts ...Option) error {
 	originalConfig, err := config.GetConfig(o, channel)
 	if err != nil {
 		return err
@@ -453,8 +453,8 @@ func UpdateChannel(o *orderer.Orderer, channel string, opts ...Option) error {
 	newConfig := proto.Clone(originalConfig).(*common.Config)
 	operation := &channelOperation{
 		newConfig,
-		o.ConnectionMSPID(),
-		o.ConnectionIdentity(),
+		o.MSPID(),
+		o.Identity(),
 	}
 	for _, opt := range opts {
 		err := opt(operation)
@@ -470,7 +470,7 @@ func UpdateChannel(o *orderer.Orderer, channel string, opts ...Option) error {
 	return createOrUpdateChannel(o, operation.mspID, operation.identity, configUpdate)
 }
 
-func createOrUpdateChannel(o *orderer.Orderer, mspID string, identity *identity.Identity, configUpdate *common.ConfigUpdate) error {
+func createOrUpdateChannel(o *orderer.Connection, mspID string, identity *identity.Identity, configUpdate *common.ConfigUpdate) error {
 	txID := txid.New(mspID, identity)
 	header := protoutil.BuildHeader(common.HeaderType_CONFIG_UPDATE, configUpdate.ChannelId, txID)
 	configUpdateBytes := util.MarshalOrPanic(configUpdate)

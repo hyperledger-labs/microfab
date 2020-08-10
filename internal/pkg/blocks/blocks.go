@@ -20,8 +20,8 @@ type DeliverCallback func(*common.Block) error
 
 // Deliverer can be implemented by types that can deliver one or more blocks.
 type Deliverer interface {
-	ConnectionMSPID() string
-	ConnectionIdentity() *identity.Identity
+	MSPID() string
+	Identity() *identity.Identity
 	Deliver(envelope *common.Envelope, callback DeliverCallback) error
 }
 
@@ -85,7 +85,7 @@ func GetGenesisBlock(deliverer Deliverer, channel string) (*common.Block, error)
 }
 
 func buildEnvelope(deliverer Deliverer, channel string, seekInfo *orderer.SeekInfo) *common.Envelope {
-	txID := txid.New(deliverer.ConnectionMSPID(), deliverer.ConnectionIdentity())
+	txID := txid.New(deliverer.MSPID(), deliverer.Identity())
 	header := protoutil.BuildHeader(common.HeaderType_DELIVER_SEEK_INFO, channel, txID)
 	payload := protoutil.BuildPayload(header, seekInfo)
 	return protoutil.BuildEnvelope(payload, txID)

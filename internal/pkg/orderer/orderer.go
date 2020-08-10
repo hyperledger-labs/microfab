@@ -24,7 +24,6 @@ import (
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 )
 
 // Orderer represents a loaded orderer definition.
@@ -37,9 +36,6 @@ type Orderer struct {
 	apiURL         *url.URL
 	operationsPort int
 	operationsURL  *url.URL
-	clientConn     *grpc.ClientConn
-	connIdentity   *identity.Identity
-	connMSPID      string
 	command        *exec.Cmd
 }
 
@@ -58,7 +54,7 @@ func New(organization *organization.Organization, directory string, apiPort int,
 	if err != nil {
 		return nil, err
 	}
-	return &Orderer{organization, organization.MSP().ID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil, "", nil}, nil
+	return &Orderer{organization, organization.MSP().ID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil}, nil
 }
 
 // Organization returns the organization of the orderer.
@@ -69,44 +65,6 @@ func (o *Orderer) Organization() *organization.Organization {
 // MSPID returns the MSP ID of the orderer.
 func (o *Orderer) MSPID() string {
 	return o.mspID
-}
-
-// Connect opens a connection to the orderer.
-func (o *Orderer) Connect(mspID string, identity *identity.Identity) error {
-	clientConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", o.apiPort), grpc.WithInsecure())
-	if err != nil {
-		return err
-	}
-	o.clientConn = clientConn
-	o.connMSPID = mspID
-	o.connIdentity = identity
-	return nil
-}
-
-// Connected determines if a connection is open to the peer.
-func (o *Orderer) Connected() bool {
-	return o.clientConn != nil
-}
-
-// Close closes any open connection to the orderer.
-func (o *Orderer) Close() error {
-	o.identity = nil
-	if o.clientConn != nil {
-		err := o.clientConn.Close()
-		o.clientConn = nil
-		return err
-	}
-	return nil
-}
-
-// ConnectionMSPID returns the MSP ID used to the connect to the orderer.
-func (o *Orderer) ConnectionMSPID() string {
-	return o.connMSPID
-}
-
-// ConnectionIdentity returns the identity used to connect to the orderer.
-func (o *Orderer) ConnectionIdentity() *identity.Identity {
-	return o.connIdentity
 }
 
 // APIPort returns the API port of the orderer.

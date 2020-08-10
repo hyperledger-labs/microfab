@@ -77,8 +77,8 @@ var _ = Describe("the blocks package", func() {
 		Expect(err).NotTo(HaveOccurred())
 		fakeBlock = &common.Block{}
 		fakeDeliverer = &fakes.Deliverer{}
-		fakeDeliverer.ConnectionMSPIDReturns("Org1MSP")
-		fakeDeliverer.ConnectionIdentityReturns(testIdentity)
+		fakeDeliverer.MSPIDReturns("Org1MSP")
+		fakeDeliverer.IdentityReturns(testIdentity)
 		fakeDeliverer.DeliverCalls(func(_ *common.Envelope, callback blocks.DeliverCallback) error {
 			return callback(fakeBlock)
 		})

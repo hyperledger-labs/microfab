@@ -10,58 +10,6 @@ import (
 )
 
 type Deliverer struct {
-	CloseStub        func() error
-	closeMutex       sync.RWMutex
-	closeArgsForCall []struct {
-	}
-	closeReturns struct {
-		result1 error
-	}
-	closeReturnsOnCall map[int]struct {
-		result1 error
-	}
-	ConnectStub        func(string, *identity.Identity) error
-	connectMutex       sync.RWMutex
-	connectArgsForCall []struct {
-		arg1 string
-		arg2 *identity.Identity
-	}
-	connectReturns struct {
-		result1 error
-	}
-	connectReturnsOnCall map[int]struct {
-		result1 error
-	}
-	ConnectedStub        func() bool
-	connectedMutex       sync.RWMutex
-	connectedArgsForCall []struct {
-	}
-	connectedReturns struct {
-		result1 bool
-	}
-	connectedReturnsOnCall map[int]struct {
-		result1 bool
-	}
-	ConnectionIdentityStub        func() *identity.Identity
-	connectionIdentityMutex       sync.RWMutex
-	connectionIdentityArgsForCall []struct {
-	}
-	connectionIdentityReturns struct {
-		result1 *identity.Identity
-	}
-	connectionIdentityReturnsOnCall map[int]struct {
-		result1 *identity.Identity
-	}
-	ConnectionMSPIDStub        func() string
-	connectionMSPIDMutex       sync.RWMutex
-	connectionMSPIDArgsForCall []struct {
-	}
-	connectionMSPIDReturns struct {
-		result1 string
-	}
-	connectionMSPIDReturnsOnCall map[int]struct {
-		result1 string
-	}
 	DeliverStub        func(*common.Envelope, blocks.DeliverCallback) error
 	deliverMutex       sync.RWMutex
 	deliverArgsForCall []struct {
@@ -74,307 +22,28 @@ type Deliverer struct {
 	deliverReturnsOnCall map[int]struct {
 		result1 error
 	}
-	HostStub        func() string
-	hostMutex       sync.RWMutex
-	hostArgsForCall []struct {
+	IdentityStub        func() *identity.Identity
+	identityMutex       sync.RWMutex
+	identityArgsForCall []struct {
 	}
-	hostReturns struct {
+	identityReturns struct {
+		result1 *identity.Identity
+	}
+	identityReturnsOnCall map[int]struct {
+		result1 *identity.Identity
+	}
+	MSPIDStub        func() string
+	mSPIDMutex       sync.RWMutex
+	mSPIDArgsForCall []struct {
+	}
+	mSPIDReturns struct {
 		result1 string
 	}
-	hostReturnsOnCall map[int]struct {
+	mSPIDReturnsOnCall map[int]struct {
 		result1 string
-	}
-	HostnameStub        func() string
-	hostnameMutex       sync.RWMutex
-	hostnameArgsForCall []struct {
-	}
-	hostnameReturns struct {
-		result1 string
-	}
-	hostnameReturnsOnCall map[int]struct {
-		result1 string
-	}
-	PortStub        func() int32
-	portMutex       sync.RWMutex
-	portArgsForCall []struct {
-	}
-	portReturns struct {
-		result1 int32
-	}
-	portReturnsOnCall map[int]struct {
-		result1 int32
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *Deliverer) Close() error {
-	fake.closeMutex.Lock()
-	ret, specificReturn := fake.closeReturnsOnCall[len(fake.closeArgsForCall)]
-	fake.closeArgsForCall = append(fake.closeArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Close", []interface{}{})
-	fake.closeMutex.Unlock()
-	if fake.CloseStub != nil {
-		return fake.CloseStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.closeReturns
-	return fakeReturns.result1
-}
-
-func (fake *Deliverer) CloseCallCount() int {
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	return len(fake.closeArgsForCall)
-}
-
-func (fake *Deliverer) CloseCalls(stub func() error) {
-	fake.closeMutex.Lock()
-	defer fake.closeMutex.Unlock()
-	fake.CloseStub = stub
-}
-
-func (fake *Deliverer) CloseReturns(result1 error) {
-	fake.closeMutex.Lock()
-	defer fake.closeMutex.Unlock()
-	fake.CloseStub = nil
-	fake.closeReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *Deliverer) CloseReturnsOnCall(i int, result1 error) {
-	fake.closeMutex.Lock()
-	defer fake.closeMutex.Unlock()
-	fake.CloseStub = nil
-	if fake.closeReturnsOnCall == nil {
-		fake.closeReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.closeReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *Deliverer) Connect(arg1 string, arg2 *identity.Identity) error {
-	fake.connectMutex.Lock()
-	ret, specificReturn := fake.connectReturnsOnCall[len(fake.connectArgsForCall)]
-	fake.connectArgsForCall = append(fake.connectArgsForCall, struct {
-		arg1 string
-		arg2 *identity.Identity
-	}{arg1, arg2})
-	fake.recordInvocation("Connect", []interface{}{arg1, arg2})
-	fake.connectMutex.Unlock()
-	if fake.ConnectStub != nil {
-		return fake.ConnectStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.connectReturns
-	return fakeReturns.result1
-}
-
-func (fake *Deliverer) ConnectCallCount() int {
-	fake.connectMutex.RLock()
-	defer fake.connectMutex.RUnlock()
-	return len(fake.connectArgsForCall)
-}
-
-func (fake *Deliverer) ConnectCalls(stub func(string, *identity.Identity) error) {
-	fake.connectMutex.Lock()
-	defer fake.connectMutex.Unlock()
-	fake.ConnectStub = stub
-}
-
-func (fake *Deliverer) ConnectArgsForCall(i int) (string, *identity.Identity) {
-	fake.connectMutex.RLock()
-	defer fake.connectMutex.RUnlock()
-	argsForCall := fake.connectArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *Deliverer) ConnectReturns(result1 error) {
-	fake.connectMutex.Lock()
-	defer fake.connectMutex.Unlock()
-	fake.ConnectStub = nil
-	fake.connectReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *Deliverer) ConnectReturnsOnCall(i int, result1 error) {
-	fake.connectMutex.Lock()
-	defer fake.connectMutex.Unlock()
-	fake.ConnectStub = nil
-	if fake.connectReturnsOnCall == nil {
-		fake.connectReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.connectReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *Deliverer) Connected() bool {
-	fake.connectedMutex.Lock()
-	ret, specificReturn := fake.connectedReturnsOnCall[len(fake.connectedArgsForCall)]
-	fake.connectedArgsForCall = append(fake.connectedArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Connected", []interface{}{})
-	fake.connectedMutex.Unlock()
-	if fake.ConnectedStub != nil {
-		return fake.ConnectedStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.connectedReturns
-	return fakeReturns.result1
-}
-
-func (fake *Deliverer) ConnectedCallCount() int {
-	fake.connectedMutex.RLock()
-	defer fake.connectedMutex.RUnlock()
-	return len(fake.connectedArgsForCall)
-}
-
-func (fake *Deliverer) ConnectedCalls(stub func() bool) {
-	fake.connectedMutex.Lock()
-	defer fake.connectedMutex.Unlock()
-	fake.ConnectedStub = stub
-}
-
-func (fake *Deliverer) ConnectedReturns(result1 bool) {
-	fake.connectedMutex.Lock()
-	defer fake.connectedMutex.Unlock()
-	fake.ConnectedStub = nil
-	fake.connectedReturns = struct {
-		result1 bool
-	}{result1}
-}
-
-func (fake *Deliverer) ConnectedReturnsOnCall(i int, result1 bool) {
-	fake.connectedMutex.Lock()
-	defer fake.connectedMutex.Unlock()
-	fake.ConnectedStub = nil
-	if fake.connectedReturnsOnCall == nil {
-		fake.connectedReturnsOnCall = make(map[int]struct {
-			result1 bool
-		})
-	}
-	fake.connectedReturnsOnCall[i] = struct {
-		result1 bool
-	}{result1}
-}
-
-func (fake *Deliverer) ConnectionIdentity() *identity.Identity {
-	fake.connectionIdentityMutex.Lock()
-	ret, specificReturn := fake.connectionIdentityReturnsOnCall[len(fake.connectionIdentityArgsForCall)]
-	fake.connectionIdentityArgsForCall = append(fake.connectionIdentityArgsForCall, struct {
-	}{})
-	fake.recordInvocation("ConnectionIdentity", []interface{}{})
-	fake.connectionIdentityMutex.Unlock()
-	if fake.ConnectionIdentityStub != nil {
-		return fake.ConnectionIdentityStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.connectionIdentityReturns
-	return fakeReturns.result1
-}
-
-func (fake *Deliverer) ConnectionIdentityCallCount() int {
-	fake.connectionIdentityMutex.RLock()
-	defer fake.connectionIdentityMutex.RUnlock()
-	return len(fake.connectionIdentityArgsForCall)
-}
-
-func (fake *Deliverer) ConnectionIdentityCalls(stub func() *identity.Identity) {
-	fake.connectionIdentityMutex.Lock()
-	defer fake.connectionIdentityMutex.Unlock()
-	fake.ConnectionIdentityStub = stub
-}
-
-func (fake *Deliverer) ConnectionIdentityReturns(result1 *identity.Identity) {
-	fake.connectionIdentityMutex.Lock()
-	defer fake.connectionIdentityMutex.Unlock()
-	fake.ConnectionIdentityStub = nil
-	fake.connectionIdentityReturns = struct {
-		result1 *identity.Identity
-	}{result1}
-}
-
-func (fake *Deliverer) ConnectionIdentityReturnsOnCall(i int, result1 *identity.Identity) {
-	fake.connectionIdentityMutex.Lock()
-	defer fake.connectionIdentityMutex.Unlock()
-	fake.ConnectionIdentityStub = nil
-	if fake.connectionIdentityReturnsOnCall == nil {
-		fake.connectionIdentityReturnsOnCall = make(map[int]struct {
-			result1 *identity.Identity
-		})
-	}
-	fake.connectionIdentityReturnsOnCall[i] = struct {
-		result1 *identity.Identity
-	}{result1}
-}
-
-func (fake *Deliverer) ConnectionMSPID() string {
-	fake.connectionMSPIDMutex.Lock()
-	ret, specificReturn := fake.connectionMSPIDReturnsOnCall[len(fake.connectionMSPIDArgsForCall)]
-	fake.connectionMSPIDArgsForCall = append(fake.connectionMSPIDArgsForCall, struct {
-	}{})
-	fake.recordInvocation("ConnectionMSPID", []interface{}{})
-	fake.connectionMSPIDMutex.Unlock()
-	if fake.ConnectionMSPIDStub != nil {
-		return fake.ConnectionMSPIDStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.connectionMSPIDReturns
-	return fakeReturns.result1
-}
-
-func (fake *Deliverer) ConnectionMSPIDCallCount() int {
-	fake.connectionMSPIDMutex.RLock()
-	defer fake.connectionMSPIDMutex.RUnlock()
-	return len(fake.connectionMSPIDArgsForCall)
-}
-
-func (fake *Deliverer) ConnectionMSPIDCalls(stub func() string) {
-	fake.connectionMSPIDMutex.Lock()
-	defer fake.connectionMSPIDMutex.Unlock()
-	fake.ConnectionMSPIDStub = stub
-}
-
-func (fake *Deliverer) ConnectionMSPIDReturns(result1 string) {
-	fake.connectionMSPIDMutex.Lock()
-	defer fake.connectionMSPIDMutex.Unlock()
-	fake.ConnectionMSPIDStub = nil
-	fake.connectionMSPIDReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *Deliverer) ConnectionMSPIDReturnsOnCall(i int, result1 string) {
-	fake.connectionMSPIDMutex.Lock()
-	defer fake.connectionMSPIDMutex.Unlock()
-	fake.ConnectionMSPIDStub = nil
-	if fake.connectionMSPIDReturnsOnCall == nil {
-		fake.connectionMSPIDReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.connectionMSPIDReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
 }
 
 func (fake *Deliverer) Deliver(arg1 *common.Envelope, arg2 blocks.DeliverCallback) error {
@@ -438,183 +107,119 @@ func (fake *Deliverer) DeliverReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *Deliverer) Host() string {
-	fake.hostMutex.Lock()
-	ret, specificReturn := fake.hostReturnsOnCall[len(fake.hostArgsForCall)]
-	fake.hostArgsForCall = append(fake.hostArgsForCall, struct {
+func (fake *Deliverer) Identity() *identity.Identity {
+	fake.identityMutex.Lock()
+	ret, specificReturn := fake.identityReturnsOnCall[len(fake.identityArgsForCall)]
+	fake.identityArgsForCall = append(fake.identityArgsForCall, struct {
 	}{})
-	fake.recordInvocation("Host", []interface{}{})
-	fake.hostMutex.Unlock()
-	if fake.HostStub != nil {
-		return fake.HostStub()
+	fake.recordInvocation("Identity", []interface{}{})
+	fake.identityMutex.Unlock()
+	if fake.IdentityStub != nil {
+		return fake.IdentityStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.hostReturns
+	fakeReturns := fake.identityReturns
 	return fakeReturns.result1
 }
 
-func (fake *Deliverer) HostCallCount() int {
-	fake.hostMutex.RLock()
-	defer fake.hostMutex.RUnlock()
-	return len(fake.hostArgsForCall)
+func (fake *Deliverer) IdentityCallCount() int {
+	fake.identityMutex.RLock()
+	defer fake.identityMutex.RUnlock()
+	return len(fake.identityArgsForCall)
 }
 
-func (fake *Deliverer) HostCalls(stub func() string) {
-	fake.hostMutex.Lock()
-	defer fake.hostMutex.Unlock()
-	fake.HostStub = stub
+func (fake *Deliverer) IdentityCalls(stub func() *identity.Identity) {
+	fake.identityMutex.Lock()
+	defer fake.identityMutex.Unlock()
+	fake.IdentityStub = stub
 }
 
-func (fake *Deliverer) HostReturns(result1 string) {
-	fake.hostMutex.Lock()
-	defer fake.hostMutex.Unlock()
-	fake.HostStub = nil
-	fake.hostReturns = struct {
+func (fake *Deliverer) IdentityReturns(result1 *identity.Identity) {
+	fake.identityMutex.Lock()
+	defer fake.identityMutex.Unlock()
+	fake.IdentityStub = nil
+	fake.identityReturns = struct {
+		result1 *identity.Identity
+	}{result1}
+}
+
+func (fake *Deliverer) IdentityReturnsOnCall(i int, result1 *identity.Identity) {
+	fake.identityMutex.Lock()
+	defer fake.identityMutex.Unlock()
+	fake.IdentityStub = nil
+	if fake.identityReturnsOnCall == nil {
+		fake.identityReturnsOnCall = make(map[int]struct {
+			result1 *identity.Identity
+		})
+	}
+	fake.identityReturnsOnCall[i] = struct {
+		result1 *identity.Identity
+	}{result1}
+}
+
+func (fake *Deliverer) MSPID() string {
+	fake.mSPIDMutex.Lock()
+	ret, specificReturn := fake.mSPIDReturnsOnCall[len(fake.mSPIDArgsForCall)]
+	fake.mSPIDArgsForCall = append(fake.mSPIDArgsForCall, struct {
+	}{})
+	fake.recordInvocation("MSPID", []interface{}{})
+	fake.mSPIDMutex.Unlock()
+	if fake.MSPIDStub != nil {
+		return fake.MSPIDStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.mSPIDReturns
+	return fakeReturns.result1
+}
+
+func (fake *Deliverer) MSPIDCallCount() int {
+	fake.mSPIDMutex.RLock()
+	defer fake.mSPIDMutex.RUnlock()
+	return len(fake.mSPIDArgsForCall)
+}
+
+func (fake *Deliverer) MSPIDCalls(stub func() string) {
+	fake.mSPIDMutex.Lock()
+	defer fake.mSPIDMutex.Unlock()
+	fake.MSPIDStub = stub
+}
+
+func (fake *Deliverer) MSPIDReturns(result1 string) {
+	fake.mSPIDMutex.Lock()
+	defer fake.mSPIDMutex.Unlock()
+	fake.MSPIDStub = nil
+	fake.mSPIDReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *Deliverer) HostReturnsOnCall(i int, result1 string) {
-	fake.hostMutex.Lock()
-	defer fake.hostMutex.Unlock()
-	fake.HostStub = nil
-	if fake.hostReturnsOnCall == nil {
-		fake.hostReturnsOnCall = make(map[int]struct {
+func (fake *Deliverer) MSPIDReturnsOnCall(i int, result1 string) {
+	fake.mSPIDMutex.Lock()
+	defer fake.mSPIDMutex.Unlock()
+	fake.MSPIDStub = nil
+	if fake.mSPIDReturnsOnCall == nil {
+		fake.mSPIDReturnsOnCall = make(map[int]struct {
 			result1 string
 		})
 	}
-	fake.hostReturnsOnCall[i] = struct {
+	fake.mSPIDReturnsOnCall[i] = struct {
 		result1 string
-	}{result1}
-}
-
-func (fake *Deliverer) Hostname() string {
-	fake.hostnameMutex.Lock()
-	ret, specificReturn := fake.hostnameReturnsOnCall[len(fake.hostnameArgsForCall)]
-	fake.hostnameArgsForCall = append(fake.hostnameArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Hostname", []interface{}{})
-	fake.hostnameMutex.Unlock()
-	if fake.HostnameStub != nil {
-		return fake.HostnameStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.hostnameReturns
-	return fakeReturns.result1
-}
-
-func (fake *Deliverer) HostnameCallCount() int {
-	fake.hostnameMutex.RLock()
-	defer fake.hostnameMutex.RUnlock()
-	return len(fake.hostnameArgsForCall)
-}
-
-func (fake *Deliverer) HostnameCalls(stub func() string) {
-	fake.hostnameMutex.Lock()
-	defer fake.hostnameMutex.Unlock()
-	fake.HostnameStub = stub
-}
-
-func (fake *Deliverer) HostnameReturns(result1 string) {
-	fake.hostnameMutex.Lock()
-	defer fake.hostnameMutex.Unlock()
-	fake.HostnameStub = nil
-	fake.hostnameReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *Deliverer) HostnameReturnsOnCall(i int, result1 string) {
-	fake.hostnameMutex.Lock()
-	defer fake.hostnameMutex.Unlock()
-	fake.HostnameStub = nil
-	if fake.hostnameReturnsOnCall == nil {
-		fake.hostnameReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.hostnameReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *Deliverer) Port() int32 {
-	fake.portMutex.Lock()
-	ret, specificReturn := fake.portReturnsOnCall[len(fake.portArgsForCall)]
-	fake.portArgsForCall = append(fake.portArgsForCall, struct {
-	}{})
-	fake.recordInvocation("Port", []interface{}{})
-	fake.portMutex.Unlock()
-	if fake.PortStub != nil {
-		return fake.PortStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.portReturns
-	return fakeReturns.result1
-}
-
-func (fake *Deliverer) PortCallCount() int {
-	fake.portMutex.RLock()
-	defer fake.portMutex.RUnlock()
-	return len(fake.portArgsForCall)
-}
-
-func (fake *Deliverer) PortCalls(stub func() int32) {
-	fake.portMutex.Lock()
-	defer fake.portMutex.Unlock()
-	fake.PortStub = stub
-}
-
-func (fake *Deliverer) PortReturns(result1 int32) {
-	fake.portMutex.Lock()
-	defer fake.portMutex.Unlock()
-	fake.PortStub = nil
-	fake.portReturns = struct {
-		result1 int32
-	}{result1}
-}
-
-func (fake *Deliverer) PortReturnsOnCall(i int, result1 int32) {
-	fake.portMutex.Lock()
-	defer fake.portMutex.Unlock()
-	fake.PortStub = nil
-	if fake.portReturnsOnCall == nil {
-		fake.portReturnsOnCall = make(map[int]struct {
-			result1 int32
-		})
-	}
-	fake.portReturnsOnCall[i] = struct {
-		result1 int32
 	}{result1}
 }
 
 func (fake *Deliverer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.connectMutex.RLock()
-	defer fake.connectMutex.RUnlock()
-	fake.connectedMutex.RLock()
-	defer fake.connectedMutex.RUnlock()
-	fake.connectionIdentityMutex.RLock()
-	defer fake.connectionIdentityMutex.RUnlock()
-	fake.connectionMSPIDMutex.RLock()
-	defer fake.connectionMSPIDMutex.RUnlock()
 	fake.deliverMutex.RLock()
 	defer fake.deliverMutex.RUnlock()
-	fake.hostMutex.RLock()
-	defer fake.hostMutex.RUnlock()
-	fake.hostnameMutex.RLock()
-	defer fake.hostnameMutex.RUnlock()
-	fake.portMutex.RLock()
-	defer fake.portMutex.RUnlock()
+	fake.identityMutex.RLock()
+	defer fake.identityMutex.RUnlock()
+	fake.mSPIDMutex.RLock()
+	defer fake.mSPIDMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

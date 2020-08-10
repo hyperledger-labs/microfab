@@ -36,6 +36,7 @@ type Microfab struct {
 	endorsingOrganizations []*organization.Organization
 	organizations          []*organization.Organization
 	orderer                *orderer.Orderer
+	ordererConnection      *orderer.Connection
 	peers                  []*peer.Peer
 	peerConnections        []*peer.Connection
 	genesisBlocks          map[string]*common.Block
@@ -136,21 +137,22 @@ func (m *Microfab) Run() error {
 
 	// Connect to all of the components.
 	channelCreator := m.endorsingOrganizations[0]
-	err = m.orderer.Connect(channelCreator.MSP().ID(), channelCreator.Admin())
+	ordererConnection, err := orderer.Connect(m.orderer, channelCreator.MSP().ID(), channelCreator.Admin())
 	if err != nil {
 		return err
 	}
-	defer m.orderer.Close()
+	m.ordererConnection = ordererConnection
+	defer m.ordererConnection.Close()
 	for _, p := range m.peers {
-		connection, err := peer.Connect(p, p.Organization().MSP().ID(), p.Organization().Admin())
+		peerConnection, err := peer.Connect(p, p.Organization().MSP().ID(), p.Organization().Admin())
 		if err != nil {
 			return err
 		}
-		m.peerConnections = append(m.peerConnections, connection)
+		m.peerConnections = append(m.peerConnections, peerConnection)
 	}
 	defer func() {
-		for _, connection := range m.peerConnections {
-			connection.Close()
+		for _, peerConnection := range m.peerConnections {
+			peerConnection.Close()
 		}
 	}()
 
@@ -322,13 +324,13 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			opts = append(opts, channel.AddMSPID(endorsingOrganization.MSP().ID()))
 		}
 	}
-	err := channel.CreateChannel(m.orderer, config.Name, opts...)
+	err := channel.CreateChannel(m.ordererConnection, config.Name, opts...)
 	if err != nil {
 		return nil, err
 	}
 	var genesisBlock *common.Block
 	for {
-		genesisBlock, err = blocks.GetGenesisBlock(m.orderer, config.Name)
+		genesisBlock, err = blocks.GetGenesisBlock(m.ordererConnection, config.Name)
 		if err != nil {
 			time.Sleep(100 * time.Millisecond)
 			continue
@@ -348,7 +350,7 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.Hostname(), peer.Port()))
 		}
 	}
-	err = channel.UpdateChannel(m.orderer, config.Name, opts...)
+	err = channel.UpdateChannel(m.ordererConnection, config.Name, opts...)
 	if err != nil {
 		return nil, err
 	}

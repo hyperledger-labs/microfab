@@ -16,10 +16,10 @@ import (
 )
 
 // Deliver requests one or more blocks from the orderer.
-func (p *Orderer) Deliver(envelope *common.Envelope, callback blocks.DeliverCallback) error {
+func (c *Connection) Deliver(envelope *common.Envelope, callback blocks.DeliverCallback) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	deliverClient, err := orderer.NewAtomicBroadcastClient(p.clientConn).Deliver(ctx)
+	deliverClient, err := orderer.NewAtomicBroadcastClient(c.clientConn).Deliver(ctx)
 	if err != nil {
 		return err
 	}
