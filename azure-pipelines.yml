@@ -20,25 +20,9 @@ steps:
     inputs:
       version: "1.14"
     displayName: Use Go 1.14
-  - script: |
-      set -ex
-      export PATH=$(go env GOPATH)/bin:$PATH
-      GO111MODULE=off go get golang.org/x/lint/golint sourcegraph.com/sqs/goreturns
-    displayName: Install Go tools
-  - script: |
-      set -ex
-      export PATH=$(go env GOPATH)/bin:$PATH
-      test -z $(gofmt -l -s .)
-      golint -set_exit_status ./...
-      test -z $(goreturns -l .)
-      go vet ./...
+  - script: make lint
     displayName: Run Go formatters and linters
-  - script: |
-      set -ex
-      export PATH=$(go env GOPATH)/bin:$PATH
-      go test ./...
+  - script: make unit
     displayName: Run Go unit tests
-  - script: |
-      set -ex
-      shellcheck builders/*/bin/*
+  - script: shellcheck builders/*/bin/*
     displayName: Run ShellCheck
