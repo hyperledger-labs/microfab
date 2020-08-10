@@ -58,8 +58,8 @@ type jsonIdentity struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"display_name"`
 	Type        string `json:"type"`
-	Certificate string `json:"cert"`
-	PrivateKey  string `json:"private_key"`
+	Certificate []byte `json:"cert"`
+	PrivateKey  []byte `json:"private_key"`
 	MSPID       string `json:"msp_id"`
 	Wallet      string `json:"wallet"`
 }
@@ -88,8 +88,8 @@ func New(organizations []*organization.Organization, orderer *orderer.Orderer, p
 			ID:          id,
 			DisplayName: admin.Name(),
 			Type:        "identity",
-			Certificate: admin.Certificate().ToBase64(),
-			PrivateKey:  admin.PrivateKey().ToBase64(),
+			Certificate: admin.Certificate().Bytes(),
+			PrivateKey:  admin.PrivateKey().Bytes(),
 			MSPID:       organization.MSP().ID(),
 			Wallet:      organization.Name(),
 		}

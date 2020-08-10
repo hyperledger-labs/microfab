@@ -34,23 +34,3 @@ func (m *MSP) RootCertificates() []*certificate.Certificate {
 func (m *MSP) AdminCertificates() []*certificate.Certificate {
 	return m.adminCertificates
 }
-
-func parseCertificates(certs []string) ([]*certificate.Certificate, error) {
-	result := []*certificate.Certificate{}
-	for _, cert := range certs {
-		certificate, err := certificate.FromBase64(cert)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, certificate)
-	}
-	return result, nil
-}
-
-func serializeCertificates(certs []*certificate.Certificate) []string {
-	result := []string{}
-	for _, cert := range certs {
-		result = append(result, cert.ToBase64())
-	}
-	return result
-}

@@ -7,7 +7,6 @@ package certificate
 import (
 	"crypto/sha256"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 )
 
@@ -15,15 +14,6 @@ import (
 type Certificate struct {
 	certificate *x509.Certificate
 	bytes       []byte
-}
-
-// FromBase64 loads an X509 certificate from a base64 encoded string.
-func FromBase64(data string) (*Certificate, error) {
-	bytes, err := base64.StdEncoding.DecodeString(data)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(bytes)
 }
 
 // FromBytes loads an X509 certificate from PEM data.
@@ -34,11 +24,6 @@ func FromBytes(data []byte) (*Certificate, error) {
 		return nil, err
 	}
 	return &Certificate{certificate, data}, nil
-}
-
-// ToBase64 saves the X509 certificate to a base64 encoded string.
-func (c *Certificate) ToBase64() string {
-	return base64.StdEncoding.EncodeToString(c.bytes)
 }
 
 // Certificate returns the X509 certificate.

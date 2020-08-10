@@ -7,7 +7,6 @@ package privatekey
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 )
@@ -16,15 +15,6 @@ import (
 type PrivateKey struct {
 	privateKey *ecdsa.PrivateKey
 	bytes      []byte
-}
-
-// FromBase64 loads an ECDSA private key from a base64 encoded string.
-func FromBase64(data string) (*PrivateKey, error) {
-	bytes, err := base64.StdEncoding.DecodeString(data)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(bytes)
 }
 
 // FromBytes loads an ECDSA private key from PEM data.
@@ -39,11 +29,6 @@ func FromBytes(data []byte) (*PrivateKey, error) {
 		return nil, fmt.Errorf("The specified private key is not an ECDSA private key")
 	}
 	return &PrivateKey{privateKey, data}, nil
-}
-
-// ToBase64 saves the ECDSA private key to a base64 encoded string.
-func (p *PrivateKey) ToBase64() string {
-	return base64.StdEncoding.EncodeToString(p.bytes)
 }
 
 // PrivateKey returns the ECDSA private key.
