@@ -37,6 +37,7 @@ type Microfab struct {
 	organizations          []*organization.Organization
 	orderer                *orderer.Orderer
 	peers                  []*peer.Peer
+	peerConnections        []*peer.Connection
 	genesisBlocks          map[string]*common.Block
 	console                *console.Console
 	proxy                  *proxy.Proxy
@@ -140,12 +141,18 @@ func (m *Microfab) Run() error {
 		return err
 	}
 	defer m.orderer.Close()
-	for _, peer := range m.peers {
-		err = peer.Connect(peer.Organization().MSP().ID(), peer.Organization().Admin())
+	for _, p := range m.peers {
+		connection, err := peer.Connect(p, p.Organization().MSP().ID(), p.Organization().Admin())
 		if err != nil {
 			return err
 		}
+		m.peerConnections = append(m.peerConnections, connection)
 	}
+	defer func() {
+		for _, connection := range m.peerConnections {
+			connection.Close()
+		}
+	}()
 
 	// Create and join all of the channels.
 	for i := range m.config.Channels {
@@ -359,6 +366,7 @@ func (m *Microfab) createAndJoinChannel(config Channel) error {
 	eg, _ := errgroup.WithContext(ctx)
 	for i := range m.peers {
 		peer := m.peers[i]
+		connection := m.peerConnections[i]
 		found := false
 		for _, organizationName := range config.EndorsingOrganizations {
 			if peer.Organization().Name() == organizationName {
@@ -369,7 +377,7 @@ func (m *Microfab) createAndJoinChannel(config Channel) error {
 		if found {
 			eg.Go(func() error {
 				log.Printf("Joining channel %s on peer for endorsing organization %s ...", config.Name, peer.Organization().Name())
-				err := peer.JoinChannel(genesisBlock)
+				err := connection.JoinChannel(genesisBlock)
 				if err != nil {
 					return err
 				}

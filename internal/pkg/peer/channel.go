@@ -16,8 +16,8 @@ import (
 )
 
 // JoinChannel asks the peer to join the specified channel.
-func (p *Peer) JoinChannel(block *common.Block) error {
-	txID := txid.New(p.connMSPID, p.connIdentity)
+func (c *Connection) JoinChannel(block *common.Block) error {
+	txID := txid.New(c.mspID, c.identity)
 	channelHeader := protoutil.BuildChannelHeader(common.HeaderType_CONFIG, "", txID)
 	cche := &peer.ChaincodeHeaderExtension{
 		ChaincodeId: &peer.ChaincodeID{
@@ -52,12 +52,12 @@ func (p *Peer) JoinChannel(block *common.Block) error {
 		Payload: util.MarshalOrPanic(ccpp),
 	}
 	proposalBytes := util.MarshalOrPanic(proposal)
-	signature := p.connIdentity.Sign(proposalBytes)
+	signature := c.identity.Sign(proposalBytes)
 	signedProposal := &peer.SignedProposal{
 		ProposalBytes: proposalBytes,
 		Signature:     signature,
 	}
-	response, err := p.ProcessProposal(signedProposal)
+	response, err := c.ProcessProposal(signedProposal)
 	if err != nil {
 		return err
 	} else if response.Response.Status != int32(common.Status_SUCCESS) {
@@ -67,8 +67,8 @@ func (p *Peer) JoinChannel(block *common.Block) error {
 }
 
 // ListChannels asks the peer for the list of channels it has joined.
-func (p *Peer) ListChannels() ([]string, error) {
-	txID := txid.New(p.connMSPID, p.connIdentity)
+func (c *Connection) ListChannels() ([]string, error) {
+	txID := txid.New(c.mspID, c.identity)
 	channelHeader := protoutil.BuildChannelHeader(common.HeaderType_CONFIG, "", txID)
 	cche := &peer.ChaincodeHeaderExtension{
 		ChaincodeId: &peer.ChaincodeID{
@@ -102,12 +102,12 @@ func (p *Peer) ListChannels() ([]string, error) {
 		Payload: util.MarshalOrPanic(ccpp),
 	}
 	proposalBytes := util.MarshalOrPanic(proposal)
-	signature := p.connIdentity.Sign(proposalBytes)
+	signature := c.identity.Sign(proposalBytes)
 	signedProposal := &peer.SignedProposal{
 		ProposalBytes: proposalBytes,
 		Signature:     signature,
 	}
-	response, err := p.ProcessProposal(signedProposal)
+	response, err := c.ProcessProposal(signedProposal)
 	if err != nil {
 		return nil, err
 	} else if response.Response.Status != int32(common.Status_SUCCESS) {

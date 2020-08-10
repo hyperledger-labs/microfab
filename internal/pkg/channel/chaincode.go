@@ -17,18 +17,18 @@ import (
 )
 
 // InstantiateChaincode instantiates a chaincode on the channel.
-func InstantiateChaincode(peers []*peer.Peer, o *orderer.Orderer, channel string, name string, version string, args [][]byte) error {
+func InstantiateChaincode(peers []*peer.Connection, o *orderer.Orderer, channel string, name string, version string, args [][]byte) error {
 	return instantiateOrUpgradeChaincode(peers, o, channel, name, version, args, "deploy")
 }
 
 // UpgradeChaincode upgrades a chaincode on the channel.
-func UpgradeChaincode(peers []*peer.Peer, o *orderer.Orderer, channel string, name string, version string, args [][]byte) error {
+func UpgradeChaincode(peers []*peer.Connection, o *orderer.Orderer, channel string, name string, version string, args [][]byte) error {
 	return instantiateOrUpgradeChaincode(peers, o, channel, name, version, args, "upgrade")
 }
 
-func instantiateOrUpgradeChaincode(peers []*peer.Peer, o *orderer.Orderer, channel string, name string, version string, args [][]byte, lsccFunction string) error {
+func instantiateOrUpgradeChaincode(peers []*peer.Connection, o *orderer.Orderer, channel string, name string, version string, args [][]byte, lsccFunction string) error {
 	firstPeer := peers[0]
-	txID := txid.New(firstPeer.ConnectionMSPID(), firstPeer.ConnectionIdentity())
+	txID := txid.New(firstPeer.MSPID(), firstPeer.Identity())
 	channelHeader := protoutil.BuildChannelHeader(common.HeaderType_ENDORSER_TRANSACTION, channel, txID)
 	cche := &fpeer.ChaincodeHeaderExtension{
 		ChaincodeId: &fpeer.ChaincodeID{
@@ -79,7 +79,7 @@ func instantiateOrUpgradeChaincode(peers []*peer.Peer, o *orderer.Orderer, chann
 		Payload: util.MarshalOrPanic(ccpp),
 	}
 	proposalBytes := util.MarshalOrPanic(proposal)
-	signature := firstPeer.ConnectionIdentity().Sign(proposalBytes)
+	signature := firstPeer.Identity().Sign(proposalBytes)
 	signedProposal := &fpeer.SignedProposal{
 		ProposalBytes: proposalBytes,
 		Signature:     signature,

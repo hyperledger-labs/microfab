@@ -15,8 +15,8 @@ import (
 )
 
 // InstallChaincode installs the specified chaincode package onto the peer.
-func (p *Peer) InstallChaincode(scds []byte) error {
-	txID := txid.New(p.connMSPID, p.connIdentity)
+func (c *Connection) InstallChaincode(scds []byte) error {
+	txID := txid.New(c.mspID, c.identity)
 	channelHeader := protoutil.BuildChannelHeader(common.HeaderType_ENDORSER_TRANSACTION, "", txID)
 	cche := &peer.ChaincodeHeaderExtension{
 		ChaincodeId: &peer.ChaincodeID{
@@ -51,12 +51,12 @@ func (p *Peer) InstallChaincode(scds []byte) error {
 		Payload: util.MarshalOrPanic(ccpp),
 	}
 	proposalBytes := util.MarshalOrPanic(proposal)
-	signature := p.connIdentity.Sign(proposalBytes)
+	signature := c.identity.Sign(proposalBytes)
 	signedProposal := &peer.SignedProposal{
 		ProposalBytes: proposalBytes,
 		Signature:     signature,
 	}
-	response, err := p.ProcessProposal(signedProposal)
+	response, err := c.ProcessProposal(signedProposal)
 	if err != nil {
 		return err
 	} else if response.Response.Status != int32(common.Status_SUCCESS) {

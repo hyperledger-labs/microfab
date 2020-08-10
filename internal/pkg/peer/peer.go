@@ -21,7 +21,6 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,9 +36,6 @@ type Peer struct {
 	chaincodeURL   *url.URL
 	operationsPort int32
 	operationsURL  *url.URL
-	clientConn     *grpc.ClientConn
-	connIdentity   *identity.Identity
-	connMSPID      string
 	command        *exec.Cmd
 }
 
@@ -62,7 +58,7 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	if err != nil {
 		return nil, err
 	}
-	return &Peer{organization, identity, organization.MSP().ID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, nil, nil, "", nil}, nil
+	return &Peer{organization, identity, organization.MSP().ID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, nil}, nil
 }
 
 // Organization returns the organization of the peer.
@@ -73,44 +69,6 @@ func (p *Peer) Organization() *organization.Organization {
 // MSPID returns the MSP ID of the peer.
 func (p *Peer) MSPID() string {
 	return p.mspID
-}
-
-// Connect opens a connection to the peer.
-func (p *Peer) Connect(mspID string, identity *identity.Identity) error {
-	clientConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", p.apiPort), grpc.WithInsecure())
-	if err != nil {
-		return err
-	}
-	p.clientConn = clientConn
-	p.connMSPID = mspID
-	p.connIdentity = identity
-	return nil
-}
-
-// Connected determines if a connection is open to the peer.
-func (p *Peer) Connected() bool {
-	return p.clientConn != nil
-}
-
-// Close closes any open connection to the peer.
-func (p *Peer) Close() error {
-	p.identity = nil
-	if p.clientConn != nil {
-		err := p.clientConn.Close()
-		p.clientConn = nil
-		return err
-	}
-	return nil
-}
-
-// ConnectionMSPID returns the MSP ID used to connect to the peer.
-func (p *Peer) ConnectionMSPID() string {
-	return p.mspID
-}
-
-// ConnectionIdentity returns the identity used to connect to the peer.
-func (p *Peer) ConnectionIdentity() *identity.Identity {
-	return p.identity
 }
 
 // APIPort returns the API port of the peer.
@@ -286,12 +244,12 @@ func (p *Peer) hasStarted() bool {
 	if resp.StatusCode != 200 {
 		return false
 	}
-	err = p.Connect(p.mspID, p.organization.Admin())
+	connection, err := Connect(p, p.mspID, p.organization.Admin())
 	if err != nil {
 		return false
 	}
-	defer p.Close()
-	_, err = p.ListChannels()
+	defer connection.Close()
+	_, err = connection.ListChannels()
 	if err != nil {
 		return false
 	}
