@@ -73,7 +73,7 @@ var _ = Describe("the blocks package", func() {
 
 	BeforeEach(func() {
 		var err error
-		testIdentity, err = identity.FromBytes([]byte(testIdentityText))
+		testIdentity, err = identity.New("Org1Admin")
 		Expect(err).NotTo(HaveOccurred())
 		fakeBlock = &common.Block{}
 		fakeDeliverer = &fakes.Deliverer{}
