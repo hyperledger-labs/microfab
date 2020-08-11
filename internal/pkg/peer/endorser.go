@@ -12,8 +12,8 @@ import (
 )
 
 // ProcessProposal asks the peer to endorse the specified proposal.
-func (p *Peer) ProcessProposal(signedProposal *peer.SignedProposal) (*peer.ProposalResponse, error) {
-	endorserClient := peer.NewEndorserClient(p.clientConn)
+func (c *Connection) ProcessProposal(signedProposal *peer.SignedProposal) (*peer.ProposalResponse, error) {
+	endorserClient := peer.NewEndorserClient(c.clientConn)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	response, err := endorserClient.ProcessProposal(ctx, signedProposal)

@@ -13,10 +13,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
-	"io/ioutil"
 	"math/big"
 	"time"
 
@@ -31,14 +28,6 @@ type Identity struct {
 	privateKey  *privatekey.PrivateKey
 	ca          *certificate.Certificate
 	isCA        bool
-}
-
-type jsonIdentity struct {
-	Name        string  `json:"name"`
-	Certificate string  `json:"cert"`
-	PrivateKey  string  `json:"private_key"`
-	CA          *string `json:"ca"`
-	IsCA        *bool   `json:"is_ca"`
 }
 
 type newIdentity struct {
@@ -138,89 +127,6 @@ func New(name string, opts ...Option) (*Identity, error) {
 	}
 	isCA := identity.Template.IsCA
 	return &Identity{name, cert, pk, ca, isCA}, nil
-}
-
-// FromFile loads an identity from a JSON file.
-func FromFile(file string) (*Identity, error) {
-	data, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(data)
-}
-
-// FromBase64 loads an identity from a base64 encoded string.
-func FromBase64(data string) (*Identity, error) {
-	bytes, err := base64.StdEncoding.DecodeString(data)
-	if err != nil {
-		return nil, err
-	}
-	return FromBytes(bytes)
-}
-
-// FromBytes loads an identity from JSON data.
-func FromBytes(data []byte) (*Identity, error) {
-	parsedJSON := jsonIdentity{}
-	err := json.Unmarshal(data, &parsedJSON)
-	if err != nil {
-		return nil, err
-	}
-	cert, err := certificate.FromBase64(parsedJSON.Certificate)
-	if err != nil {
-		return nil, err
-	}
-	pk, err := privatekey.FromBase64(parsedJSON.PrivateKey)
-	if err != nil {
-		return nil, err
-	}
-	var ca *certificate.Certificate
-	if parsedJSON.CA != nil {
-		ca, err = certificate.FromBase64(*parsedJSON.CA)
-		if err != nil {
-			return nil, err
-		}
-	}
-	isCA := false
-	if parsedJSON.IsCA != nil {
-		isCA = *parsedJSON.IsCA
-	}
-	return &Identity{parsedJSON.Name, cert, pk, ca, isCA}, nil
-}
-
-// ToBytes saves the identity to JSON data.
-func (i *Identity) ToBytes() ([]byte, error) {
-	cert := i.certificate.ToBase64()
-	pk := i.privateKey.ToBase64()
-	var ca *string
-	if i.ca != nil {
-		tmp := i.ca.ToBase64()
-		ca = &tmp
-	}
-	var isCA *bool
-	if i.isCA {
-		tmp := true
-		isCA = &tmp
-	}
-	serializedJSON := jsonIdentity{i.name, cert, pk, ca, isCA}
-	return json.Marshal(serializedJSON)
-}
-
-// ToBase64 saves the identity to a base64 encoded string.
-func (i *Identity) ToBase64() (string, error) {
-	bytes, err := i.ToBytes()
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(bytes), nil
-}
-
-// ToFile saves the identity to a JSON file.
-func (i *Identity) ToFile(file string) error {
-	data, err := i.ToBytes()
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(file, data, 0644)
 }
 
 // Name returns the name of the identity.

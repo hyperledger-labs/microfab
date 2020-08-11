@@ -15,8 +15,8 @@ import (
 )
 
 // Broadcast sends an envelope with one or more transactions in to the orderer.
-func (o *Orderer) Broadcast(envelope *common.Envelope) error {
-	abClient := orderer.NewAtomicBroadcastClient(o.clientConn)
+func (c *Connection) Broadcast(envelope *common.Envelope) error {
+	abClient := orderer.NewAtomicBroadcastClient(c.clientConn)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	broadcastClient, err := abClient.Broadcast(ctx)
