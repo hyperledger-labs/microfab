@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+set -euo pipefail
+
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
+
+CHAINCODE_SOURCE_DIR="$1"
+CHAINCODE_METADATA_DIR="$2"
+BUILD_OUTPUT_DIR="$3"
+
+cd "${CHAINCODE_SOURCE_DIR}/src"
+tar cf - . | (cd "${BUILD_OUTPUT_DIR}" && tar xf -)

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+set -euo pipefail
+BUILD_OUTPUT_DIR="$1"
+RUN_METADATA_DIR="$2"
+CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "${RUN_METADATA_DIR}/chaincode.json")"
+CORE_PEER_LOCALMSPID="$(jq -r .mspid "${RUN_METADATA_DIR}/chaincode.json")"
+CHAINCODE_WASM_FILE=$(ls -d "${BUILD_OUTPUT_DIR}/"*.wasm | head -1)
+CORE_PEER_TLS_ENABLED=false
+export CORE_CHAINCODE_ID_NAME CORE_PEER_LOCALMSPID CHAINCODE_WASM_FILE CORE_PEER_TLS_ENABLED
+exec fabric-chaincode-wasm -peer.address="$(jq -r .peer_address "${RUN_METADATA_DIR}/chaincode.json")"

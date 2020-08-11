@@ -207,6 +207,13 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 				"HOME",
 			},
 		},
+		{
+			"path": path.Join(homeDirectory, "builders", "wasm"),
+			"name": "wasm",
+			"propagateEnvironment": []string{
+				"HOME",
+			},
+		},
 	}
 	configData, err = yaml.Marshal(config)
 	if err != nil {

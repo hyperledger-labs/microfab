@@ -49,10 +49,22 @@ RUN cd /tmp/microfab \
     && go build -o /opt/microfab/bin/microfabd cmd/microfabd/main.go \
     && cp -rf builders /opt/microfab/builders
 
+FROM base AS wasmcc
+WORKDIR /tmp/wasmer
+RUN curl -sSL https://github.com/wasmerio/wasmer/releases/download/0.17.1/wasmer-c-api-linux-amd64.tar.gz | tar xzf -
+WORKDIR /tmp/wasmcc
+RUN git clone -b client-server https://github.com/jt-nti/fabric-chaincode-wasm.git \
+    && cd fabric-chaincode-wasm \
+    && go get -d -v ./... \
+    && go install -v ./...
+
 FROM base
 COPY --from=builder /opt/microfab /opt/microfab
+COPY --from=wasmcc /tmp/wasmer/lib/* /usr/local/lib/
+COPY --from=wasmcc /tmp/go/bin/fabric-chaincode-wasm /usr/local/bin/
 ENV MICROFAB_HOME=/opt/microfab
 ENV PATH=/opt/microfab/bin:${PATH}
+ENV LD_LIBRARY_PATH=/usr/local/lib
 EXPOSE 8080
 USER ibp-user
 VOLUME /opt/microfab/data
