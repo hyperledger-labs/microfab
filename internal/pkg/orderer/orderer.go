@@ -55,8 +55,8 @@ func (o *Orderer) MSPID() string {
 	return o.mspID
 }
 
-// Hostname returns the hostname of the orderer.
-func (o *Orderer) Hostname(internal bool) string {
+// APIHostname returns the hostname of the orderer.
+func (o *Orderer) APIHostname(internal bool) string {
 	if internal {
 		return "localhost"
 	}
