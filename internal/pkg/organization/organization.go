@@ -42,6 +42,11 @@ func (o *Organization) Name() string {
 	return o.name
 }
 
+// MSPID returns the MSP ID for the organization.
+func (o *Organization) MSPID() string {
+	return o.mspID
+}
+
 // CA returns the CA for the organization.
 func (o *Organization) CA() *identity.Identity {
 	return o.ca
@@ -50,9 +55,4 @@ func (o *Organization) CA() *identity.Identity {
 // Admin returns the admin identity for the organization.
 func (o *Organization) Admin() *identity.Identity {
 	return o.admin
-}
-
-// MSPID returns the MSP ID for the organization.
-func (o *Organization) MSPID() string {
-	return o.mspID
 }
