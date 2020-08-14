@@ -7,5 +7,6 @@ BUILD_OUTPUT_DIR="$1"
 RUN_METADATA_DIR="$2"
 CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "${RUN_METADATA_DIR}/chaincode.json")"
 CORE_PEER_LOCALMSPID="$(jq -r .mspid "${RUN_METADATA_DIR}/chaincode.json")"
-export CORE_CHAINCODE_ID_NAME CORE_PEER_LOCALMSPID
+CORE_PEER_TLS_ENABLED=false
+export CORE_CHAINCODE_ID_NAME CORE_PEER_LOCALMSPID CORE_PEER_TLS_ENABLED
 exec "${BUILD_OUTPUT_DIR}/chaincode" -peer.address="$(jq -r .peer_address "${RUN_METADATA_DIR}/chaincode.json")"
