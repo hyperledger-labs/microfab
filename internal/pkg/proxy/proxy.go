@@ -52,13 +52,13 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 			UseHTTP2:   false,
 		},
 		{
-			SourceHost: orderer.APIHost(true),
-			TargetHost: orderer.APIHost(false),
+			SourceHost: orderer.APIHost(false),
+			TargetHost: orderer.APIHost(true),
 			UseHTTP2:   true,
 		},
 		{
-			SourceHost: orderer.OperationsHost(true),
-			TargetHost: orderer.OperationsHost(false),
+			SourceHost: orderer.OperationsHost(false),
+			TargetHost: orderer.OperationsHost(true),
 			UseHTTP2:   false,
 		},
 	}
