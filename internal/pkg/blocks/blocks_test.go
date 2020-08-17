@@ -124,7 +124,7 @@ var _ = Describe("the blocks package", func() {
 				seekInfo := getSeekInfo(envelope)
 				Expect(seekInfo.Start.Type).To(BeAssignableToTypeOf(&orderer.SeekPosition_Newest{}))
 				Expect(seekInfo.Stop.Type).To(BeAssignableToTypeOf(&orderer.SeekPosition_Newest{}))
-				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_FAIL_IF_NOT_READY))
+				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_BLOCK_UNTIL_READY))
 				envelope, _ = fakeDeliverer.DeliverArgsForCall(1)
 				channelHeader = getChannelHeader(envelope)
 				Expect(channelHeader.Type).To(BeEquivalentTo(common.HeaderType_DELIVER_SEEK_INFO))
@@ -139,7 +139,7 @@ var _ = Describe("the blocks package", func() {
 				Expect(start.Specified.Number).To(BeEquivalentTo(1337))
 				stop := seekInfo.Stop.Type.(*orderer.SeekPosition_Specified)
 				Expect(stop.Specified.Number).To(BeEquivalentTo(1337))
-				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_FAIL_IF_NOT_READY))
+				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_BLOCK_UNTIL_READY))
 			})
 		})
 
@@ -200,7 +200,7 @@ var _ = Describe("the blocks package", func() {
 				seekInfo := getSeekInfo(envelope)
 				Expect(seekInfo.Start.Type).To(BeAssignableToTypeOf(&orderer.SeekPosition_Newest{}))
 				Expect(seekInfo.Stop.Type).To(BeAssignableToTypeOf(&orderer.SeekPosition_Newest{}))
-				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_FAIL_IF_NOT_READY))
+				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_BLOCK_UNTIL_READY))
 			})
 		})
 
@@ -265,7 +265,7 @@ var _ = Describe("the blocks package", func() {
 				Expect(start.Specified.Number).To(BeEquivalentTo(1337))
 				stop := seekInfo.Stop.Type.(*orderer.SeekPosition_Specified)
 				Expect(stop.Specified.Number).To(BeEquivalentTo(1337))
-				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_FAIL_IF_NOT_READY))
+				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_BLOCK_UNTIL_READY))
 			})
 		})
 
@@ -330,7 +330,7 @@ var _ = Describe("the blocks package", func() {
 				Expect(start.Specified.Number).To(BeEquivalentTo(0))
 				stop := seekInfo.Stop.Type.(*orderer.SeekPosition_Specified)
 				Expect(stop.Specified.Number).To(BeEquivalentTo(0))
-				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_FAIL_IF_NOT_READY))
+				Expect(seekInfo.Behavior).To(Equal(orderer.SeekInfo_BLOCK_UNTIL_READY))
 			})
 		})
 

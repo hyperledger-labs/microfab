@@ -31,6 +31,9 @@ import (
 // Microfab represents an instance of the Microfab application.
 type Microfab struct {
 	sync.Mutex
+	sigs                   chan os.Signal
+	done                   chan struct{}
+	started                bool
 	config                 *Config
 	ordererOrganization    *organization.Organization
 	endorsingOrganizations []*organization.Organization
@@ -51,20 +54,27 @@ func New() (*Microfab, error) {
 		return nil, err
 	}
 	fablet := &Microfab{
-		config: config,
+		config:  config,
+		sigs:    make(chan os.Signal, 1),
+		done:    make(chan struct{}, 1),
+		started: false,
 	}
 	return fablet, nil
 }
 
-// Run runs the Fablet application.
-func (m *Microfab) Run() error {
+// Start starts the Microfab application.
+func (m *Microfab) Start() error {
 
 	// Grab the start time and say hello.
 	startTime := time.Now()
 	log.Print("Starting Microfab ...")
 
 	// Ensure anything we start is stopped.
-	defer m.stop()
+	defer func() {
+		if !m.started {
+			m.stop()
+		}
+	}()
 
 	// Ensure the directory exists and is empty.
 	err := m.ensureDirectory()
@@ -171,15 +181,34 @@ func (m *Microfab) Run() error {
 	// Say how long start up took, then wait for signals.
 	readyTime := time.Now()
 	startupDuration := readyTime.Sub(startTime)
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	log.Printf("Microfab started in %vms", startupDuration.Milliseconds())
-	<-sigs
-	log.Printf("Stopping Microfab due to signal ...")
-	m.stop()
-	log.Printf("Microfab stopped")
+	signal.Notify(m.sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-m.sigs
+		log.Printf("Stopping Microfab due to signal ...")
+		m.stop()
+		log.Printf("Microfab stopped")
+		close(m.done)
+		m.started = false
+	}()
+	m.started = true
 	return nil
 
+}
+
+// Stop stops the Microfab application.
+func (m *Microfab) Stop() {
+	if m.started {
+		m.sigs <- syscall.SIGTERM
+		<-m.done
+	}
+}
+
+// Wait waits for the Microfab application.
+func (m *Microfab) Wait() {
+	if m.started {
+		<-m.done
+	}
 }
 
 func (m *Microfab) ensureDirectory() error {

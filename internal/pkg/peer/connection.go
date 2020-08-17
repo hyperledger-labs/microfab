@@ -6,8 +6,10 @@ package peer
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
+	"github.com/IBM-Blockchain/microfab/pkg/client"
 	"google.golang.org/grpc"
 )
 
@@ -27,6 +29,24 @@ func Connect(peer *Peer, mspID string, identity *identity.Identity) (*Connection
 	}
 	return &Connection{
 		peer:       peer,
+		clientConn: clientConn,
+		mspID:      mspID,
+		identity:   identity,
+	}, nil
+}
+
+// ConnectClient opens a connection to the peer using a client peer object.
+func ConnectClient(peer *client.Peer, mspID string, identity *identity.Identity) (*Connection, error) {
+	parsedURL, err := url.Parse(peer.APIURL)
+	if err != nil {
+		return nil, err
+	}
+	clientConn, err := grpc.Dial(parsedURL.Host, grpc.WithInsecure(), grpc.WithAuthority(peer.APIOptions.DefaultAuthority))
+	if err != nil {
+		return nil, err
+	}
+	return &Connection{
+		peer:       nil,
 		clientConn: clientConn,
 		mspID:      mspID,
 		identity:   identity,

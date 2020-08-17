@@ -52,7 +52,7 @@ func GetNewestBlock(deliverer Deliverer, channel string) (*common.Block, error) 
 				Newest: &orderer.SeekNewest{},
 			},
 		},
-		Behavior: orderer.SeekInfo_FAIL_IF_NOT_READY,
+		Behavior: orderer.SeekInfo_BLOCK_UNTIL_READY,
 	}
 	return getBlock(deliverer, channel, seekInfo)
 }
@@ -74,7 +74,7 @@ func GetSpecificBlock(deliverer Deliverer, channel string, number uint64) (*comm
 				},
 			},
 		},
-		Behavior: orderer.SeekInfo_FAIL_IF_NOT_READY,
+		Behavior: orderer.SeekInfo_BLOCK_UNTIL_READY,
 	}
 	return getBlock(deliverer, channel, seekInfo)
 }
@@ -88,7 +88,7 @@ func buildEnvelope(deliverer Deliverer, channel string, seekInfo *orderer.SeekIn
 	txID := txid.New(deliverer.MSPID(), deliverer.Identity())
 	header := protoutil.BuildHeader(common.HeaderType_DELIVER_SEEK_INFO, channel, txID)
 	payload := protoutil.BuildPayload(header, seekInfo)
-	return protoutil.BuildEnvelope(payload, txID)
+	return protoutil.BuildEnvelope(payload, deliverer.Identity())
 }
 
 func getBlock(deliverer Deliverer, channel string, seekInfo *orderer.SeekInfo) (*common.Block, error) {

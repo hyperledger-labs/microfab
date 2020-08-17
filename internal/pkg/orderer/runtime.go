@@ -272,7 +272,7 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 		LastUpdate: nil,
 	}
 	payload := protoutil.BuildPayload(header, configEnvelope)
-	envelope := protoutil.BuildEnvelope(payload, txID)
+	envelope := protoutil.BuildEnvelope(payload, o.identity)
 	genesisBlock := protoutil.BuildGenesisBlock(envelope)
 	data := util.MarshalOrPanic(genesisBlock)
 	configDirectory := path.Join(o.directory, "config")

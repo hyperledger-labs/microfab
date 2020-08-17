@@ -231,63 +231,10 @@ func createOrUpdateChannel(o *orderer.Connection, mspID string, identity *identi
 		},
 	}
 	payload := protoutil.BuildPayload(header, configUpdateEnvelope)
-	envelope := protoutil.BuildEnvelope(payload, txID)
+	envelope := protoutil.BuildEnvelope(payload, o.Identity())
 	err := o.Broadcast(envelope)
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func addToPolicy(policy *common.Policy, mspID string, role fmsp.MSPRole_MSPRoleType) error {
-	spe := &common.SignaturePolicyEnvelope{}
-	err := proto.Unmarshal(policy.Value, spe)
-	if err != nil {
-		return err
-	}
-	idx := len(spe.Identities)
-	spe.Identities = append(spe.Identities, &fmsp.MSPPrincipal{
-		PrincipalClassification: fmsp.MSPPrincipal_ROLE,
-		Principal: util.MarshalOrPanic(&fmsp.MSPRole{
-			MspIdentifier: mspID,
-			Role:          role,
-		}),
-	})
-	spe.Rule.GetNOutOf().Rules = append(spe.Rule.GetNOutOf().Rules, &common.SignaturePolicy{
-		Type: &common.SignaturePolicy_SignedBy{
-			SignedBy: int32(idx),
-		},
-	})
-	policy.Value = util.MarshalOrPanic(spe)
-	return nil
-}
-
-func removeFromPolicy(policy *common.Policy, mspID string) error {
-	spe := &common.SignaturePolicyEnvelope{}
-	err := proto.Unmarshal(policy.Value, spe)
-	if err != nil {
-		return err
-	}
-	identities := []*fmsp.MSPPrincipal{}
-	rules := []*common.SignaturePolicy{}
-	for _, identity := range spe.Identities {
-		role := &fmsp.MSPRole{}
-		err := proto.Unmarshal(identity.Principal, role)
-		if err != nil {
-			return err
-		}
-		if role.MspIdentifier != mspID {
-			idx := len(identities)
-			identities = append(identities, identity)
-			rules = append(rules, &common.SignaturePolicy{
-				Type: &common.SignaturePolicy_SignedBy{
-					SignedBy: int32(idx),
-				},
-			})
-		}
-	}
-	spe.Identities = identities
-	spe.Rule.GetNOutOf().Rules = rules
-	policy.Value = util.MarshalOrPanic(spe)
 	return nil
 }

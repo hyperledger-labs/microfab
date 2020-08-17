@@ -20,9 +20,34 @@ steps:
     inputs:
       version: "1.14"
     displayName: Use Go 1.14
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '11'
+      jdkArchitectureOption: x64
+      jdkSourceOption: PreInstalled
+      cleanDestinationDirectory: false
+    displayName: Use Java 11
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: Use Node.js 12
+  - script: |
+      set -euo pipefail
+      sudo mkdir -p /opt/fabric
+      curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.2.0/hyperledger-fabric-linux-amd64-2.2.0.tar.gz | sudo tar xzf - -C /opt/fabric
+      cd builders/java
+      sudo mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib
+      npm install -g fabric-shim@2.2.0
+    displayName: Install Fabric dependencies
   - script: make lint
     displayName: Run Go formatters and linters
   - script: make unit
     displayName: Run Go unit tests
+  - script: |
+      set -euo pipefail
+      export PATH="/opt/fabric/bin:${PATH}"
+      export FABRIC_CFG_PATH=/opt/fabric/config
+      make integration
+    displayName: Run Go integration tests
   - script: shellcheck builders/*/bin/*
     displayName: Run ShellCheck
