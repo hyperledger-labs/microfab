@@ -6,8 +6,10 @@ package orderer
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
+	"github.com/IBM-Blockchain/microfab/pkg/client"
 	"google.golang.org/grpc"
 )
 
@@ -27,6 +29,24 @@ func Connect(orderer *Orderer, mspID string, identity *identity.Identity) (*Conn
 	}
 	return &Connection{
 		orderer:    orderer,
+		clientConn: clientConn,
+		mspID:      mspID,
+		identity:   identity,
+	}, nil
+}
+
+// ConnectClient opens a connection to the orderer using a client orderer object.
+func ConnectClient(orderer *client.OrderingService, mspID string, identity *identity.Identity) (*Connection, error) {
+	parsedURL, err := url.Parse(orderer.APIURL)
+	if err != nil {
+		return nil, err
+	}
+	clientConn, err := grpc.Dial(parsedURL.Host, grpc.WithInsecure(), grpc.WithAuthority(orderer.APIOptions.DefaultAuthority))
+	if err != nil {
+		return nil, err
+	}
+	return &Connection{
+		orderer:    nil,
 		clientConn: clientConn,
 		mspID:      mspID,
 		identity:   identity,

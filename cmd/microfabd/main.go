@@ -15,8 +15,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create application: %v", err)
 	}
-	err = microfabd.Run()
+	err = microfabd.Start()
 	if err != nil {
-		log.Fatalf("Failed to run application: %v", err)
+		log.Fatalf("Failed to start application: %v", err)
 	}
+	microfabd.Wait()
 }

@@ -19,6 +19,7 @@ import (
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/privatekey"
+	"github.com/IBM-Blockchain/microfab/pkg/client"
 )
 
 // Identity represents a loaded identity (X509 certificate and ECDSA private key pair).
@@ -127,6 +128,24 @@ func New(name string, opts ...Option) (*Identity, error) {
 	}
 	isCA := identity.Template.IsCA
 	return &Identity{name, cert, pk, ca, isCA}, nil
+}
+
+// FromClient loads an identity from a client identity object.
+func FromClient(c *client.Identity) (*Identity, error) {
+	name := c.DisplayName
+	cert, err := certificate.FromBytes(c.Certificate)
+	if err != nil {
+		return nil, err
+	}
+	pk, err := privatekey.FromBytes(c.PrivateKey)
+	if err != nil {
+		return nil, err
+	}
+	ca, err := certificate.FromBytes(c.CA)
+	if err != nil {
+		return nil, err
+	}
+	return &Identity{name, cert, pk, ca, false}, nil
 }
 
 // Name returns the name of the identity.

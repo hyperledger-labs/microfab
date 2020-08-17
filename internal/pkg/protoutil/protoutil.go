@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"time"
 
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
@@ -72,9 +73,9 @@ func BuildPayload(header *common.Header, data proto.Message) *common.Payload {
 }
 
 // BuildEnvelope builds an envelope for the specified payload and signs it.
-func BuildEnvelope(payload *common.Payload, txID *txid.TransactionID) *common.Envelope {
+func BuildEnvelope(payload *common.Payload, identity *identity.Identity) *common.Envelope {
 	payloadBytes := util.MarshalOrPanic(payload)
-	signature := txID.Identity().Sign(payloadBytes)
+	signature := identity.Sign(payloadBytes)
 	return &common.Envelope{
 		Payload:   payloadBytes,
 		Signature: signature,
