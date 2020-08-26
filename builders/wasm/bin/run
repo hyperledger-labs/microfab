@@ -10,4 +10,4 @@ CORE_PEER_LOCALMSPID="$(jq -r .mspid "${RUN_METADATA_DIR}/chaincode.json")"
 CHAINCODE_WASM_FILE=$(ls -d "${BUILD_OUTPUT_DIR}/"*.wasm | head -1)
 CORE_PEER_TLS_ENABLED=false
 export CORE_CHAINCODE_ID_NAME CORE_PEER_LOCALMSPID CHAINCODE_WASM_FILE CORE_PEER_TLS_ENABLED
-exec fabric-chaincode-wasm -peer.address="$(jq -r .peer_address "${RUN_METADATA_DIR}/chaincode.json")"
+exec fabric-chaincode-wasm -peer.address="$(jq -r .peer_address "${RUN_METADATA_DIR}/chaincode.json")" >&2
