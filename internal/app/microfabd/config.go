@@ -30,6 +30,7 @@ type Config struct {
 	EndorsingOrganizations []Organization `json:"endorsing_organizations"`
 	Channels               []Channel      `json:"channels"`
 	CapabilityLevel        string         `json:"capability_level"`
+	CouchDB                bool           `json:"couchdb"`
 }
 
 // DefaultConfig returns the default configuration.
@@ -63,6 +64,7 @@ func DefaultConfig() (*Config, error) {
 			},
 		},
 		CapabilityLevel: "V2_0",
+		CouchDB:         true,
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)
