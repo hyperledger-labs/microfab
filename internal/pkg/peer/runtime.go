@@ -208,6 +208,24 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 			},
 		},
 	}
+	ledger, ok := config["ledger"].(map[interface{}]interface{})
+	if !ok {
+		return fmt.Errorf("core.yaml missing ledger section")
+	}
+	state, ok := ledger["state"].(map[interface{}]interface{})
+	if !ok {
+		return fmt.Errorf("core.yaml missing ledger.state section")
+	}
+	if p.couchDB {
+		state["stateDatabase"] = "CouchDB"
+		couchDBConfig, ok := state["couchDBConfig"].(map[interface{}]interface{})
+		if !ok {
+			return fmt.Errorf("core.yaml missing ledger.state.couchDBConfig section")
+		}
+		couchDBConfig["couchDBAddress"] = fmt.Sprintf("localhost:%d", p.couchDBPort)
+		couchDBConfig["username"] = "admin"
+		couchDBConfig["password"] = "adminpw"
+	}
 	configData, err = yaml.Marshal(config)
 	if err != nil {
 		return err

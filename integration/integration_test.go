@@ -37,6 +37,7 @@ var _ = Describe("Integration", func() {
 		Expect(err).NotTo(HaveOccurred())
 		testConfig := map[string]interface{}{
 			"directory": testDirectory,
+			"couchdb":   false,
 		}
 		serializedConfig, err := json.Marshal(testConfig)
 		Expect(err).NotTo(HaveOccurred())
