@@ -2,11 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS base
-RUN microdnf install findutils gcc gcc-c++ git gzip make python3 shadow-utils tar unzip xz \
+ADD docker/bintray-apache-couchdb-rpm.repo /etc/yum.repos.d/bintray-apache-couchdb-rpm.repo
+RUN microdnf install couchdb findutils gcc gcc-c++ git gzip make python3 shadow-utils tar unzip xz \
     && groupadd -g 7051 ibp-user \
     && useradd -u 7051 -g ibp-user -G root -s /bin/bash ibp-user \
     && microdnf remove shadow-utils \
     && microdnf clean all
+ADD docker/local.ini /opt/couchdb/etc/local.d/local.ini
+ENV PATH=/opt/couchdb/bin:${PATH}
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 /usr/local/bin/jq
@@ -52,10 +55,10 @@ RUN cd /tmp/microfab \
 
 FROM base
 COPY --from=builder /opt/microfab /opt/microfab
+COPY docker/docker-entrypoint.sh /
 ENV MICROFAB_HOME=/opt/microfab
 ENV PATH=/opt/microfab/bin:${PATH}
 EXPOSE 8080
 USER 7051
 VOLUME /opt/microfab/data
-ENTRYPOINT [ "/tini", "--" ]
-CMD [ "/opt/microfab/bin/microfabd" ]
+ENTRYPOINT [ "/tini", "--", "/docker-entrypoint.sh" ]
