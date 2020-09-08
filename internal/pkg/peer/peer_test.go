@@ -30,7 +30,7 @@ var _ = Describe("the peer package", func() {
 
 		When("called", func() {
 			It("creates a new peer", func() {
-				p, err := peer.New(testOrganization, testDirectory, 7051, "grpc://org1peer-api.127-0-0-1.nip.io:8080", 7052, "grpc://org1peer-chaincode.127-0-0-1.nip.io:8080", 8443, "http://org1peer-operations.127-0-0-1.nip.io:8080")
+				p, err := peer.New(testOrganization, testDirectory, 7051, "grpc://org1peer-api.127-0-0-1.nip.io:8080", 7052, "grpc://org1peer-chaincode.127-0-0-1.nip.io:8080", 8443, "http://org1peer-operations.127-0-0-1.nip.io:8080", false, 0)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(p.Organization()).To(Equal(testOrganization))
 				Expect(p.MSPID()).To(Equal(testOrganization.MSPID()))
@@ -59,21 +59,21 @@ var _ = Describe("the peer package", func() {
 
 		When("called with an invalid API URL", func() {
 			It("returns an error", func() {
-				_, err := peer.New(testOrganization, testDirectory, 7051, "!@£$%^&*()_+", 7052, "grpc://org1peer-chaincode.127-0-0-1.nip.io:8080", 8443, "http://org1peer-operations.127-0-0-1.nip.io:8080")
+				_, err := peer.New(testOrganization, testDirectory, 7051, "!@£$%^&*()_+", 7052, "grpc://org1peer-chaincode.127-0-0-1.nip.io:8080", 8443, "http://org1peer-operations.127-0-0-1.nip.io:8080", false, 0)
 				Expect(err).To(HaveOccurred())
 			})
 		})
 
 		When("called with an invalid chaincode URL", func() {
 			It("returns an error", func() {
-				_, err := peer.New(testOrganization, testDirectory, 7051, "grpc://org1peer-api.127-0-0-1.nip.io:8080", 7052, "!@£$%^&*()_+", 8443, "http://org1peer-operations.127-0-0-1.nip.io:8080")
+				_, err := peer.New(testOrganization, testDirectory, 7051, "grpc://org1peer-api.127-0-0-1.nip.io:8080", 7052, "!@£$%^&*()_+", 8443, "http://org1peer-operations.127-0-0-1.nip.io:8080", false, 0)
 				Expect(err).To(HaveOccurred())
 			})
 		})
 
 		When("called with an invalid operations URL", func() {
 			It("returns an error", func() {
-				_, err := peer.New(testOrganization, testDirectory, 7051, "grpc://org1peer-api.127-0-0-1.nip.io:8080", 7052, "grpc://org1peer-chaincode.127-0-0-1.nip.io:8080", 8443, "!@£$%^&*()_+")
+				_, err := peer.New(testOrganization, testDirectory, 7051, "grpc://org1peer-api.127-0-0-1.nip.io:8080", 7052, "grpc://org1peer-chaincode.127-0-0-1.nip.io:8080", 8443, "!@£$%^&*()_+", false, 0)
 				Expect(err).To(HaveOccurred())
 			})
 		})

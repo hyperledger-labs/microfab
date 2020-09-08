@@ -19,6 +19,7 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/channel"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/couchdb"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
@@ -40,6 +41,8 @@ type Microfab struct {
 	organizations          []*organization.Organization
 	orderer                *orderer.Orderer
 	ordererConnection      *orderer.Connection
+	couchDB                *couchdb.CouchDB
+	couchDBProxies         []*couchdb.Proxy
 	peers                  []*peer.Peer
 	peerConnections        []*peer.Connection
 	genesisBlocks          map[string]*common.Block
@@ -53,13 +56,12 @@ func New() (*Microfab, error) {
 	if err != nil {
 		return nil, err
 	}
-	fablet := &Microfab{
+	return &Microfab{
 		config:  config,
 		sigs:    make(chan os.Signal, 1),
 		done:    make(chan struct{}, 1),
 		started: false,
-	}
-	return fablet, nil
+	}, nil
 }
 
 // Start starts the Microfab application.
@@ -106,17 +108,29 @@ func (m *Microfab) Start() error {
 	m.organizations = append(m.organizations, m.ordererOrganization)
 	m.organizations = append(m.organizations, m.endorsingOrganizations...)
 
+	// Wait for CouchDB to start.
+	if m.config.CouchDB {
+		err = m.waitForCouchDB()
+		if err != nil {
+			return err
+		}
+	}
+
 	// Create and start all of the components (orderer, peers).
 	eg.Go(func() error {
 		return m.createAndStartOrderer(m.ordererOrganization, 7050, 7051)
 	})
 	for i := range m.endorsingOrganizations {
 		organization := m.endorsingOrganizations[i]
-		apiPort := 7052 + (i * 3)
-		chaincodePort := 7053 + (i * 3)
-		operationsPort := 7054 + (i * 3)
+		apiPort := 7052 + (i * 4)
+		chaincodePort := 7053 + (i * 4)
+		operationsPort := 7054 + (i * 4)
+		couchDBProxyPort := 7055 + (i * 4)
+		if m.config.CouchDB {
+			go m.createAndStartCouchDBProxy(organization, couchDBProxyPort)
+		}
 		eg.Go(func() error {
-			return m.createAndStartPeer(organization, apiPort, chaincodePort, operationsPort)
+			return m.createAndStartPeer(organization, apiPort, chaincodePort, operationsPort, m.config.CouchDB, couchDBProxyPort)
 		})
 	}
 	err = eg.Wait()
@@ -307,8 +321,43 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 	return nil
 }
 
-func (m *Microfab) createAndStartPeer(organization *organization.Organization, apiPort, chaincodePort, operationsPort int) error {
-	log.Printf("Creating and starting peer for ordering organization %s ...", organization.Name())
+func (m *Microfab) waitForCouchDB() error {
+	log.Printf("Waiting for CouchDB to start ...")
+	couchDB, err := couchdb.New("http://localhost:5984")
+	if err != nil {
+		return err
+	}
+	err = couchDB.WaitFor()
+	if err != nil {
+		return err
+	}
+	m.Lock()
+	defer m.Unlock()
+	m.couchDB = couchDB
+	log.Printf("CouchDB has started")
+	return nil
+}
+
+func (m *Microfab) createAndStartCouchDBProxy(organization *organization.Organization, port int) error {
+	log.Printf("Creating and starting CouchDB proxy for endorsing organization %s ...", organization.Name())
+	prefix := strings.ToLower(organization.Name())
+	proxy, err := m.couchDB.NewProxy(prefix, port)
+	if err != nil {
+		return err
+	}
+	err = proxy.Start()
+	if err != nil {
+		return err
+	}
+	m.Lock()
+	defer m.Unlock()
+	m.couchDBProxies = append(m.couchDBProxies, proxy)
+	log.Printf("Created and started CouchDB proxy for endorsing organization %s", organization.Name())
+	return nil
+}
+
+func (m *Microfab) createAndStartPeer(organization *organization.Organization, apiPort, chaincodePort, operationsPort int, couchDB bool, couchDBProxyPort int) error {
+	log.Printf("Creating and starting peer for endorsing organization %s ...", organization.Name())
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
 	peerDirectory := path.Join(m.config.Directory, fmt.Sprintf("peer-%s", lowerOrganizationName))
@@ -321,6 +370,8 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 		fmt.Sprintf("grpc://%speer-chaincode.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
 		int32(operationsPort),
 		fmt.Sprintf("http://%speer-operations.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+		couchDB,
+		int32(couchDBProxyPort),
 	)
 	if err != nil {
 		return err
@@ -447,6 +498,13 @@ func (m *Microfab) stop() error {
 		}
 	}
 	m.peers = []*peer.Peer{}
+	for _, couchDBProxy := range m.couchDBProxies {
+		err := couchDBProxy.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	m.couchDBProxies = []*couchdb.Proxy{}
 	if m.orderer != nil {
 		err := m.orderer.Stop()
 		if err != nil {
