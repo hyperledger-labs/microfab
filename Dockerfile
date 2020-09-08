@@ -4,7 +4,7 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS base
 RUN microdnf install findutils gcc gcc-c++ git gzip make python3 shadow-utils tar unzip xz \
     && groupadd -g 7051 ibp-user \
-    && useradd -u 7051 -g ibp-user -s /bin/bash ibp-user \
+    && useradd -u 7051 -g ibp-user -G root -s /bin/bash ibp-user \
     && microdnf remove shadow-utils \
     && microdnf clean all
 ENV TINI_VERSION v0.19.0
@@ -45,7 +45,8 @@ FROM base AS builder
 ADD . /tmp/microfab
 RUN cd /tmp/microfab \
     && mkdir -p /opt/microfab/bin /opt/microfab/data \
-    && chown ibp-user:ibp-user /opt/microfab/data \
+    && chown ibp-user:root /opt/microfab/data \
+    && chmod 775 /opt/microfab/data \
     && go build -o /opt/microfab/bin/microfabd cmd/microfabd/main.go \
     && cp -rf builders /opt/microfab/builders
 
@@ -54,7 +55,7 @@ COPY --from=builder /opt/microfab /opt/microfab
 ENV MICROFAB_HOME=/opt/microfab
 ENV PATH=/opt/microfab/bin:${PATH}
 EXPOSE 8080
-USER ibp-user
+USER 7051
 VOLUME /opt/microfab/data
 ENTRYPOINT [ "/tini", "--" ]
 CMD [ "/opt/microfab/bin/microfabd" ]
