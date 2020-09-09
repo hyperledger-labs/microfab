@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 set -euo pipefail
+exec 1>&2
 BUILD_OUTPUT_DIR="$1"
 RUN_METADATA_DIR="$2"
 CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "${RUN_METADATA_DIR}/chaincode.json")"
