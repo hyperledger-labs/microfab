@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 set -euo pipefail
+exec 1>&2
 CHAINCODE_SOURCE_DIR="$1"
 # CHAINCODE_METADATA_DIR="$2"
 BUILD_OUTPUT_DIR="$3"
