@@ -30,6 +30,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "microfabd"), log.LstdFlags)
+
 // Microfab represents an instance of the Microfab application.
 type Microfab struct {
 	sync.Mutex
@@ -71,7 +73,7 @@ func (m *Microfab) Start() error {
 
 	// Grab the start time and say hello.
 	startTime := time.Now()
-	log.Print("Starting Microfab ...")
+	logger.Print("Starting Microfab ...")
 
 	// Ensure anything we start is stopped.
 	defer func() {
@@ -205,13 +207,13 @@ func (m *Microfab) Start() error {
 	// Say how long start up took, then wait for signals.
 	readyTime := time.Now()
 	startupDuration := readyTime.Sub(startTime)
-	log.Printf("Microfab started in %vms", startupDuration.Milliseconds())
+	logger.Printf("Microfab started in %vms", startupDuration.Milliseconds())
 	signal.Notify(m.sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-m.sigs
-		log.Printf("Stopping Microfab due to signal ...")
+		logger.Printf("Stopping Microfab due to signal ...")
 		m.stop()
-		log.Printf("Microfab stopped")
+		logger.Printf("Microfab stopped")
 		close(m.done)
 		m.started = false
 	}()
@@ -281,7 +283,7 @@ func (m *Microfab) removeDirectory() error {
 }
 
 func (m *Microfab) createOrderingOrganization(config Organization) error {
-	log.Printf("Creating ordering organization %s ...", config.Name)
+	logger.Printf("Creating ordering organization %s ...", config.Name)
 	organization, err := organization.New(config.Name)
 	if err != nil {
 		return err
@@ -289,12 +291,12 @@ func (m *Microfab) createOrderingOrganization(config Organization) error {
 	m.Lock()
 	defer m.Unlock()
 	m.ordererOrganization = organization
-	log.Printf("Created ordering organization %s", config.Name)
+	logger.Printf("Created ordering organization %s", config.Name)
 	return nil
 }
 
 func (m *Microfab) createEndorsingOrganization(config Organization) error {
-	log.Printf("Creating endorsing organization %s ...", config.Name)
+	logger.Printf("Creating endorsing organization %s ...", config.Name)
 	organization, err := organization.New(config.Name)
 	if err != nil {
 		return err
@@ -302,12 +304,12 @@ func (m *Microfab) createEndorsingOrganization(config Organization) error {
 	m.Lock()
 	defer m.Unlock()
 	m.endorsingOrganizations = append(m.endorsingOrganizations, organization)
-	log.Printf("Created endorsing organization %s", config.Name)
+	logger.Printf("Created endorsing organization %s", config.Name)
 	return nil
 }
 
 func (m *Microfab) createAndStartOrderer(organization *organization.Organization, apiPort, operationsPort int) error {
-	log.Printf("Creating and starting orderer for ordering organization %s ...", organization.Name())
+	logger.Printf("Creating and starting orderer for ordering organization %s ...", organization.Name())
 	directory := path.Join(m.config.Directory, "orderer")
 	orderer, err := orderer.New(
 		organization,
@@ -327,12 +329,12 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 	m.Lock()
 	defer m.Unlock()
 	m.orderer = orderer
-	log.Printf("Created and started orderer for ordering organization %s", organization.Name())
+	logger.Printf("Created and started orderer for ordering organization %s", organization.Name())
 	return nil
 }
 
 func (m *Microfab) waitForCouchDB() error {
-	log.Printf("Waiting for CouchDB to start ...")
+	logger.Printf("Waiting for CouchDB to start ...")
 	couchDB, err := couchdb.New("http://localhost:5984")
 	if err != nil {
 		return err
@@ -344,12 +346,12 @@ func (m *Microfab) waitForCouchDB() error {
 	m.Lock()
 	defer m.Unlock()
 	m.couchDB = couchDB
-	log.Printf("CouchDB has started")
+	logger.Printf("CouchDB has started")
 	return nil
 }
 
 func (m *Microfab) createAndStartCouchDBProxy(organization *organization.Organization, port int) error {
-	log.Printf("Creating and starting CouchDB proxy for endorsing organization %s ...", organization.Name())
+	logger.Printf("Creating and starting CouchDB proxy for endorsing organization %s ...", organization.Name())
 	prefix := strings.ToLower(organization.Name())
 	proxy, err := m.couchDB.NewProxy(prefix, port)
 	if err != nil {
@@ -362,12 +364,12 @@ func (m *Microfab) createAndStartCouchDBProxy(organization *organization.Organiz
 	m.Lock()
 	defer m.Unlock()
 	m.couchDBProxies = append(m.couchDBProxies, proxy)
-	log.Printf("Created and started CouchDB proxy for endorsing organization %s", organization.Name())
+	logger.Printf("Created and started CouchDB proxy for endorsing organization %s", organization.Name())
 	return nil
 }
 
 func (m *Microfab) createAndStartPeer(organization *organization.Organization, apiPort, chaincodePort, operationsPort int, couchDB bool, couchDBProxyPort int) error {
-	log.Printf("Creating and starting peer for endorsing organization %s ...", organization.Name())
+	logger.Printf("Creating and starting peer for endorsing organization %s ...", organization.Name())
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
 	peerDirectory := path.Join(m.config.Directory, fmt.Sprintf("peer-%s", lowerOrganizationName))
@@ -393,12 +395,12 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 	m.Lock()
 	defer m.Unlock()
 	m.peers = append(m.peers, peer)
-	log.Printf("Created and started peer for endorsing organization %s", organization.Name())
+	logger.Printf("Created and started peer for endorsing organization %s", organization.Name())
 	return nil
 }
 
 func (m *Microfab) createAndStartCA(organization *organization.Organization, apiPort, operationsPort int) error {
-	log.Printf("Creating and starting CA for endorsing organization %s ...", organization.Name())
+	logger.Printf("Creating and starting CA for endorsing organization %s ...", organization.Name())
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
 	caDirectory := path.Join(m.config.Directory, fmt.Sprintf("ca-%s", lowerOrganizationName))
@@ -420,12 +422,12 @@ func (m *Microfab) createAndStartCA(organization *organization.Organization, api
 	m.Lock()
 	defer m.Unlock()
 	m.cas = append(m.cas, ca)
-	log.Printf("Created and started CA for endorsing organization %s", organization.Name())
+	logger.Printf("Created and started CA for endorsing organization %s", organization.Name())
 	return nil
 }
 
 func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
-	log.Printf("Creating channel %s ...", config.Name)
+	logger.Printf("Creating channel %s ...", config.Name)
 	opts := []channel.Option{
 		channel.WithCapabilityLevel(m.config.CapabilityLevel),
 	}
@@ -471,12 +473,12 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Created channel %s", config.Name)
+	logger.Printf("Created channel %s", config.Name)
 	return genesisBlock, nil
 }
 
 func (m *Microfab) createAndJoinChannel(config Channel) error {
-	log.Printf("Creating and joining channel %s ...", config.Name)
+	logger.Printf("Creating and joining channel %s ...", config.Name)
 	genesisBlock, err := m.createChannel(config)
 	if err != nil {
 		return err
@@ -495,12 +497,12 @@ func (m *Microfab) createAndJoinChannel(config Channel) error {
 		}
 		if found {
 			eg.Go(func() error {
-				log.Printf("Joining channel %s on peer for endorsing organization %s ...", config.Name, peer.Organization().Name())
+				logger.Printf("Joining channel %s on peer for endorsing organization %s ...", config.Name, peer.Organization().Name())
 				err := connection.JoinChannel(genesisBlock)
 				if err != nil {
 					return err
 				}
-				log.Printf("Joined channel %s on peer for endorsing organization %s", config.Name, peer.Organization().Name())
+				logger.Printf("Joined channel %s on peer for endorsing organization %s", config.Name, peer.Organization().Name())
 				return nil
 			})
 		}
@@ -509,7 +511,7 @@ func (m *Microfab) createAndJoinChannel(config Channel) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Created and joined channel %s", config.Name)
+	logger.Printf("Created and joined channel %s", config.Name)
 	return nil
 }
 
