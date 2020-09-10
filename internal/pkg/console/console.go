@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
@@ -73,12 +74,13 @@ type Console struct {
 	staticComponents components
 	orderer          *orderer.Orderer
 	peers            []*peer.Peer
+	cas              []*ca.CA
 	port             int32
 	url              *url.URL
 }
 
 // New creates a new instance of a console.
-func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, port int32, curl string) (*Console, error) {
+func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int32, curl string) (*Console, error) {
 	staticComponents := components{}
 	for _, organization := range organizations {
 		orgName := organization.Name()
@@ -106,6 +108,7 @@ func New(organizations []*organization.Organization, orderer *orderer.Orderer, p
 		url:              parsedURL,
 		orderer:          orderer,
 		peers:            peers,
+		cas:              cas,
 	}
 	router := mux.NewRouter()
 	router.HandleFunc("/ak/api/v1/health", console.getHealth).Methods("GET")
@@ -232,8 +235,15 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 			Identity: peer.Organization().Admin().Name(),
 			Wallet:   peer.Organization().Name(),
 		}
+		var ca *ca.CA
+		for _, temp := range c.cas {
+			if temp.Organization().Name() == peer.Organization().Name() {
+				ca = temp
+				break
+			}
+		}
 		id = fmt.Sprintf("%sgateway", lowerOrgName)
-		dynamicComponents[id] = map[string]interface{}{
+		gateway := map[string]interface{}{
 			"id":           id,
 			"display_name": fmt.Sprintf("%s Gateway", orgName),
 			"type":         "gateway",
@@ -268,6 +278,43 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 					},
 				},
 			},
+		}
+		if ca != nil {
+			organizations := gateway["organizations"].(map[string]interface{})
+			organization := organizations[ca.Organization().Name()].(map[string]interface{})
+			organization["certificateAuthorities"] = []interface{}{
+				ca.APIHost(false),
+			}
+			gateway["certificateAuthorities"] = map[string]interface{}{
+				ca.APIHost(false): map[string]interface{}{
+					"url": c.getDynamicURL(req, ca.APIURL(false)),
+				},
+			}
+		}
+		dynamicComponents[id] = gateway
+	}
+	for _, ca := range c.cas {
+		orgName := ca.Organization().Name()
+		lowerOrgName := strings.ToLower(orgName)
+		id := fmt.Sprintf("%sca", lowerOrgName)
+		dynamicComponents[id] = &jsonPeer{
+			ID:          id,
+			DisplayName: fmt.Sprintf("%s CA", orgName),
+			Type:        "fabric-ca",
+			APIURL:      c.getDynamicURL(req, ca.APIURL(false)),
+			APIOptions: &jsonOptions{
+				DefaultAuthority:      ca.APIHost(false),
+				SSLTargetNameOverride: ca.APIHost(false),
+				RequestTimeout:        300 * 1000,
+			},
+			OperationsURL: c.getDynamicURL(req, ca.OperationsURL(false)),
+			OperationsOptions: &jsonOptions{
+				DefaultAuthority:      ca.OperationsHost(false),
+				SSLTargetNameOverride: ca.OperationsHost(false),
+				RequestTimeout:        300 * 1000,
+			},
+			Identity: ca.Organization().Admin().Name(),
+			Wallet:   ca.Organization().Name(),
 		}
 	}
 	return dynamicComponents

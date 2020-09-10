@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/channel"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/couchdb"
@@ -45,6 +46,7 @@ type Microfab struct {
 	couchDBProxies         []*couchdb.Proxy
 	peers                  []*peer.Peer
 	peerConnections        []*peer.Connection
+	cas                    []*ca.CA
 	genesisBlocks          map[string]*common.Block
 	console                *console.Console
 	proxy                  *proxy.Proxy
@@ -116,22 +118,30 @@ func (m *Microfab) Start() error {
 		}
 	}
 
-	// Create and start all of the components (orderer, peers).
+	// Create and start all of the components (orderer, peers, CAs).
 	eg.Go(func() error {
 		return m.createAndStartOrderer(m.ordererOrganization, 7050, 7051)
 	})
 	for i := range m.endorsingOrganizations {
 		organization := m.endorsingOrganizations[i]
-		apiPort := 7052 + (i * 4)
-		chaincodePort := 7053 + (i * 4)
-		operationsPort := 7054 + (i * 4)
-		couchDBProxyPort := 7055 + (i * 4)
+		numPorts := 6
+		peerAPIPort := 7052 + (i * numPorts)
+		peerChaincodePort := 7053 + (i * numPorts)
+		peerOperationsPort := 7054 + (i * numPorts)
+		couchDBProxyPort := 7055 + (i * numPorts)
+		caAPIPort := 7056 + (i * numPorts)
+		caOperationsPort := 7057 + (i * numPorts)
 		if m.config.CouchDB {
 			go m.createAndStartCouchDBProxy(organization, couchDBProxyPort)
 		}
 		eg.Go(func() error {
-			return m.createAndStartPeer(organization, apiPort, chaincodePort, operationsPort, m.config.CouchDB, couchDBProxyPort)
+			return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, m.config.CouchDB, couchDBProxyPort)
 		})
+		if m.config.CertificateAuthorities {
+			eg.Go(func() error {
+				return m.createAndStartCA(organization, caAPIPort, caOperationsPort)
+			})
+		}
 	}
 	err = eg.Wait()
 	if err != nil {
@@ -144,7 +154,7 @@ func (m *Microfab) Start() error {
 	})
 
 	// Create and start the console.
-	console, err := console.New(m.organizations, m.orderer, m.peers, 8081, fmt.Sprintf("http://console.%s:%d", m.config.Domain, m.config.Port))
+	console, err := console.New(m.organizations, m.orderer, m.peers, m.cas, 8081, fmt.Sprintf("http://console.%s:%d", m.config.Domain, m.config.Port))
 	if err != nil {
 		return err
 	}
@@ -152,7 +162,7 @@ func (m *Microfab) Start() error {
 	go console.Start()
 
 	// Create and start the proxy.
-	proxy, err := proxy.New(console, m.orderer, m.peers, m.config.Port)
+	proxy, err := proxy.New(console, m.orderer, m.peers, m.cas, m.config.Port)
 	if err != nil {
 		return err
 	}
@@ -384,6 +394,33 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 	defer m.Unlock()
 	m.peers = append(m.peers, peer)
 	log.Printf("Created and started peer for endorsing organization %s", organization.Name())
+	return nil
+}
+
+func (m *Microfab) createAndStartCA(organization *organization.Organization, apiPort, operationsPort int) error {
+	log.Printf("Creating and starting CA for endorsing organization %s ...", organization.Name())
+	organizationName := organization.Name()
+	lowerOrganizationName := strings.ToLower(organizationName)
+	caDirectory := path.Join(m.config.Directory, fmt.Sprintf("ca-%s", lowerOrganizationName))
+	ca, err := ca.New(
+		organization,
+		caDirectory,
+		int32(apiPort),
+		fmt.Sprintf("http://%sca-api.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+		int32(operationsPort),
+		fmt.Sprintf("http://%sca-operations.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+	)
+	if err != nil {
+		return err
+	}
+	err = ca.Start()
+	if err != nil {
+		return err
+	}
+	m.Lock()
+	defer m.Unlock()
+	m.cas = append(m.cas, ca)
+	log.Printf("Created and started CA for endorsing organization %s", organization.Name())
 	return nil
 }
 
