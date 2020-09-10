@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"regexp"
 
+	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
@@ -44,7 +45,7 @@ func (tw *h2cTransportWrapper) RoundTrip(req *http.Request) (*http.Response, err
 var portRegex = regexp.MustCompile(":\\d+$")
 
 // New creates a new instance of a proxy.
-func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer, port int) (*Proxy, error) {
+func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int) (*Proxy, error) {
 	routes := []*route{
 		{
 			SourceHost: console.URL().Host,
@@ -77,6 +78,21 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 			{
 				SourceHost: peer.OperationsHost(false),
 				TargetHost: peer.OperationsHost(true),
+				UseHTTP2:   false,
+			},
+		}
+		routes = append(routes, orgRoutes...)
+	}
+	for _, ca := range cas {
+		orgRoutes := []*route{
+			{
+				SourceHost: ca.APIHost(false),
+				TargetHost: ca.APIHost(true),
+				UseHTTP2:   false,
+			},
+			{
+				SourceHost: ca.OperationsHost(false),
+				TargetHost: ca.OperationsHost(true),
 				UseHTTP2:   false,
 			},
 		}
