@@ -5,9 +5,10 @@
 package peer
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -53,7 +54,20 @@ func (p *Peer) Start() error {
 	if err != nil {
 		return err
 	}
-	go io.Copy(logFile, pipe)
+	go func() {
+		reader := bufio.NewReader(pipe)
+		scanner := bufio.NewScanner(reader)
+		scanner.Split(bufio.ScanLines)
+		id := strings.ToLower(p.identity.Name())
+		id = strings.ReplaceAll(id, " ", "")
+		logger := log.New(os.Stdout, fmt.Sprintf("[%16s] ", id), 0)
+		for scanner.Scan() {
+			logger.Println(scanner.Text())
+			logFile.WriteString(scanner.Text())
+		}
+		pipe.Close()
+		logFile.Close()
+	}()
 	cmd.Stderr = cmd.Stdout
 	err = cmd.Start()
 	if err != nil {

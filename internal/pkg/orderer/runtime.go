@@ -5,9 +5,10 @@
 package orderer
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -66,7 +67,19 @@ func (o *Orderer) Start(consortium []*organization.Organization) error {
 	if err != nil {
 		return errors.WithMessage(err, "failed to open pipe")
 	}
-	go io.Copy(logFile, pipe)
+	go func() {
+		reader := bufio.NewReader(pipe)
+		scanner := bufio.NewScanner(reader)
+		scanner.Split(bufio.ScanLines)
+		id := "orderer"
+		logger := log.New(os.Stdout, fmt.Sprintf("[%16s] ", id), 0)
+		for scanner.Scan() {
+			logger.Println(scanner.Text())
+			logFile.WriteString(scanner.Text())
+		}
+		pipe.Close()
+		logFile.Close()
+	}()
 	cmd.Stderr = cmd.Stdout
 	err = cmd.Start()
 	if err != nil {
