@@ -37,6 +37,7 @@ ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
 ADD builders/java/pom.xml /opt/fabric-chaincode-java/
 RUN mkdir -p /opt/fabric \
     && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.2.0/hyperledger-fabric-linux-amd64-2.2.0.tar.gz | tar xzf - -C /opt/fabric  \
+    && curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.4.8/hyperledger-fabric-ca-linux-amd64-1.4.8.tar.gz | tar xzf - -C /opt/fabric  \
     && cd /opt/fabric-chaincode-java \
     && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \
     && npm install --unsafe-perm -g fabric-shim@2.2.0 \
@@ -48,8 +49,8 @@ FROM base AS builder
 ADD . /tmp/microfab
 RUN cd /tmp/microfab \
     && mkdir -p /opt/microfab/bin /opt/microfab/data \
-    && chown ibp-user:root /opt/microfab/data \
-    && chmod 775 /opt/microfab/data \
+    && chgrp -R root /opt/microfab/data \
+    && chmod -R g=u /opt/microfab/data \
     && go build -o /opt/microfab/bin/microfabd cmd/microfabd/main.go \
     && cp -rf builders /opt/microfab/builders
 

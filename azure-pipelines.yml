@@ -51,3 +51,16 @@ steps:
     displayName: Run Go integration tests
   - script: shellcheck builders/*/bin/*
     displayName: Run ShellCheck
+  - script: |
+      set -euo pipefail
+      docker build -t ibmcom/ibp-microfab:latest .
+    displayName: Build Docker image
+  - script: |
+      set -euo pipefail
+      VERSION=$(git describe --exact-match --tags $(Build.SourceVersion))
+      docker tag ibmcom/ibp-microfab:latest ibmcom/ibp-microfab:${VERSION}
+      docker login -u $(Docker Hub User Name) -p $(Docker Hub Access Token)
+      docker push ibmcom/ibp-microfab:${VERSION}
+      docker push ibmcom/ibp-microfab:latest
+    displayName: Publish Docker image to Docker Hub
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
