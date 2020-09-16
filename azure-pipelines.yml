@@ -57,7 +57,7 @@ steps:
     displayName: Build Docker image
   - script: |
       set -euo pipefail
-      VERSION=$(git describe --exact-match --tags $(Build.SourceVersion))
+      VERSION=$(git describe --exact-match --tags $(Build.SourceVersion) | sed 's/^v//')
       docker tag ibmcom/ibp-microfab:latest ibmcom/ibp-microfab:${VERSION}
       docker login -u $(Docker Hub User Name) -p $(Docker Hub Access Token)
       docker push ibmcom/ibp-microfab:${VERSION}
