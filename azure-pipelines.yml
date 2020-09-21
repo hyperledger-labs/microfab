@@ -2,6 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 ---
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - master
+    always: true
 trigger:
   branches:
     include:
@@ -56,6 +63,13 @@ steps:
       set -euo pipefail
       docker build -t ibmcom/ibp-microfab:latest .
     displayName: Build Docker image
+  - task: HCLAppScan@1
+    inputs:
+      AppSecTestService: "HCL AppScan on Cloud"
+      applications: "85393290-6bab-43e2-8203-be3ba50246fa"
+      scantype: "static"
+    displayName: Run HCL AppScan on Cloud
+    condition: eq(variables['Build.Reason'], 'Schedule')
   - script: |
       set -euo pipefail
       VERSION=$(git describe --exact-match --tags $(Build.SourceVersion) | sed 's/^v//')
