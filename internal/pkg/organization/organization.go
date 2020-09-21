@@ -13,10 +13,11 @@ import (
 
 // Organization represents a loaded organization definition.
 type Organization struct {
-	name  string
-	ca    *identity.Identity
-	admin *identity.Identity
-	mspID string
+	name    string
+	ca      *identity.Identity
+	admin   *identity.Identity
+	caAdmin *identity.Identity
+	mspID   string
 }
 
 // New creates a new organization.
@@ -34,7 +35,7 @@ func New(name string) (*Organization, error) {
 	safeRegex := regexp.MustCompile("[^a-zA-Z0-9]+")
 	safeName := safeRegex.ReplaceAllString(name, "")
 	mspID := fmt.Sprintf("%sMSP", safeName)
-	return &Organization{name, ca, admin, mspID}, nil
+	return &Organization{name, ca, admin, nil, mspID}, nil
 }
 
 // Name returns the name of the organization.
@@ -55,4 +56,23 @@ func (o *Organization) CA() *identity.Identity {
 // Admin returns the admin identity for the organization.
 func (o *Organization) Admin() *identity.Identity {
 	return o.admin
+}
+
+// CAAdmin returns the CA admin identity for the organization.
+func (o *Organization) CAAdmin() *identity.Identity {
+	return o.caAdmin
+}
+
+// SetCAAdmin adds an identity to the organization.
+func (o *Organization) SetCAAdmin(id *identity.Identity) {
+	o.caAdmin = id
+}
+
+// GetIdentities returns all identities for the organization.
+func (o *Organization) GetIdentities() []*identity.Identity {
+	result := []*identity.Identity{o.admin}
+	if o.caAdmin != nil {
+		result = append(result, o.caAdmin)
+	}
+	return result
 }

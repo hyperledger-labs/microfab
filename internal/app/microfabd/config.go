@@ -66,7 +66,7 @@ func DefaultConfig() (*Config, error) {
 		},
 		CapabilityLevel:        "V2_0",
 		CouchDB:                true,
-		CertificateAuthorities: false,
+		CertificateAuthorities: true,
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)

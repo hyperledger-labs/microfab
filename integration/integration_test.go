@@ -36,8 +36,9 @@ var _ = Describe("Integration", func() {
 		testDirectory, err = ioutil.TempDir("", "microfab-it")
 		Expect(err).NotTo(HaveOccurred())
 		testConfig := map[string]interface{}{
-			"directory": testDirectory,
-			"couchdb":   false,
+			"directory":               testDirectory,
+			"couchdb":                 false,
+			"certificate_authorities": false,
 		}
 		serializedConfig, err := json.Marshal(testConfig)
 		Expect(err).NotTo(HaveOccurred())
