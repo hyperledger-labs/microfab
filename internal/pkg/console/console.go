@@ -64,6 +64,7 @@ type jsonIdentity struct {
 	CA          []byte `json:"ca"`
 	MSPID       string `json:"msp_id"`
 	Wallet      string `json:"wallet"`
+	Hide        bool   `json:"hide"`
 }
 
 type components map[string]interface{}
@@ -83,18 +84,21 @@ type Console struct {
 func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int32, curl string) (*Console, error) {
 	staticComponents := components{}
 	for _, organization := range organizations {
-		for _, orgIdentity := range organization.GetIdentities() {
-			id := strings.ToLower(orgIdentity.Name())
+		orgHide := organization == orderer.Organization()
+		for _, identity := range organization.GetIdentities() {
+			identityHide := orgHide || identity != organization.Admin()
+			id := strings.ToLower(identity.Name())
 			id = strings.ReplaceAll(id, " ", "")
 			staticComponents[id] = &jsonIdentity{
 				ID:          id,
-				DisplayName: orgIdentity.Name(),
+				DisplayName: identity.Name(),
 				Type:        "identity",
-				Certificate: orgIdentity.Certificate().Bytes(),
-				PrivateKey:  orgIdentity.PrivateKey().Bytes(),
-				CA:          orgIdentity.CA().Bytes(),
+				Certificate: identity.Certificate().Bytes(),
+				PrivateKey:  identity.PrivateKey().Bytes(),
+				CA:          identity.CA().Bytes(),
 				MSPID:       organization.MSPID(),
 				Wallet:      organization.Name(),
+				Hide:        identityHide,
 			}
 		}
 	}
