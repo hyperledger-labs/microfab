@@ -289,8 +289,8 @@ func (m *Microfab) createOrderingOrganization(config Organization) error {
 		return err
 	}
 	m.Lock()
-	defer m.Unlock()
 	m.ordererOrganization = organization
+	m.Unlock()
 	logger.Printf("Created ordering organization %s", config.Name)
 	return nil
 }
@@ -302,8 +302,8 @@ func (m *Microfab) createEndorsingOrganization(config Organization) error {
 		return err
 	}
 	m.Lock()
-	defer m.Unlock()
 	m.endorsingOrganizations = append(m.endorsingOrganizations, organization)
+	m.Unlock()
 	logger.Printf("Created endorsing organization %s", config.Name)
 	return nil
 }
@@ -322,13 +322,13 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 	if err != nil {
 		return err
 	}
+	m.Lock()
+	m.orderer = orderer
+	m.Unlock()
 	err = orderer.Start(m.endorsingOrganizations)
 	if err != nil {
 		return err
 	}
-	m.Lock()
-	defer m.Unlock()
-	m.orderer = orderer
 	logger.Printf("Created and started orderer for ordering organization %s", organization.Name())
 	return nil
 }
@@ -339,13 +339,13 @@ func (m *Microfab) waitForCouchDB() error {
 	if err != nil {
 		return err
 	}
+	m.Lock()
+	m.couchDB = couchDB
+	m.Unlock()
 	err = couchDB.WaitFor()
 	if err != nil {
 		return err
 	}
-	m.Lock()
-	defer m.Unlock()
-	m.couchDB = couchDB
 	logger.Printf("CouchDB has started")
 	return nil
 }
@@ -357,13 +357,13 @@ func (m *Microfab) createAndStartCouchDBProxy(organization *organization.Organiz
 	if err != nil {
 		return err
 	}
+	m.Lock()
+	m.couchDBProxies = append(m.couchDBProxies, proxy)
+	m.Unlock()
 	err = proxy.Start()
 	if err != nil {
 		return err
 	}
-	m.Lock()
-	defer m.Unlock()
-	m.couchDBProxies = append(m.couchDBProxies, proxy)
 	logger.Printf("Created and started CouchDB proxy for endorsing organization %s", organization.Name())
 	return nil
 }
@@ -388,13 +388,13 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 	if err != nil {
 		return err
 	}
+	m.Lock()
+	m.peers = append(m.peers, peer)
+	m.Unlock()
 	err = peer.Start()
 	if err != nil {
 		return err
 	}
-	m.Lock()
-	defer m.Unlock()
-	m.peers = append(m.peers, peer)
 	logger.Printf("Created and started peer for endorsing organization %s", organization.Name())
 	return nil
 }
@@ -404,7 +404,7 @@ func (m *Microfab) createAndStartCA(organization *organization.Organization, api
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
 	caDirectory := path.Join(m.config.Directory, fmt.Sprintf("ca-%s", lowerOrganizationName))
-	ca, err := ca.New(
+	theCA, err := ca.New(
 		organization,
 		caDirectory,
 		int32(apiPort),
@@ -415,13 +415,23 @@ func (m *Microfab) createAndStartCA(organization *organization.Organization, api
 	if err != nil {
 		return err
 	}
-	err = ca.Start()
+	m.Lock()
+	m.cas = append(m.cas, theCA)
+	m.Unlock()
+	err = theCA.Start()
 	if err != nil {
 		return err
 	}
-	m.Lock()
-	defer m.Unlock()
-	m.cas = append(m.cas, ca)
+	conn, err := ca.Connect(theCA)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	id, err := conn.Enroll(fmt.Sprintf("%s CA Admin", organizationName), "admin", "adminpw")
+	if err != nil {
+		return err
+	}
+	organization.SetCAAdmin(id)
 	logger.Printf("Created and started CA for endorsing organization %s", organization.Name())
 	return nil
 }
@@ -530,6 +540,13 @@ func (m *Microfab) stop() error {
 		}
 		m.console = nil
 	}
+	for _, ca := range m.cas {
+		err := ca.Stop()
+		if err != nil {
+			return err
+		}
+	}
+	m.cas = []*ca.CA{}
 	for _, peer := range m.peers {
 		err := peer.Stop()
 		if err != nil {

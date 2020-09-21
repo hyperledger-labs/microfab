@@ -83,19 +83,19 @@ type Console struct {
 func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int32, curl string) (*Console, error) {
 	staticComponents := components{}
 	for _, organization := range organizations {
-		orgName := organization.Name()
-		lowerOrgName := strings.ToLower(orgName)
-		id := fmt.Sprintf("%sadmin", lowerOrgName)
-		admin := organization.Admin()
-		staticComponents[id] = &jsonIdentity{
-			ID:          id,
-			DisplayName: admin.Name(),
-			Type:        "identity",
-			Certificate: admin.Certificate().Bytes(),
-			PrivateKey:  admin.PrivateKey().Bytes(),
-			CA:          admin.CA().Bytes(),
-			MSPID:       organization.MSPID(),
-			Wallet:      organization.Name(),
+		for _, orgIdentity := range organization.GetIdentities() {
+			id := strings.ToLower(orgIdentity.Name())
+			id = strings.ReplaceAll(id, " ", "")
+			staticComponents[id] = &jsonIdentity{
+				ID:          id,
+				DisplayName: orgIdentity.Name(),
+				Type:        "identity",
+				Certificate: orgIdentity.Certificate().Bytes(),
+				PrivateKey:  orgIdentity.PrivateKey().Bytes(),
+				CA:          orgIdentity.CA().Bytes(),
+				MSPID:       organization.MSPID(),
+				Wallet:      organization.Name(),
+			}
 		}
 	}
 	parsedURL, err := url.Parse(curl)
@@ -313,7 +313,7 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 				SSLTargetNameOverride: ca.OperationsHost(false),
 				RequestTimeout:        300 * 1000,
 			},
-			Identity: ca.Organization().Admin().Name(),
+			Identity: ca.Organization().CAAdmin().Name(),
 			Wallet:   ca.Organization().Name(),
 		}
 	}
