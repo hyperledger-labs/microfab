@@ -74,5 +74,8 @@ func DefaultConfig() (*Config, error) {
 			return nil, err
 		}
 	}
+	if config.Port >= startPort && config.Port < endPort {
+		logger.Fatalf("Cannot specify port %d, must be outside port range %d-%d", config.Port, 2000, 3000)
+	}
 	return config, nil
 }

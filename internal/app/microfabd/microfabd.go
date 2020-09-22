@@ -32,6 +32,9 @@ import (
 
 var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "microfabd"), log.LstdFlags)
 
+const startPort = 2000
+const endPort = 3000
+
 // Microfab represents an instance of the Microfab application.
 type Microfab struct {
 	sync.Mutex
@@ -52,6 +55,7 @@ type Microfab struct {
 	genesisBlocks          map[string]*common.Block
 	console                *console.Console
 	proxy                  *proxy.Proxy
+	currentPort            int
 }
 
 // New creates an instance of the Microfab application.
@@ -61,10 +65,11 @@ func New() (*Microfab, error) {
 		return nil, err
 	}
 	return &Microfab{
-		config:  config,
-		sigs:    make(chan os.Signal, 1),
-		done:    make(chan struct{}, 1),
-		started: false,
+		config:      config,
+		sigs:        make(chan os.Signal, 1),
+		done:        make(chan struct{}, 1),
+		started:     false,
+		currentPort: startPort,
 	}, nil
 }
 
@@ -122,25 +127,27 @@ func (m *Microfab) Start() error {
 
 	// Create and start all of the components (orderer, peers, CAs).
 	eg.Go(func() error {
-		return m.createAndStartOrderer(m.ordererOrganization, 7050, 7051)
+		apiPort := m.allocatePort()
+		operationsPort := m.allocatePort()
+		return m.createAndStartOrderer(m.ordererOrganization, apiPort, operationsPort)
 	})
 	for i := range m.endorsingOrganizations {
 		organization := m.endorsingOrganizations[i]
-		numPorts := 6
-		peerAPIPort := 7052 + (i * numPorts)
-		peerChaincodePort := 7053 + (i * numPorts)
-		peerOperationsPort := 7054 + (i * numPorts)
-		couchDBProxyPort := 7055 + (i * numPorts)
-		caAPIPort := 7056 + (i * numPorts)
-		caOperationsPort := 7057 + (i * numPorts)
-		if m.config.CouchDB {
-			go m.createAndStartCouchDBProxy(organization, couchDBProxyPort)
-		}
 		eg.Go(func() error {
-			return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, m.config.CouchDB, couchDBProxyPort)
+			peerAPIPort := m.allocatePort()
+			peerChaincodePort := m.allocatePort()
+			peerOperationsPort := m.allocatePort()
+			if m.config.CouchDB {
+				couchDBProxyPort := m.allocatePort()
+				go m.createAndStartCouchDBProxy(organization, couchDBProxyPort)
+				return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, m.config.CouchDB, couchDBProxyPort)
+			}
+			return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, false, 0)
 		})
 		if m.config.CertificateAuthorities {
 			eg.Go(func() error {
+				caAPIPort := m.allocatePort()
+				caOperationsPort := m.allocatePort()
 				return m.createAndStartCA(organization, caAPIPort, caOperationsPort)
 			})
 		}
@@ -156,7 +163,8 @@ func (m *Microfab) Start() error {
 	})
 
 	// Create and start the console.
-	console, err := console.New(m.organizations, m.orderer, m.peers, m.cas, 8081, fmt.Sprintf("http://console.%s:%d", m.config.Domain, m.config.Port))
+	consolePort := m.allocatePort()
+	console, err := console.New(m.organizations, m.orderer, m.peers, m.cas, consolePort, fmt.Sprintf("http://console.%s:%d", m.config.Domain, m.config.Port))
 	if err != nil {
 		return err
 	}
@@ -235,6 +243,17 @@ func (m *Microfab) Wait() {
 	if m.started {
 		<-m.done
 	}
+}
+
+func (m *Microfab) allocatePort() int {
+	m.Lock()
+	defer m.Unlock()
+	if m.currentPort >= endPort {
+		logger.Fatalf("Failed to allocate port, port range %d-%d exceeded", startPort, endPort)
+	}
+	result := m.currentPort
+	m.currentPort++
+	return result
 }
 
 func (m *Microfab) ensureDirectory() error {
