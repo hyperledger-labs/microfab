@@ -76,12 +76,12 @@ type Console struct {
 	orderer          *orderer.Orderer
 	peers            []*peer.Peer
 	cas              []*ca.CA
-	port             int32
+	port             int
 	url              *url.URL
 }
 
 // New creates a new instance of a console.
-func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int32, curl string) (*Console, error) {
+func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int, curl string) (*Console, error) {
 	staticComponents := components{}
 	for _, organization := range organizations {
 		orgHide := organization == orderer.Organization()
@@ -137,7 +137,7 @@ func (c *Console) Stop() error {
 }
 
 // Port returns the port of the console.
-func (c *Console) Port() int32 {
+func (c *Console) Port() int {
 	return c.port
 }
 
