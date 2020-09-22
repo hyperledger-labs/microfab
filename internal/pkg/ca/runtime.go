@@ -22,7 +22,7 @@ import (
 )
 
 // Start starts the peer.
-func (c *CA) Start() error {
+func (c *CA) Start(timeout time.Duration) error {
 	logsDirectory := filepath.Join(c.directory, "logs")
 	if err := os.MkdirAll(logsDirectory, 0755); err != nil {
 		return err
@@ -87,11 +87,11 @@ func (c *CA) Start() error {
 			errchan <- err
 		}
 	}()
-	timeout := time.After(10 * time.Second)
+	timeoutCh := time.After(timeout)
 	tick := time.Tick(250 * time.Millisecond)
 	for {
 		select {
-		case <-timeout:
+		case <-timeoutCh:
 			c.Stop()
 			return errors.New("timeout whilst waiting for CA to start")
 		case err := <-errchan:

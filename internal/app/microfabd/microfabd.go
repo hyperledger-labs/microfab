@@ -344,7 +344,7 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 	m.Lock()
 	m.orderer = orderer
 	m.Unlock()
-	err = orderer.Start(m.endorsingOrganizations)
+	err = orderer.Start(m.endorsingOrganizations, m.config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -361,7 +361,7 @@ func (m *Microfab) waitForCouchDB() error {
 	m.Lock()
 	m.couchDB = couchDB
 	m.Unlock()
-	err = couchDB.WaitFor()
+	err = couchDB.WaitFor(m.config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -410,7 +410,7 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 	m.Lock()
 	m.peers = append(m.peers, peer)
 	m.Unlock()
-	err = peer.Start()
+	err = peer.Start(m.config.Timeout)
 	if err != nil {
 		return err
 	}
@@ -437,7 +437,7 @@ func (m *Microfab) createAndStartCA(organization *organization.Organization, api
 	m.Lock()
 	m.cas = append(m.cas, theCA)
 	m.Unlock()
-	err = theCA.Start()
+	err = theCA.Start(m.config.Timeout)
 	if err != nil {
 		return err
 	}

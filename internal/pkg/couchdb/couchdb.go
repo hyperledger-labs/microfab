@@ -28,12 +28,12 @@ func New(url string) (*CouchDB, error) {
 }
 
 // WaitFor waits for the CouchDB instance to start.
-func (c *CouchDB) WaitFor() error {
-	timeout := time.After(10 * time.Second)
+func (c *CouchDB) WaitFor(timeout time.Duration) error {
+	timeoutCh := time.After(timeout)
 	tick := time.Tick(250 * time.Millisecond)
 	for {
 		select {
-		case <-timeout:
+		case <-timeoutCh:
 			return errors.New("timeout whilst waiting for CouchDB to start")
 		case <-tick:
 			if c.hasStarted() {

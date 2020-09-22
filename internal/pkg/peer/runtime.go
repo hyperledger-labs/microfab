@@ -22,7 +22,7 @@ import (
 )
 
 // Start starts the peer.
-func (p *Peer) Start() error {
+func (p *Peer) Start(timeout time.Duration) error {
 	err := p.createDirectories()
 	if err != nil {
 		return err
@@ -81,11 +81,11 @@ func (p *Peer) Start() error {
 			errchan <- err
 		}
 	}()
-	timeout := time.After(10 * time.Second)
+	timeoutCh := time.After(timeout)
 	tick := time.Tick(250 * time.Millisecond)
 	for {
 		select {
-		case <-timeout:
+		case <-timeoutCh:
 			p.Stop()
 			return errors.New("timeout whilst waiting for peer to start")
 		case err := <-errchan:
