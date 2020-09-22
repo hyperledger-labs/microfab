@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"time"
 )
 
 // Organization represents an organization in the configuration.
@@ -32,6 +33,8 @@ type Config struct {
 	CapabilityLevel        string         `json:"capability_level"`
 	CouchDB                bool           `json:"couchdb"`
 	CertificateAuthorities bool           `json:"certificate_authorities"`
+	TimeoutString          string         `json:"timeout"`
+	Timeout                time.Duration  `json:"-"`
 }
 
 // DefaultConfig returns the default configuration.
@@ -67,6 +70,7 @@ func DefaultConfig() (*Config, error) {
 		CapabilityLevel:        "V2_0",
 		CouchDB:                true,
 		CertificateAuthorities: true,
+		TimeoutString:          "30s",
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)
@@ -77,5 +81,10 @@ func DefaultConfig() (*Config, error) {
 	if config.Port >= startPort && config.Port < endPort {
 		logger.Fatalf("Cannot specify port %d, must be outside port range %d-%d", config.Port, 2000, 3000)
 	}
+	timeout, err := time.ParseDuration(config.TimeoutString)
+	if err != nil {
+		return nil, err
+	}
+	config.Timeout = timeout
 	return config, nil
 }

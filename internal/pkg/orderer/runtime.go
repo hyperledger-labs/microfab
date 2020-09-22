@@ -25,7 +25,7 @@ import (
 )
 
 // Start starts the orderer.
-func (o *Orderer) Start(consortium []*organization.Organization) error {
+func (o *Orderer) Start(consortium []*organization.Organization, timeout time.Duration) error {
 	err := o.createDirectories()
 	if err != nil {
 		return err
@@ -93,11 +93,11 @@ func (o *Orderer) Start(consortium []*organization.Organization) error {
 			errchan <- err
 		}
 	}()
-	timeout := time.After(10 * time.Second)
+	timeoutCh := time.After(timeout)
 	tick := time.Tick(250 * time.Millisecond)
 	for {
 		select {
-		case <-timeout:
+		case <-timeoutCh:
 			o.Stop()
 			return errors.New("timeout whilst waiting for orderer to start")
 		case err := <-errchan:
