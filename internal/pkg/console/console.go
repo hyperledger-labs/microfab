@@ -55,6 +55,19 @@ type jsonOrderer struct {
 	Identity          string       `json:"identity"`
 }
 
+type jsonCA struct {
+	ID                string       `json:"id"`
+	DisplayName       string       `json:"display_name"`
+	Type              string       `json:"type"`
+	APIURL            string       `json:"api_url"`
+	APIOptions        *jsonOptions `json:"api_options"`
+	OperationsURL     string       `json:"operations_url"`
+	OperationsOptions *jsonOptions `json:"operations_options"`
+	MSPID             string       `json:"msp_id"`
+	Wallet            string       `json:"wallet"`
+	Identity          string       `json:"identity"`
+}
+
 type jsonIdentity struct {
 	ID          string `json:"id"`
 	DisplayName string `json:"display_name"`
@@ -301,7 +314,7 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 		orgName := ca.Organization().Name()
 		lowerOrgName := strings.ToLower(orgName)
 		id := fmt.Sprintf("%sca", lowerOrgName)
-		dynamicComponents[id] = &jsonPeer{
+		dynamicComponents[id] = &jsonCA{
 			ID:          id,
 			DisplayName: fmt.Sprintf("%s CA", orgName),
 			Type:        "fabric-ca",
@@ -317,6 +330,7 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 				SSLTargetNameOverride: ca.OperationsHost(false),
 				RequestTimeout:        300 * 1000,
 			},
+			MSPID:    ca.Organization().MSPID(),
 			Identity: ca.Organization().CAAdmin().Name(),
 			Wallet:   ca.Organization().Name(),
 		}
