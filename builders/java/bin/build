@@ -11,9 +11,9 @@ cd "${CHAINCODE_SOURCE_DIR}/src"
 if [ -f build.gradle ] || [ -f build.gradle.kts ]; then
     if [ -f ./gradlew ]; then
         chmod +x ./gradlew
-        ./gradlew build shadowJar
+        ./gradlew build shadowJar -x test
     else
-        gradle build shadowJar
+        /opt/gradle/bin/gradlew build shadowJar -x test
     fi
     cp build/libs/chaincode.jar "${BUILD_OUTPUT_DIR}/"
     touch "${BUILD_OUTPUT_DIR}/.uberjar"

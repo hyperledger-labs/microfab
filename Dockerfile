@@ -29,8 +29,12 @@ ENV npm_config_devdir=/tmp/npm-devdir
 ENV PATH=/opt/go/bin:/opt/node/bin:/opt/java/bin:${PATH}
 RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-5.6.4-bin.zip \
     && unzip -qq /tmp/gradle.zip -d /opt \
-    && mv /opt/gradle-5.6.4 /opt/gradle \
+    && mkdir -p /opt/gradle/bin \
+    && cd /opt/gradle/bin       \
+    && /opt/gradle-5.6.4/bin/gradle wrapper \
     && rm -f /tmp/gradle.zip \
+    && rm -rf /opt/gradle-5.6.4 \
+    && cd - \
     && curl -sSL https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | tar xzf - -C /opt \
     && mv /opt/apache-maven-3.6.3 /opt/maven
 ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
