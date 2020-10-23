@@ -5,6 +5,9 @@
 package microfabd
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -21,10 +24,12 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/channel"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/couchdb"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/proxy"
+	"github.com/IBM-Blockchain/microfab/pkg/client"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"golang.org/x/net/context"
 	"golang.org/x/sync/errgroup"
@@ -42,6 +47,7 @@ type Microfab struct {
 	done                   chan struct{}
 	started                bool
 	config                 *Config
+	state                  *State
 	ordererOrganization    *organization.Organization
 	endorsingOrganizations []*organization.Organization
 	organizations          []*organization.Organization
@@ -56,6 +62,12 @@ type Microfab struct {
 	console                *console.Console
 	proxy                  *proxy.Proxy
 	currentPort            int
+}
+
+// State represents the state that should be persisted between instances.
+type State struct {
+	Hash []byte                      `json:"hash"`
+	CAS  map[string]*client.Identity `json:"cas"`
 }
 
 // New creates an instance of the Microfab application.
@@ -87,10 +99,31 @@ func (m *Microfab) Start() error {
 		}
 	}()
 
-	// Ensure the directory exists and is empty.
-	err := m.ensureDirectory()
+	// Calculate the config hash.
+	config, err := json.Marshal(m.config)
 	if err != nil {
 		return err
+	}
+	hash := sha256.Sum256(config)
+
+	// See if the state exists.
+	if m.stateExists() {
+		if temp, err := m.loadState(); err != nil {
+			logger.Printf("Could not load state: %v\n", err)
+		} else if bytes.Equal(hash[:], temp.Hash) {
+			logger.Println("Loaded state")
+			m.state = temp
+		} else {
+			logger.Println("Config has changed, loaded state is invalid")
+		}
+	}
+
+	// Ensure the directory exists and is empty.
+	if m.state == nil {
+		err = m.ensureDirectory()
+		if err != nil {
+			return err
+		}
 	}
 
 	// Create all of the organizations.
@@ -201,13 +234,21 @@ func (m *Microfab) Start() error {
 	}()
 
 	// Create and join all of the channels.
-	for i := range m.config.Channels {
-		channel := m.config.Channels[i]
-		eg.Go(func() error {
-			return m.createAndJoinChannel(channel)
-		})
+	if m.state == nil {
+		for i := range m.config.Channels {
+			channel := m.config.Channels[i]
+			eg.Go(func() error {
+				return m.createAndJoinChannel(channel)
+			})
+		}
+		err = eg.Wait()
+		if err != nil {
+			return err
+		}
 	}
-	err = eg.Wait()
+
+	// Write the state for next time.
+	err = m.saveState()
 	if err != nil {
 		return err
 	}
@@ -301,9 +342,66 @@ func (m *Microfab) removeDirectory() error {
 	return nil
 }
 
+func (m *Microfab) stateExists() bool {
+	statePath := path.Join(m.config.Directory, "state.json")
+	if _, err := os.Stat(statePath); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+func (m *Microfab) loadState() (*State, error) {
+	statePath := path.Join(m.config.Directory, "state.json")
+	file, err := os.Open(statePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	state := &State{}
+	err = json.NewDecoder(file).Decode(&state)
+	if err != nil {
+		return nil, err
+	}
+	return state, nil
+}
+
+func (m *Microfab) saveState() error {
+	statePath := path.Join(m.config.Directory, "state.json")
+	file, err := os.OpenFile(statePath, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	config, err := json.Marshal(m.config)
+	if err != nil {
+		return err
+	}
+	hash := sha256.Sum256(config)
+	state := &State{
+		Hash: hash[:],
+		CAS:  map[string]*client.Identity{},
+	}
+	state.CAS[m.ordererOrganization.Name()] = m.ordererOrganization.CA().ToClient()
+	for _, endorsingOrganization := range m.endorsingOrganizations {
+		state.CAS[endorsingOrganization.Name()] = endorsingOrganization.CA().ToClient()
+	}
+	return json.NewEncoder(file).Encode(&state)
+}
+
 func (m *Microfab) createOrderingOrganization(config Organization) error {
 	logger.Printf("Creating ordering organization %s ...", config.Name)
-	organization, err := organization.New(config.Name)
+	var ca *identity.Identity
+	if m.state != nil {
+		temp, ok := m.state.CAS[config.Name]
+		if ok {
+			var err error
+			ca, err = identity.FromClient(temp)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	organization, err := organization.New(config.Name, ca)
 	if err != nil {
 		return err
 	}
@@ -316,7 +414,18 @@ func (m *Microfab) createOrderingOrganization(config Organization) error {
 
 func (m *Microfab) createEndorsingOrganization(config Organization) error {
 	logger.Printf("Creating endorsing organization %s ...", config.Name)
-	organization, err := organization.New(config.Name)
+	var ca *identity.Identity
+	if m.state != nil {
+		temp, ok := m.state.CAS[config.Name]
+		if ok {
+			var err error
+			ca, err = identity.FromClient(temp)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	organization, err := organization.New(config.Name, ca)
 	if err != nil {
 		return err
 	}
@@ -457,8 +566,12 @@ func (m *Microfab) createAndStartCA(organization *organization.Organization, api
 
 func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 	logger.Printf("Creating channel %s ...", config.Name)
+	capabilityLevel := config.CapabilityLevel
+	if capabilityLevel == "" {
+		capabilityLevel = m.config.CapabilityLevel
+	}
 	opts := []channel.Option{
-		channel.WithCapabilityLevel(m.config.CapabilityLevel),
+		channel.WithCapabilityLevel(capabilityLevel),
 	}
 	for _, endorsingOrganization := range m.endorsingOrganizations {
 		found := false

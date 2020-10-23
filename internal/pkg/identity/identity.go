@@ -15,6 +15,7 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
@@ -141,11 +142,31 @@ func FromClient(c *client.Identity) (*Identity, error) {
 	if err != nil {
 		return nil, err
 	}
-	ca, err := certificate.FromBytes(c.CA)
-	if err != nil {
-		return nil, err
+	var ca *certificate.Certificate
+	if c.CA != nil {
+		ca, err = certificate.FromBytes(c.CA)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return &Identity{name, cert, pk, ca, false}, nil
+	return &Identity{name, cert, pk, ca, ca == nil}, nil
+}
+
+// ToClient saves an identity into a client identity object.
+func (i *Identity) ToClient() *client.Identity {
+	id := strings.ToLower(i.name)
+	var ca []byte
+	if !i.isCA {
+		ca = i.CA().Bytes()
+	}
+	return &client.Identity{
+		ID:          id,
+		DisplayName: i.name,
+		Type:        "identity",
+		Certificate: i.Certificate().Bytes(),
+		PrivateKey:  i.PrivateKey().Bytes(),
+		CA:          ca,
+	}
 }
 
 // Name returns the name of the identity.
