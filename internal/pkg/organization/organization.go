@@ -21,11 +21,14 @@ type Organization struct {
 }
 
 // New creates a new organization.
-func New(name string) (*Organization, error) {
-	caName := fmt.Sprintf("%s CA", name)
-	ca, err := identity.New(caName, identity.WithIsCA(true))
-	if err != nil {
-		return nil, err
+func New(name string, ca *identity.Identity) (*Organization, error) {
+	if ca == nil {
+		caName := fmt.Sprintf("%s CA", name)
+		var err error
+		ca, err = identity.New(caName, identity.WithIsCA(true))
+		if err != nil {
+			return nil, err
+		}
 	}
 	adminName := fmt.Sprintf("%s Admin", name)
 	admin, err := identity.New(adminName, identity.WithOrganizationalUnit("admin"), identity.UsingSigner(ca))

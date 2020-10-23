@@ -20,7 +20,7 @@ var _ = Describe("the peer package", func() {
 
 	BeforeEach(func() {
 		var err error
-		testOrganization, err = organization.New("Org1")
+		testOrganization, err = organization.New("Org1", nil)
 		Expect(err).NotTo(HaveOccurred())
 		testDirectory, err = ioutil.TempDir("", "ut-peer")
 		Expect(err).NotTo(HaveOccurred())

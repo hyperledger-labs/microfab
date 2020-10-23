@@ -20,6 +20,7 @@ type Organization struct {
 type Channel struct {
 	Name                   string   `json:"name"`
 	EndorsingOrganizations []string `json:"endorsing_organizations"`
+	CapabilityLevel        string   `json:"capability_level"`
 }
 
 // Config represents the configuration.
