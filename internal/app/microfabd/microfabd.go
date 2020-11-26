@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"path"
@@ -52,7 +53,6 @@ type Microfab struct {
 	endorsingOrganizations []*organization.Organization
 	organizations          []*organization.Organization
 	orderer                *orderer.Orderer
-	ordererConnection      *orderer.Connection
 	couchDB                *couchdb.CouchDB
 	couchDBProxies         []*couchdb.Proxy
 	peers                  []*peer.Peer
@@ -213,13 +213,6 @@ func (m *Microfab) Start() error {
 	go proxy.Start()
 
 	// Connect to all of the components.
-	channelCreator := m.endorsingOrganizations[0]
-	ordererConnection, err := orderer.Connect(m.orderer, channelCreator.MSPID(), channelCreator.Admin())
-	if err != nil {
-		return err
-	}
-	m.ordererConnection = ordererConnection
-	defer m.ordererConnection.Close()
 	for _, p := range m.peers {
 		peerConnection, err := peer.Connect(p, p.Organization().MSPID(), p.Organization().Admin())
 		if err != nil {
@@ -573,25 +566,34 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 	opts := []channel.Option{
 		channel.WithCapabilityLevel(capabilityLevel),
 	}
+	endorsingOrganizations := []*organization.Organization{}
 	for _, endorsingOrganization := range m.endorsingOrganizations {
-		found := false
 		for _, organizationName := range config.EndorsingOrganizations {
 			if endorsingOrganization.Name() == organizationName {
-				found = true
+				endorsingOrganizations = append(endorsingOrganizations, endorsingOrganization)
 				break
 			}
 		}
-		if found {
-			opts = append(opts, channel.AddMSPID(endorsingOrganization.MSPID()))
-		}
 	}
-	err := channel.CreateChannel(m.ordererConnection, config.Name, opts...)
+	if len(endorsingOrganizations) == 0 {
+		logger.Fatalf("Attempted to create channel %s with no endorsing organizations", config.Name)
+	}
+	for _, endorsingOrganization := range endorsingOrganizations {
+		opts = append(opts, channel.AddMSPID(endorsingOrganization.MSPID()))
+	}
+	channelCreator := endorsingOrganizations[rand.Intn(len(endorsingOrganizations))]
+	ordererConnection, err := orderer.Connect(m.orderer, channelCreator.MSPID(), channelCreator.Admin())
+	if err != nil {
+		return nil, err
+	}
+	defer ordererConnection.Close()
+	err = channel.CreateChannel(ordererConnection, config.Name, opts...)
 	if err != nil {
 		return nil, err
 	}
 	var genesisBlock *common.Block
 	for {
-		genesisBlock, err = blocks.GetGenesisBlock(m.ordererConnection, config.Name)
+		genesisBlock, err = blocks.GetGenesisBlock(ordererConnection, config.Name)
 		if err != nil {
 			time.Sleep(100 * time.Millisecond)
 			continue
@@ -611,7 +613,7 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(false), peer.APIPort(false)))
 		}
 	}
-	err = channel.UpdateChannel(m.ordererConnection, config.Name, opts...)
+	err = channel.UpdateChannel(ordererConnection, config.Name, opts...)
 	if err != nil {
 		return nil, err
 	}
