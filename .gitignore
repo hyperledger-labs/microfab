@@ -20,3 +20,8 @@
 
 # Directories created by us at runtime
 /data
+
+/builders/java/.classpath
+/builders/java/.project
+/builders/java/.settings
+/builders/java/target
