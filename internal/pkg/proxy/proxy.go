@@ -14,6 +14,7 @@ import (
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/couchdb"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
 	"golang.org/x/net/http2"
@@ -45,7 +46,7 @@ func (tw *h2cTransportWrapper) RoundTrip(req *http.Request) (*http.Response, err
 var portRegex = regexp.MustCompile(":\\d+$")
 
 // New creates a new instance of a proxy.
-func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int) (*Proxy, error) {
+func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, couchDB *couchdb.CouchDB, port int) (*Proxy, error) {
 	routes := []*route{
 		{
 			SourceHost: console.URL().Host,
@@ -97,6 +98,14 @@ func New(console *console.Console, orderer *orderer.Orderer, peers []*peer.Peer,
 			},
 		}
 		routes = append(routes, orgRoutes...)
+	}
+	if couchDB != nil {
+		couchRoute := &route{
+			SourceHost: couchDB.URL(false).Host,
+			TargetHost: couchDB.URL(true).Host,
+			UseHTTP2:   false,
+		}
+		routes = append(routes, couchRoute)
 	}
 	rm := routeMap{}
 	for _, route := range routes {

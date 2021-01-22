@@ -205,7 +205,7 @@ func (m *Microfab) Start() error {
 	go console.Start()
 
 	// Create and start the proxy.
-	proxy, err := proxy.New(console, m.orderer, m.peers, m.cas, m.config.Port)
+	proxy, err := proxy.New(console, m.orderer, m.peers, m.cas, m.couchDB, m.config.Port)
 	if err != nil {
 		return err
 	}
@@ -456,7 +456,8 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 
 func (m *Microfab) waitForCouchDB() error {
 	logger.Printf("Waiting for CouchDB to start ...")
-	couchDB, err := couchdb.New("http://localhost:5984")
+	couchURL := fmt.Sprintf("http://couchdb.%s:%d", m.config.Domain, m.config.Port)
+	couchDB, err := couchdb.New("http://localhost:5984", couchURL)
 	if err != nil {
 		return err
 	}

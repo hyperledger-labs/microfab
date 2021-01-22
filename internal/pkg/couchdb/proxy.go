@@ -26,8 +26,8 @@ type Proxy struct {
 func (c *CouchDB) NewProxy(prefix string, port int) (*Proxy, error) {
 	result := &Proxy{transport: http.DefaultTransport, prefix: prefix}
 	director := func(req *http.Request) {
-		req.URL.Scheme = c.url.Scheme
-		req.URL.Host = c.url.Host
+		req.URL.Scheme = c.internalURL.Scheme
+		req.URL.Host = c.internalURL.Host
 		if req.URL.Path == "/_all_dbs" {
 			// Do nothing.
 		} else if req.URL.Path == "/" || strings.HasPrefix(req.URL.Path, "/_") {
