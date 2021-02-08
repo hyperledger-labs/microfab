@@ -30,6 +30,7 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/proxy"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
 	"github.com/IBM-Blockchain/microfab/pkg/client"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"golang.org/x/net/context"
@@ -398,6 +399,13 @@ func (m *Microfab) createOrderingOrganization(config Organization) error {
 	if err != nil {
 		return err
 	}
+	organizationName := organization.Name()
+	lowerOrganizationName := strings.ToLower(organizationName)
+	adminDirectory := path.Join(m.config.Directory, fmt.Sprintf("admin-%s", lowerOrganizationName))
+	err = util.CreateMSPDirectory(adminDirectory, organization.Admin())
+	if err != nil {
+		return err
+	}
 	m.Lock()
 	m.ordererOrganization = organization
 	m.Unlock()
@@ -419,6 +427,13 @@ func (m *Microfab) createEndorsingOrganization(config Organization) error {
 		}
 	}
 	organization, err := organization.New(config.Name, ca)
+	if err != nil {
+		return err
+	}
+	organizationName := organization.Name()
+	lowerOrganizationName := strings.ToLower(organizationName)
+	adminDirectory := path.Join(m.config.Directory, fmt.Sprintf("admin-%s", lowerOrganizationName))
+	err = util.CreateMSPDirectory(adminDirectory, organization.Admin())
 	if err != nil {
 		return err
 	}
