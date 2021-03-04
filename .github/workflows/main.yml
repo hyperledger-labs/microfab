@@ -57,15 +57,14 @@ jobs:
         run: shellcheck builders/*/bin/*
       - name: Build Docker image
         run: |
-          VERSION=$(git describe --exact-match --tags $(Build.SourceVersion) | sed 's/^v//')
-          docker build -t ibmcom/ibp-microfab:${VERSION} .
-          docker tag ibmcom/ibp-microfab:${VERSION} ibmcom/ibp-microfab:latest
+          docker build -t ibmcom/ibp-microfab:latest .
       - name: Publish Docker image to Docker Hub
         env:
             DOCKER_HUB_USER_NAME: ${{ secrets.DOCKER_HUB_USER_NAME }}
             DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
         run: |
-          VERSION=$(git describe --exact-match --tags $(Build.SourceVersion) | sed 's/^v//')
+          VERSION=$(echo ${GITHUB_REF#refs/tags/} | sed 's/^v//')
+          docker tag ibmcom/ibp-microfab:latest ibmcom/ibp-microfab:${VERSION}
           docker login -u ${DOCKER_HUB_USER_NAME} -p ${DOCKER_HUB_ACCESS_TOKEN}
           docker push ibmcom/ibp-microfab:${VERSION}
           docker push ibmcom/ibp-microfab:latest
