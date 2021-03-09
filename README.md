@@ -1,7 +1,5 @@
 # microfab
 
-[![Build Status](https://dev.azure.com/IBM-Blockchain/microfab/_apis/build/status/IBM-Blockchain.microfab?branchName=master)](https://dev.azure.com/IBM-Blockchain/microfab/_build/latest?definitionId=7&branchName=master)
-
 The IBM Blockchain Platform provides advanced tooling that allows you to quickly build, operate & govern and grow blockchain networks. It uses Hyperledger Fabric, the open source, industry standard for enterprise blockchain. It also helps you to deploy Hyperledger Fabric networks anywhere, either to cloud or on-premises, using Kubernetes.
 
 Microfab, provided as part of the IBM Blockchain Platform, is a containerized Hyperledger Fabric runtime for use in development environments.
