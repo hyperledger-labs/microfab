@@ -254,13 +254,13 @@ func (c *Console) getOrderer(req *http.Request) *jsonOrderer {
 		APIURL:      c.getDynamicURL(req, c.orderer.APIURL(false)),
 		APIOptions: &jsonOptions{
 			DefaultAuthority:      c.orderer.APIHost(false),
-			SSLTargetNameOverride: c.orderer.APIHost(false),
+			SSLTargetNameOverride: c.orderer.APIHostname(false),
 			RequestTimeout:        300 * 1000,
 		},
 		OperationsURL: c.getDynamicURL(req, c.orderer.OperationsURL(false)),
 		OperationsOptions: &jsonOptions{
 			DefaultAuthority:      c.orderer.OperationsHost(false),
-			SSLTargetNameOverride: c.orderer.OperationsHost(false),
+			SSLTargetNameOverride: c.orderer.OperationsHostname(false),
 			RequestTimeout:        300 * 1000,
 		},
 		MSPID:    "OrdererMSP",
@@ -285,19 +285,19 @@ func (c *Console) getPeer(req *http.Request, peer *peer.Peer) *jsonPeer {
 		APIURL:      c.getDynamicURL(req, peer.APIURL(false)),
 		APIOptions: &jsonOptions{
 			DefaultAuthority:      peer.APIHost(false),
-			SSLTargetNameOverride: peer.APIHost(false),
+			SSLTargetNameOverride: peer.APIHostname(false),
 			RequestTimeout:        300 * 1000,
 		},
 		ChaincodeURL: c.getDynamicURL(req, peer.ChaincodeURL(false)),
 		ChaincodeOptions: &jsonOptions{
 			DefaultAuthority:      peer.ChaincodeHost(false),
-			SSLTargetNameOverride: peer.ChaincodeHost(false),
+			SSLTargetNameOverride: peer.ChaincodeHostname(false),
 			RequestTimeout:        300 * 1000,
 		},
 		OperationsURL: c.getDynamicURL(req, peer.OperationsURL(false)),
 		OperationsOptions: &jsonOptions{
 			DefaultAuthority:      peer.OperationsHost(false),
-			SSLTargetNameOverride: peer.OperationsHost(false),
+			SSLTargetNameOverride: peer.OperationsHostname(false),
 			RequestTimeout:        300 * 1000,
 		},
 		MSPID:    peer.MSPID(),
@@ -334,7 +334,7 @@ func (c *Console) getGateway(req *http.Request, peer *peer.Peer) map[string]inte
 		"url": c.getDynamicURL(req, peer.APIURL(false)),
 		"grpcOptions": map[string]interface{}{
 			"grpc.default_authority":        peer.APIHost(false),
-			"grpc.ssl_target_name_override": peer.APIHost(false),
+			"grpc.ssl_target_name_override": peer.APIHostname(false),
 		},
 	}
 	if tls := peer.TLS(); tls != nil {
@@ -379,16 +379,16 @@ func (c *Console) getGateway(req *http.Request, peer *peer.Peer) map[string]inte
 			ca.APIHost(false),
 		}
 		c := map[string]interface{}{
-			ca.APIHost(false): map[string]interface{}{
-				"url": c.getDynamicURL(req, ca.APIURL(false)),
-			},
+			"url": c.getDynamicURL(req, ca.APIURL(false)),
 		}
 		if tls := ca.TLS(); tls != nil {
 			c["tlsCACerts"] = map[string][]string{
 				"pem": {string(tls.CA().Bytes())},
 			}
 		}
-		result["certificateAuthorities"] = c
+		result["certificateAuthorities"] = map[string]interface{}{
+			ca.APIHost(false): c,
+		}
 	}
 	return result
 }
@@ -412,13 +412,13 @@ func (c *Console) getCA(req *http.Request, ca *ca.CA) *jsonCA {
 		APIURL:      c.getDynamicURL(req, ca.APIURL(false)),
 		APIOptions: &jsonOptions{
 			DefaultAuthority:      ca.APIHost(false),
-			SSLTargetNameOverride: ca.APIHost(false),
+			SSLTargetNameOverride: ca.APIHostname(false),
 			RequestTimeout:        300 * 1000,
 		},
 		OperationsURL: c.getDynamicURL(req, ca.OperationsURL(false)),
 		OperationsOptions: &jsonOptions{
 			DefaultAuthority:      ca.OperationsHost(false),
-			SSLTargetNameOverride: ca.OperationsHost(false),
+			SSLTargetNameOverride: ca.OperationsHostname(false),
 			RequestTimeout:        300 * 1000,
 		},
 		MSPID:    ca.Organization().MSPID(),

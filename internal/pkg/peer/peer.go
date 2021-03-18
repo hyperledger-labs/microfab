@@ -112,6 +112,14 @@ func (p *Peer) APIURL(internal bool) *url.URL {
 	return p.apiURL
 }
 
+// ChaincodeHostname returns the hostname of the peer.
+func (p *Peer) ChaincodeHostname(internal bool) string {
+	if internal {
+		return "localhost"
+	}
+	return p.chaincodeURL.Hostname()
+}
+
 // ChaincodeHost returns the host (hostname:port) of the peer.
 func (p *Peer) ChaincodeHost(internal bool) string {
 	if internal {
@@ -140,6 +148,14 @@ func (p *Peer) ChaincodeURL(internal bool) *url.URL {
 		return url
 	}
 	return p.chaincodeURL
+}
+
+// OperationsHostname returns the hostname of the peer.
+func (p *Peer) OperationsHostname(internal bool) string {
+	if internal {
+		return "localhost"
+	}
+	return p.operationsURL.Hostname()
 }
 
 // OperationsHost returns the host (hostname:port) of the peer.

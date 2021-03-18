@@ -104,6 +104,14 @@ func (o *Orderer) APIURL(internal bool) *url.URL {
 	return o.apiURL
 }
 
+// OperationsHostname returns the hostname of the orderer.
+func (o *Orderer) OperationsHostname(internal bool) string {
+	if internal {
+		return "localhost"
+	}
+	return o.operationsURL.Hostname()
+}
+
 // OperationsHost returns the host (hostname:port) of the orderer.
 func (o *Orderer) OperationsHost(internal bool) string {
 	if internal {
