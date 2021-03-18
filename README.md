@@ -132,6 +132,32 @@ The configuration is a JSON object with the following keys:
 
   Default value: `"30s"`
 
+- `tls`
+
+  The TLS configuration.
+
+  Default value:
+
+      {
+        "enabled": false, // Set to true to enable TLS.
+        "certificate": null, // Optional: the TLS certificate to be used.
+        "private_key": null, // Optional: the TLS private key to be used.
+        "ca": null // Optional: the TLS CA certificate to be used.
+      }
+
+## Examples
+
+Configuration example for enabling TLS:
+
+    export MICROFAB_CONFIG='{
+        "port": 8443,
+        "tls": {
+          "enabled": true
+        }
+    }'
+
+    docker run -p 8443:8443 -e MICROFAB_CONFIG ibmcom/ibp-microfab
+
 ## License
 
 Apache-2.0

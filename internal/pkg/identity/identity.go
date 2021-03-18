@@ -169,6 +169,11 @@ func (i *Identity) ToClient() *client.Identity {
 	}
 }
 
+// FromParts creates an identity from the specified parts.
+func FromParts(name string, cert *certificate.Certificate, pk *privatekey.PrivateKey, ca *certificate.Certificate) (*Identity, error) {
+	return &Identity{name, cert, pk, ca, ca == nil}, nil
+}
+
 // Name returns the name of the identity.
 func (i *Identity) Name() string {
 	return i.name

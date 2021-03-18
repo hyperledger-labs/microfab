@@ -7,8 +7,10 @@ package microfabd
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -26,6 +28,8 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/couchdb"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/privatekey"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
@@ -130,7 +134,7 @@ func (m *Microfab) Start() error {
 	}
 
 	// If TLS is enabled, generate the TLS material.
-	if m.config.TLS {
+	if m.config.TLS.Enabled {
 		if err := m.createTLS(); err != nil {
 			return err
 		}
@@ -388,28 +392,75 @@ func (m *Microfab) saveState() error {
 	return json.NewEncoder(file).Encode(&state)
 }
 
-func (m *Microfab) createTLS() error {
-	var ca, tls *identity.Identity
-	var err error
-	if m.state != nil {
-		temp := m.state.TLS
-		tls, err = identity.FromClient(temp)
-		if err != nil {
-			return err
-		}
-	}
-	if tls == nil {
-		ca, err = identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
-		if err != nil {
-			return err
-		}
-		tls, err = identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.UsingSigner(ca))
-		if err != nil {
-			return err
-		}
+func (m *Microfab) loadTLSFromState(state *State) error {
+	temp := state.TLS
+	tls, err := identity.FromClient(temp)
+	if err != nil {
+		return err
 	}
 	m.tls = tls
 	return nil
+}
+
+func (m *Microfab) loadTLSFromConfig(config TLS) error {
+	var temp []byte
+	var err error
+	certFileOrString := config.Certificate
+	if temp, err = ioutil.ReadFile(*certFileOrString); err != nil {
+		if temp, err = base64.StdEncoding.DecodeString(*certFileOrString); err != nil {
+			return fmt.Errorf("Invalid TLS certificate, must be file or base64 encoded PEM: %v", err)
+		}
+	}
+	cert, err := certificate.FromBytes(temp)
+	if err != nil {
+		return err
+	}
+	keyFileOrString := config.PrivateKey
+	if temp, err = ioutil.ReadFile(*keyFileOrString); err != nil {
+		if temp, err = base64.StdEncoding.DecodeString(*keyFileOrString); err != nil {
+			return fmt.Errorf("Invalid TLS private key, must be file or base64 encoded PEM: %v", err)
+		}
+	}
+	pk, err := privatekey.FromBytes(temp)
+	caFileOrString := config.CA
+	if temp, err = ioutil.ReadFile(*caFileOrString); err != nil {
+		if temp, err = base64.StdEncoding.DecodeString(*caFileOrString); err != nil {
+			return fmt.Errorf("Invalid TLS CA, must be file or base64 encoded PEM: %v", err)
+		}
+	}
+	ca, err := certificate.FromBytes(temp)
+	if err != nil {
+		return err
+	}
+	tls, err := identity.FromParts("TLS", cert, pk, ca)
+	if err != nil {
+		return err
+	}
+	m.tls = tls
+	return nil
+}
+
+func (m *Microfab) generateTLS() error {
+	ca, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
+	if err != nil {
+		return err
+	}
+	tls, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.UsingSigner(ca))
+	if err != nil {
+		return err
+	}
+	m.tls = tls
+	return nil
+}
+
+func (m *Microfab) createTLS() error {
+	if m.state != nil {
+		return m.loadTLSFromState(m.state)
+	}
+	if config := m.config.TLS; config.Certificate != nil && config.CA != nil && config.PrivateKey != nil {
+		return m.loadTLSFromConfig(config)
+	}
+	return m.generateTLS()
 }
 
 func (m *Microfab) createOrderingOrganization(config Organization) error {
