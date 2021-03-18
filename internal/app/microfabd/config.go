@@ -23,6 +23,14 @@ type Channel struct {
 	CapabilityLevel        string   `json:"capability_level"`
 }
 
+// TLS represents the TLS configuration.
+type TLS struct {
+	Enabled     bool    `json:"enabled"`
+	Certificate *string `json:"certificate"`
+	PrivateKey  *string `json:"private_key"`
+	CA          *string `json:"ca"`
+}
+
 // Config represents the configuration.
 type Config struct {
 	Domain                 string         `json:"domain"`
@@ -35,7 +43,7 @@ type Config struct {
 	CouchDB                bool           `json:"couchdb"`
 	CertificateAuthorities bool           `json:"certificate_authorities"`
 	TimeoutString          string         `json:"timeout"`
-	TLS                    bool           `json:"tls"`
+	TLS                    TLS            `json:"tls"`
 	Timeout                time.Duration  `json:"-"`
 }
 
@@ -73,7 +81,9 @@ func DefaultConfig() (*Config, error) {
 		CouchDB:                true,
 		CertificateAuthorities: true,
 		TimeoutString:          "30s",
-		TLS:                    false,
+		TLS: TLS{
+			Enabled: false,
+		},
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)
