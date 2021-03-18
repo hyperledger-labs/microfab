@@ -5,6 +5,7 @@
 package console
 
 import (
+	gotls "crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
+	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
@@ -27,6 +29,14 @@ type jsonOptions struct {
 	RequestTimeout        int    `json:"request-timeout"`
 }
 
+type jsonTLSCACerts struct {
+	PEM string `json:"pem"`
+}
+
+type jsonTLSCACertsList struct {
+	PEM []string `json:"pem"`
+}
+
 type jsonPeer struct {
 	ID                string       `json:"id"`
 	DisplayName       string       `json:"display_name"`
@@ -40,6 +50,8 @@ type jsonPeer struct {
 	MSPID             string       `json:"msp_id"`
 	Wallet            string       `json:"wallet"`
 	Identity          string       `json:"identity"`
+	PEM               []byte       `json:"pem,omitempty"`
+	TLSCARootCert     []byte       `json:"tls_ca_root_cert,omitempty"`
 }
 
 type jsonOrderer struct {
@@ -53,6 +65,8 @@ type jsonOrderer struct {
 	MSPID             string       `json:"msp_id"`
 	Wallet            string       `json:"wallet"`
 	Identity          string       `json:"identity"`
+	PEM               []byte       `json:"pem,omitempty"`
+	TLSCARootCert     []byte       `json:"tls_ca_root_cert,omitempty"`
 }
 
 type jsonCA struct {
@@ -66,6 +80,8 @@ type jsonCA struct {
 	MSPID             string       `json:"msp_id"`
 	Wallet            string       `json:"wallet"`
 	Identity          string       `json:"identity"`
+	PEM               []byte       `json:"pem,omitempty"`
+	TLSCert           []byte       `json:"tls_cert,omitempty"`
 }
 
 type jsonIdentity struct {
@@ -94,38 +110,18 @@ type Console struct {
 }
 
 // New creates a new instance of a console.
-func New(organizations []*organization.Organization, orderer *orderer.Orderer, peers []*peer.Peer, cas []*ca.CA, port int, curl string) (*Console, error) {
-	staticComponents := components{}
-	for _, organization := range organizations {
-		orgHide := organization == orderer.Organization()
-		for _, identity := range organization.GetIdentities() {
-			identityHide := orgHide || identity != organization.Admin()
-			id := strings.ToLower(identity.Name())
-			id = strings.ReplaceAll(id, " ", "")
-			staticComponents[id] = &jsonIdentity{
-				ID:          id,
-				DisplayName: identity.Name(),
-				Type:        "identity",
-				Certificate: identity.Certificate().Bytes(),
-				PrivateKey:  identity.PrivateKey().Bytes(),
-				CA:          identity.CA().Bytes(),
-				MSPID:       organization.MSPID(),
-				Wallet:      organization.Name(),
-				Hide:        identityHide,
-			}
-		}
-	}
+func New(port int, curl string) (*Console, error) {
 	parsedURL, err := url.Parse(curl)
 	if err != nil {
 		return nil, err
 	}
 	console := &Console{
-		staticComponents: staticComponents,
+		staticComponents: components{},
 		port:             port,
 		url:              parsedURL,
-		orderer:          orderer,
-		peers:            peers,
-		cas:              cas,
+		orderer:          nil,
+		peers:            []*peer.Peer{},
+		cas:              []*ca.CA{},
 	}
 	router := mux.NewRouter()
 	router.HandleFunc("/ak/api/v1/health", console.getHealth).Methods("GET")
@@ -139,8 +135,58 @@ func New(organizations []*organization.Organization, orderer *orderer.Orderer, p
 	return console, nil
 }
 
+// EnableTLS enables TLS for this console.
+func (c *Console) EnableTLS(tls *identity.Identity) error {
+	certificate, err := gotls.X509KeyPair(tls.Certificate().Bytes(), tls.PrivateKey().Bytes())
+	if err != nil {
+		return err
+	}
+	c.httpServer.TLSConfig = &gotls.Config{
+		Certificates: []gotls.Certificate{certificate},
+	}
+	return nil
+}
+
+// RegisterOrganization registers the specified organization with the console.
+func (c *Console) RegisterOrganization(organization *organization.Organization) {
+	for _, identity := range organization.GetIdentities() {
+		identityHide := identity != organization.Admin()
+		id := strings.ToLower(identity.Name())
+		id = strings.ReplaceAll(id, " ", "")
+		c.staticComponents[id] = &jsonIdentity{
+			ID:          id,
+			DisplayName: identity.Name(),
+			Type:        "identity",
+			Certificate: identity.Certificate().Bytes(),
+			PrivateKey:  identity.PrivateKey().Bytes(),
+			CA:          identity.CA().Bytes(),
+			MSPID:       organization.MSPID(),
+			Wallet:      organization.Name(),
+			Hide:        identityHide,
+		}
+	}
+}
+
+// RegisterOrderer registers the specified orderer with the console.
+func (c *Console) RegisterOrderer(orderer *orderer.Orderer) {
+	c.orderer = orderer
+}
+
+// RegisterPeer registers the specified peer with the console.
+func (c *Console) RegisterPeer(peer *peer.Peer) {
+	c.peers = append(c.peers, peer)
+}
+
+// RegisterCA registers the specified CA with the console.
+func (c *Console) RegisterCA(ca *ca.CA) {
+	c.cas = append(c.cas, ca)
+}
+
 // Start starts the console.
 func (c *Console) Start() error {
+	if c.httpServer.TLSConfig != nil {
+		return c.httpServer.ListenAndServeTLS("", "")
+	}
 	return c.httpServer.ListenAndServe()
 }
 
@@ -200,9 +246,8 @@ func (c *Console) getDynamicURL(req *http.Request, target *url.URL) string {
 	return updatedTarget.String()
 }
 
-func (c *Console) getDynamicComponents(req *http.Request) components {
-	dynamicComponents := components{}
-	dynamicComponents["orderer"] = &jsonOrderer{
+func (c *Console) getOrderer(req *http.Request) *jsonOrderer {
+	result := &jsonOrderer{
 		ID:          "orderer",
 		DisplayName: "Orderer",
 		Type:        "fabric-orderer",
@@ -222,118 +267,194 @@ func (c *Console) getDynamicComponents(req *http.Request) components {
 		Identity: c.orderer.Organization().Admin().Name(),
 		Wallet:   c.orderer.Organization().Name(),
 	}
+	if tls := c.orderer.TLS(); tls != nil {
+		result.PEM = tls.CA().Bytes()
+		result.TLSCARootCert = tls.CA().Bytes()
+	}
+	return result
+}
+
+func (c *Console) getPeer(req *http.Request, peer *peer.Peer) *jsonPeer {
+	orgName := peer.Organization().Name()
+	lowerOrgName := strings.ToLower(orgName)
+	id := fmt.Sprintf("%speer", lowerOrgName)
+	result := &jsonPeer{
+		ID:          id,
+		DisplayName: fmt.Sprintf("%s Peer", orgName),
+		Type:        "fabric-peer",
+		APIURL:      c.getDynamicURL(req, peer.APIURL(false)),
+		APIOptions: &jsonOptions{
+			DefaultAuthority:      peer.APIHost(false),
+			SSLTargetNameOverride: peer.APIHost(false),
+			RequestTimeout:        300 * 1000,
+		},
+		ChaincodeURL: c.getDynamicURL(req, peer.ChaincodeURL(false)),
+		ChaincodeOptions: &jsonOptions{
+			DefaultAuthority:      peer.ChaincodeHost(false),
+			SSLTargetNameOverride: peer.ChaincodeHost(false),
+			RequestTimeout:        300 * 1000,
+		},
+		OperationsURL: c.getDynamicURL(req, peer.OperationsURL(false)),
+		OperationsOptions: &jsonOptions{
+			DefaultAuthority:      peer.OperationsHost(false),
+			SSLTargetNameOverride: peer.OperationsHost(false),
+			RequestTimeout:        300 * 1000,
+		},
+		MSPID:    peer.MSPID(),
+		Identity: peer.Organization().Admin().Name(),
+		Wallet:   peer.Organization().Name(),
+	}
+	if tls := peer.TLS(); tls != nil {
+		result.PEM = tls.CA().Bytes()
+		result.TLSCARootCert = tls.CA().Bytes()
+	}
+	return result
+}
+
+func (c *Console) getPeers(req *http.Request) []*jsonPeer {
+	result := []*jsonPeer{}
 	for _, peer := range c.peers {
-		orgName := peer.Organization().Name()
-		lowerOrgName := strings.ToLower(orgName)
-		id := fmt.Sprintf("%speer", lowerOrgName)
-		dynamicComponents[id] = &jsonPeer{
-			ID:          id,
-			DisplayName: fmt.Sprintf("%s Peer", orgName),
-			Type:        "fabric-peer",
-			APIURL:      c.getDynamicURL(req, peer.APIURL(false)),
-			APIOptions: &jsonOptions{
-				DefaultAuthority:      peer.APIHost(false),
-				SSLTargetNameOverride: peer.APIHost(false),
-				RequestTimeout:        300 * 1000,
-			},
-			ChaincodeURL: c.getDynamicURL(req, peer.ChaincodeURL(false)),
-			ChaincodeOptions: &jsonOptions{
-				DefaultAuthority:      peer.ChaincodeHost(false),
-				SSLTargetNameOverride: peer.ChaincodeHost(false),
-				RequestTimeout:        300 * 1000,
-			},
-			OperationsURL: c.getDynamicURL(req, peer.OperationsURL(false)),
-			OperationsOptions: &jsonOptions{
-				DefaultAuthority:      peer.OperationsHost(false),
-				SSLTargetNameOverride: peer.OperationsHost(false),
-				RequestTimeout:        300 * 1000,
-			},
-			MSPID:    peer.MSPID(),
-			Identity: peer.Organization().Admin().Name(),
-			Wallet:   peer.Organization().Name(),
+		result = append(result, c.getPeer(req, peer))
+	}
+	return result
+}
+
+func (c *Console) getGateway(req *http.Request, peer *peer.Peer) map[string]interface{} {
+	orgName := peer.Organization().Name()
+	lowerOrgName := strings.ToLower(orgName)
+	id := fmt.Sprintf("%sgateway", lowerOrgName)
+	var ca *ca.CA
+	for _, temp := range c.cas {
+		if temp.Organization().Name() == peer.Organization().Name() {
+			ca = temp
+			break
 		}
-		var ca *ca.CA
-		for _, temp := range c.cas {
-			if temp.Organization().Name() == peer.Organization().Name() {
-				ca = temp
-				break
+	}
+	p := map[string]interface{}{
+		"url": c.getDynamicURL(req, peer.APIURL(false)),
+		"grpcOptions": map[string]interface{}{
+			"grpc.default_authority":        peer.APIHost(false),
+			"grpc.ssl_target_name_override": peer.APIHost(false),
+		},
+	}
+	if tls := peer.TLS(); tls != nil {
+		p["tlsCACerts"] = map[string]string{
+			"pem": string(tls.CA().Bytes()),
+		}
+	}
+	result := map[string]interface{}{
+		"id":           id,
+		"display_name": fmt.Sprintf("%s Gateway", orgName),
+		"type":         "gateway",
+		"name":         fmt.Sprintf("%s Gateway", orgName),
+		"version":      "1.0",
+		"wallet":       peer.Organization().Name(),
+		"client": map[string]interface{}{
+			"organization": peer.Organization().Name(),
+			"connection": map[string]interface{}{
+				"timeout": map[string]interface{}{
+					"peer": map[string]interface{}{
+						"endorser": "300",
+					},
+					"orderer": "300",
+				},
+			},
+		},
+		"organizations": map[string]interface{}{
+			peer.Organization().Name(): map[string]interface{}{
+				"mspid": peer.MSPID(),
+				"peers": []interface{}{
+					peer.APIHost(false),
+				},
+			},
+		},
+		"peers": map[string]interface{}{
+			peer.APIHost(false): p,
+		},
+	}
+	if ca != nil {
+		organizations := result["organizations"].(map[string]interface{})
+		organization := organizations[ca.Organization().Name()].(map[string]interface{})
+		organization["certificateAuthorities"] = []interface{}{
+			ca.APIHost(false),
+		}
+		c := map[string]interface{}{
+			ca.APIHost(false): map[string]interface{}{
+				"url": c.getDynamicURL(req, ca.APIURL(false)),
+			},
+		}
+		if tls := ca.TLS(); tls != nil {
+			c["tlsCACerts"] = map[string][]string{
+				"pem": {string(tls.CA().Bytes())},
 			}
 		}
-		id = fmt.Sprintf("%sgateway", lowerOrgName)
-		gateway := map[string]interface{}{
-			"id":           id,
-			"display_name": fmt.Sprintf("%s Gateway", orgName),
-			"type":         "gateway",
-			"name":         fmt.Sprintf("%s Gateway", orgName),
-			"version":      "1.0",
-			"wallet":       peer.Organization().Name(),
-			"client": map[string]interface{}{
-				"organization": peer.Organization().Name(),
-				"connection": map[string]interface{}{
-					"timeout": map[string]interface{}{
-						"peer": map[string]interface{}{
-							"endorser": "300",
-						},
-						"orderer": "300",
-					},
-				},
-			},
-			"organizations": map[string]interface{}{
-				peer.Organization().Name(): map[string]interface{}{
-					"mspid": peer.MSPID(),
-					"peers": []interface{}{
-						peer.APIHost(false),
-					},
-				},
-			},
-			"peers": map[string]interface{}{
-				peer.APIHost(false): map[string]interface{}{
-					"url": c.getDynamicURL(req, peer.APIURL(false)),
-					"grpcOptions": map[string]interface{}{
-						"grpc.default_authority":        peer.APIHost(false),
-						"grpc.ssl_target_name_override": peer.APIHost(false),
-					},
-				},
-			},
-		}
-		if ca != nil {
-			organizations := gateway["organizations"].(map[string]interface{})
-			organization := organizations[ca.Organization().Name()].(map[string]interface{})
-			organization["certificateAuthorities"] = []interface{}{
-				ca.APIHost(false),
-			}
-			gateway["certificateAuthorities"] = map[string]interface{}{
-				ca.APIHost(false): map[string]interface{}{
-					"url": c.getDynamicURL(req, ca.APIURL(false)),
-				},
-			}
-		}
+		result["certificateAuthorities"] = c
+	}
+	return result
+}
+
+func (c *Console) getGateways(req *http.Request) []map[string]interface{} {
+	result := []map[string]interface{}{}
+	for _, peer := range c.peers {
+		result = append(result, c.getGateway(req, peer))
+	}
+	return result
+}
+
+func (c *Console) getCA(req *http.Request, ca *ca.CA) *jsonCA {
+	orgName := ca.Organization().Name()
+	lowerOrgName := strings.ToLower(orgName)
+	id := fmt.Sprintf("%sca", lowerOrgName)
+	result := &jsonCA{
+		ID:          id,
+		DisplayName: fmt.Sprintf("%s CA", orgName),
+		Type:        "fabric-ca",
+		APIURL:      c.getDynamicURL(req, ca.APIURL(false)),
+		APIOptions: &jsonOptions{
+			DefaultAuthority:      ca.APIHost(false),
+			SSLTargetNameOverride: ca.APIHost(false),
+			RequestTimeout:        300 * 1000,
+		},
+		OperationsURL: c.getDynamicURL(req, ca.OperationsURL(false)),
+		OperationsOptions: &jsonOptions{
+			DefaultAuthority:      ca.OperationsHost(false),
+			SSLTargetNameOverride: ca.OperationsHost(false),
+			RequestTimeout:        300 * 1000,
+		},
+		MSPID:    ca.Organization().MSPID(),
+		Identity: ca.Organization().CAAdmin().Name(),
+		Wallet:   ca.Organization().Name(),
+	}
+	if tls := ca.TLS(); tls != nil {
+		result.PEM = tls.CA().Bytes()
+		result.TLSCert = tls.CA().Bytes()
+	}
+	return result
+}
+
+func (c *Console) getCAs(req *http.Request) []*jsonCA {
+	result := []*jsonCA{}
+	for _, ca := range c.cas {
+		result = append(result, c.getCA(req, ca))
+	}
+	return result
+}
+
+func (c *Console) getDynamicComponents(req *http.Request) components {
+	dynamicComponents := components{}
+	dynamicComponents["orderer"] = c.getOrderer(req)
+	peers := c.getPeers(req)
+	for _, peer := range peers {
+		dynamicComponents[peer.ID] = peer
+	}
+	gateways := c.getGateways(req)
+	for _, gateway := range gateways {
+		id := gateway["id"].(string)
 		dynamicComponents[id] = gateway
 	}
-	for _, ca := range c.cas {
-		orgName := ca.Organization().Name()
-		lowerOrgName := strings.ToLower(orgName)
-		id := fmt.Sprintf("%sca", lowerOrgName)
-		dynamicComponents[id] = &jsonCA{
-			ID:          id,
-			DisplayName: fmt.Sprintf("%s CA", orgName),
-			Type:        "fabric-ca",
-			APIURL:      c.getDynamicURL(req, ca.APIURL(false)),
-			APIOptions: &jsonOptions{
-				DefaultAuthority:      ca.APIHost(false),
-				SSLTargetNameOverride: ca.APIHost(false),
-				RequestTimeout:        300 * 1000,
-			},
-			OperationsURL: c.getDynamicURL(req, ca.OperationsURL(false)),
-			OperationsOptions: &jsonOptions{
-				DefaultAuthority:      ca.OperationsHost(false),
-				SSLTargetNameOverride: ca.OperationsHost(false),
-				RequestTimeout:        300 * 1000,
-			},
-			MSPID:    ca.Organization().MSPID(),
-			Identity: ca.Organization().CAAdmin().Name(),
-			Wallet:   ca.Organization().Name(),
-		}
+	cas := c.getCAs(req)
+	for _, ca := range cas {
+		dynamicComponents[ca.ID] = ca
 	}
 	return dynamicComponents
 }

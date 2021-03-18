@@ -35,6 +35,7 @@ type Config struct {
 	CouchDB                bool           `json:"couchdb"`
 	CertificateAuthorities bool           `json:"certificate_authorities"`
 	TimeoutString          string         `json:"timeout"`
+	TLS                    bool           `json:"tls"`
 	Timeout                time.Duration  `json:"-"`
 }
 
@@ -72,6 +73,7 @@ func DefaultConfig() (*Config, error) {
 		CouchDB:                true,
 		CertificateAuthorities: true,
 		TimeoutString:          "30s",
+		TLS:                    false,
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)

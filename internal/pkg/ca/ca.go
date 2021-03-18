@@ -24,6 +24,7 @@ type CA struct {
 	operationsPort int32
 	operationsURL  *url.URL
 	command        *exec.Cmd
+	tls            *identity.Identity
 }
 
 // New creates a new CA.
@@ -37,7 +38,17 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	if err != nil {
 		return nil, err
 	}
-	return &CA{organization, identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil}, nil
+	return &CA{organization, identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil}, nil
+}
+
+// TLS gets the TLS identity for this CA.
+func (c *CA) TLS() *identity.Identity {
+	return c.tls
+}
+
+// EnableTLS enables TLS for this CA.
+func (c *CA) EnableTLS(tls *identity.Identity) {
+	c.tls = tls
 }
 
 // Organization returns the organization of the CA.
@@ -72,8 +83,12 @@ func (c *CA) APIPort(internal bool) int32 {
 
 // APIURL returns the API URL of the CA.
 func (c *CA) APIURL(internal bool) *url.URL {
+	scheme := "http"
+	if c.tls != nil {
+		scheme = "https"
+	}
 	if internal {
-		url, _ := url.Parse(fmt.Sprintf("http://localhost:%d", c.apiPort))
+		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, c.apiPort))
 		return url
 	}
 	return c.apiURL
@@ -98,8 +113,12 @@ func (c *CA) OperationsPort(internal bool) int32 {
 
 // OperationsURL returns the operations URL of the CA.
 func (c *CA) OperationsURL(internal bool) *url.URL {
+	scheme := "http"
+	if c.tls != nil {
+		scheme = "https"
+	}
 	if internal {
-		url, _ := url.Parse(fmt.Sprintf("http://localhost:%d", c.operationsPort))
+		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, c.operationsPort))
 		return url
 	}
 	return c.operationsURL

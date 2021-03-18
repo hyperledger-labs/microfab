@@ -25,6 +25,7 @@ type Orderer struct {
 	operationsPort int32
 	operationsURL  *url.URL
 	command        *exec.Cmd
+	tls            *identity.Identity
 }
 
 // New creates a new orderer.
@@ -42,7 +43,17 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	if err != nil {
 		return nil, err
 	}
-	return &Orderer{organization, organization.MSPID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil}, nil
+	return &Orderer{organization, organization.MSPID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil}, nil
+}
+
+// TLS gets the TLS identity for this orderer.
+func (o *Orderer) TLS() *identity.Identity {
+	return o.tls
+}
+
+// EnableTLS enables TLS for this orderer.
+func (o *Orderer) EnableTLS(tls *identity.Identity) {
+	o.tls = tls
 }
 
 // Organization returns the organization of the orderer.
@@ -82,8 +93,12 @@ func (o *Orderer) APIPort(internal bool) int32 {
 
 // APIURL returns the API URL of the orderer.
 func (o *Orderer) APIURL(internal bool) *url.URL {
+	scheme := "grpc"
+	if o.tls != nil {
+		scheme = "grpcs"
+	}
 	if internal {
-		url, _ := url.Parse(fmt.Sprintf("grpc://localhost:%d", o.apiPort))
+		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, o.apiPort))
 		return url
 	}
 	return o.apiURL
@@ -108,8 +123,12 @@ func (o *Orderer) OperationsPort(internal bool) int32 {
 
 // OperationsURL returns the operations URL of the orderer.
 func (o *Orderer) OperationsURL(internal bool) *url.URL {
+	scheme := "http"
+	if o.tls != nil {
+		scheme = "https"
+	}
 	if internal {
-		url, _ := url.Parse(fmt.Sprintf("http://localhost:%d", o.operationsPort))
+		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, o.operationsPort))
 		return url
 	}
 	return o.operationsURL

@@ -6,6 +6,7 @@ package peer
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -118,6 +119,7 @@ func (p *Peer) createDirectories() error {
 		path.Join(p.directory, "data"),
 		path.Join(p.directory, "logs"),
 		path.Join(p.directory, "msp"),
+		path.Join(p.directory, "tls"),
 	}
 	for _, dir := range directories {
 		err := os.MkdirAll(dir, 0755)
@@ -239,6 +241,37 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		couchDBConfig["couchDBAddress"] = fmt.Sprintf("localhost:%d", p.couchDBPort)
 		couchDBConfig["username"] = "admin"
 		couchDBConfig["password"] = "adminpw"
+
+	}
+	if p.tls != nil {
+		tlsDirectory := path.Join(p.directory, "tls")
+		certFile := path.Join(tlsDirectory, "cert.pem")
+		keyFile := path.Join(tlsDirectory, "key.pem")
+		caFile := path.Join(tlsDirectory, "ca.pem")
+		tls, ok := peer["tls"].(map[interface{}]interface{})
+		if !ok {
+			return fmt.Errorf("core.yaml missing peer.tls section")
+		}
+		tls["enabled"] = true
+		tls["cert"] = map[string]string{"file": certFile}
+		tls["key"] = map[string]string{"file": keyFile}
+		tls["rootcert"] = map[string]string{"file": caFile}
+		tls, ok = operations["tls"].(map[interface{}]interface{})
+		if !ok {
+			return fmt.Errorf("core.yaml missing operations.tls section")
+		}
+		tls["enabled"] = true
+		tls["cert"] = map[string]string{"file": certFile}
+		tls["key"] = map[string]string{"file": keyFile}
+		if err := ioutil.WriteFile(certFile, p.tls.Certificate().Bytes(), 0644); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(keyFile, p.tls.PrivateKey().Bytes(), 0644); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(caFile, p.tls.CA().Bytes(), 0644); err != nil {
+			return err
+		}
 	}
 	configData, err = yaml.Marshal(config)
 	if err != nil {
@@ -249,8 +282,16 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 }
 
 func (p *Peer) hasStarted() bool {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/healthz", p.operationsPort))
+	cli := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	resp, err := cli.Get(fmt.Sprintf("%s/healthz", p.OperationsURL(true)))
 	if err != nil {
+		log.Printf("error waiting for peer: %v\n", err)
 		return false
 	}
 	if resp.StatusCode != 200 {

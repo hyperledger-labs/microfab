@@ -5,12 +5,14 @@
 package peer
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/pkg/client"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // Connection represents a connection to a peer.
@@ -23,7 +25,16 @@ type Connection struct {
 
 // Connect opens a connection to the peer.
 func Connect(peer *Peer, mspID string, identity *identity.Identity) (*Connection, error) {
-	clientConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", peer.apiPort), grpc.WithInsecure())
+	var clientConn *grpc.ClientConn
+	var err error
+	if peer.tls != nil {
+		creds := credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+		clientConn, err = grpc.Dial(fmt.Sprintf("localhost:%d", peer.apiPort), grpc.WithTransportCredentials(creds))
+	} else {
+		clientConn, err = grpc.Dial(fmt.Sprintf("localhost:%d", peer.apiPort), grpc.WithInsecure())
+	}
 	if err != nil {
 		return nil, err
 	}
