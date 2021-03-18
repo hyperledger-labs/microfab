@@ -29,6 +29,7 @@ type Peer struct {
 	couchDB        bool
 	couchDBPort    int32
 	command        *exec.Cmd
+	tls            *identity.Identity
 }
 
 // New creates a new peer.
@@ -50,7 +51,17 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	if err != nil {
 		return nil, err
 	}
-	return &Peer{organization, identity, organization.MSPID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, couchDB, couchDBPort, nil}, nil
+	return &Peer{organization, identity, organization.MSPID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, couchDB, couchDBPort, nil, nil}, nil
+}
+
+// TLS gets the TLS identity for this peer.
+func (p *Peer) TLS() *identity.Identity {
+	return p.tls
+}
+
+// EnableTLS enables TLS for this peer.
+func (p *Peer) EnableTLS(tls *identity.Identity) {
+	p.tls = tls
 }
 
 // Organization returns the organization of the peer.
@@ -90,8 +101,12 @@ func (p *Peer) APIPort(internal bool) int32 {
 
 // APIURL returns the API URL of the peer.
 func (p *Peer) APIURL(internal bool) *url.URL {
+	scheme := "grpc"
+	if p.tls != nil {
+		scheme = "grpcs"
+	}
 	if internal {
-		url, _ := url.Parse(fmt.Sprintf("grpc://localhost:%d", p.apiPort))
+		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, p.apiPort))
 		return url
 	}
 	return p.apiURL
@@ -116,8 +131,12 @@ func (p *Peer) ChaincodePort(internal bool) int32 {
 
 // ChaincodeURL returns the chaincode URL of the peer.
 func (p *Peer) ChaincodeURL(internal bool) *url.URL {
+	scheme := "grpc"
+	if p.tls != nil {
+		scheme = "grpcs"
+	}
 	if internal {
-		url, _ := url.Parse(fmt.Sprintf("grpc://localhost:%d", p.chaincodePort))
+		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, p.chaincodePort))
 		return url
 	}
 	return p.chaincodeURL
@@ -142,8 +161,12 @@ func (p *Peer) OperationsPort(internal bool) int32 {
 
 // OperationsURL returns the operations URL of the peer.
 func (p *Peer) OperationsURL(internal bool) *url.URL {
+	scheme := "http"
+	if p.tls != nil {
+		scheme = "https"
+	}
 	if internal {
-		url, _ := url.Parse(fmt.Sprintf("http://localhost:%d", p.operationsPort))
+		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, p.operationsPort))
 		return url
 	}
 	return p.operationsURL

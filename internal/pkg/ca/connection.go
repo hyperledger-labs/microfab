@@ -9,6 +9,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
@@ -61,13 +62,20 @@ func (c *Connection) Enroll(name, id, secret string) (*identity.Identity, error)
 		return nil, err
 	}
 	reader := bytes.NewReader(data)
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%d/enroll", c.ca.apiPort), reader)
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/enroll", c.ca.APIURL(true)), reader)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/json")
 	req.SetBasicAuth(id, secret)
-	resp, err := http.DefaultClient.Do(req)
+	cli := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	resp, err := cli.Do(req)
 	if err != nil {
 		return nil, err
 	}

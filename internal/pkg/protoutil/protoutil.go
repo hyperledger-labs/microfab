@@ -169,7 +169,7 @@ func BuildFabricCryptoConfig() *msp.FabricCryptoConfig {
 }
 
 // BuildFabricMSPConfig builds the Fabric MSP configuration for an organization.
-func BuildFabricMSPConfig(organization *organization.Organization) *msp.FabricMSPConfig {
+func BuildFabricMSPConfig(organization *organization.Organization, tls *identity.Identity) (*msp.FabricMSPConfig, error) {
 	mspConfig := &msp.FabricMSPConfig{
 		Name: organization.MSPID(),
 		RootCerts: [][]byte{
@@ -187,7 +187,10 @@ func BuildFabricMSPConfig(organization *organization.Organization) *msp.FabricMS
 		CryptoConfig:                  BuildFabricCryptoConfig(),
 		FabricNodeOus:                 BuildFabricNodeOUs(),
 	}
-	return mspConfig
+	if tls != nil {
+		mspConfig.TlsRootCerts = [][]byte{tls.CA().Bytes()}
+	}
+	return mspConfig, nil
 }
 
 // BuildFabricNodeOUs builds the default Fabric NodeOU configuration.
@@ -210,7 +213,7 @@ func BuildFabricNodeOUs() *msp.FabricNodeOUs {
 }
 
 // BuildConfigGroupFromOrganization builds a config group from an organization.
-func BuildConfigGroupFromOrganization(organization *organization.Organization) *common.ConfigGroup {
+func BuildConfigGroupFromOrganization(organization *organization.Organization, tls *identity.Identity) (*common.ConfigGroup, error) {
 	signaturePolicyEnvelope := BuildSignaturePolicyEnvelope(organization.MSPID(), msp.MSPRole_MEMBER)
 	configPolicy := &common.ConfigPolicy{
 		ModPolicy: "Admins",
@@ -219,7 +222,10 @@ func BuildConfigGroupFromOrganization(organization *organization.Organization) *
 			Value: util.MarshalOrPanic(signaturePolicyEnvelope),
 		},
 	}
-	fabricMSPConfig := BuildFabricMSPConfig(organization)
+	fabricMSPConfig, err := BuildFabricMSPConfig(organization, tls)
+	if err != nil {
+		return nil, err
+	}
 	configGroup := &common.ConfigGroup{
 		Groups:    map[string]*common.ConfigGroup{},
 		ModPolicy: "/Channel/Application/Admins",
@@ -239,5 +245,5 @@ func BuildConfigGroupFromOrganization(organization *organization.Organization) *
 			},
 		},
 	}
-	return configGroup
+	return configGroup, nil
 }

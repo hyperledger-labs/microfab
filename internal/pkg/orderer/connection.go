@@ -5,12 +5,14 @@
 package orderer
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/pkg/client"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // Connection represents a connection to a orderer.
@@ -23,7 +25,16 @@ type Connection struct {
 
 // Connect opens a connection to the orderer.
 func Connect(orderer *Orderer, mspID string, identity *identity.Identity) (*Connection, error) {
-	clientConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", orderer.apiPort), grpc.WithInsecure())
+	var clientConn *grpc.ClientConn
+	var err error
+	if orderer.tls != nil {
+		creds := credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+		clientConn, err = grpc.Dial(fmt.Sprintf("localhost:%d", orderer.apiPort), grpc.WithTransportCredentials(creds))
+	} else {
+		clientConn, err = grpc.Dial(fmt.Sprintf("localhost:%d", orderer.apiPort), grpc.WithInsecure())
+	}
 	if err != nil {
 		return nil, err
 	}

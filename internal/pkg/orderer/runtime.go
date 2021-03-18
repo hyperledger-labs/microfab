@@ -6,6 +6,7 @@ package orderer
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -34,6 +35,7 @@ func (o *Orderer) Start(consortium []*organization.Organization, timeout time.Du
 	dataDirectory := path.Join(o.directory, "data")
 	logsDirectory := path.Join(o.directory, "logs")
 	mspDirectory := path.Join(o.directory, "msp")
+	tlsDirectory := path.Join(o.directory, "tls")
 	err = util.CreateMSPDirectory(mspDirectory, o.identity)
 	if err != nil {
 		return err
@@ -56,6 +58,29 @@ func (o *Orderer) Start(consortium []*organization.Organization, timeout time.Du
 		"ORDERER_GENERAL_LISTENADDRESS=0.0.0.0",
 		fmt.Sprintf("ORDERER_GENERAL_LISTENPORT=%d", o.apiPort),
 		fmt.Sprintf("ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:%d", o.operationsPort),
+	}
+	if o.tls != nil {
+		certFile := path.Join(tlsDirectory, "cert.pem")
+		keyFile := path.Join(tlsDirectory, "key.pem")
+		caFile := path.Join(tlsDirectory, "ca.pem")
+		extraEnvs = append(extraEnvs,
+			"ORDERER_GENERAL_TLS_ENABLED=true",
+			fmt.Sprintf("ORDERER_GENERAL_TLS_CERTIFICATE=%s", certFile),
+			fmt.Sprintf("ORDERER_GENERAL_TLS_PRIVATEKEY=%s", keyFile),
+			fmt.Sprintf("ORDERER_GENERAL_TLS_ROOTCAS=%s", caFile),
+			"ORDERER_OPERATIONS_TLS_ENABLED=true",
+			fmt.Sprintf("ORDERER_OPERATIONS_TLS_CERTIFICATE=%s", certFile),
+			fmt.Sprintf("ORDERER_OPERATIONS_TLS_PRIVATEKEY=%s", keyFile),
+		)
+		if err := ioutil.WriteFile(certFile, o.tls.Certificate().Bytes(), 0644); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(keyFile, o.tls.PrivateKey().Bytes(), 0644); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(caFile, o.tls.CA().Bytes(), 0644); err != nil {
+			return err
+		}
 	}
 	cmd.Env = append(cmd.Env, extraEnvs...)
 	cmd.Stdin = nil
@@ -130,6 +155,7 @@ func (o *Orderer) createDirectories() error {
 		path.Join(o.directory, "data"),
 		path.Join(o.directory, "logs"),
 		path.Join(o.directory, "msp"),
+		path.Join(o.directory, "tls"),
 	}
 	for _, dir := range directories {
 		err := os.MkdirAll(dir, 0755)
@@ -141,8 +167,16 @@ func (o *Orderer) createDirectories() error {
 }
 
 func (o *Orderer) hasStarted() bool {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/healthz", o.operationsPort))
+	cli := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	resp, err := cli.Get(fmt.Sprintf("%s/healthz", o.OperationsURL(true)))
 	if err != nil {
+		log.Printf("error waiting for orderer: %v\n", err)
 		return false
 	}
 	return resp.StatusCode == 200
@@ -276,9 +310,17 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 		},
 		Sequence: 0,
 	}
-	config.ChannelGroup.Groups["Orderer"].Groups[o.organization.MSPID()] = protoutil.BuildConfigGroupFromOrganization(o.organization)
+	configGroup, err := protoutil.BuildConfigGroupFromOrganization(o.organization, o.tls)
+	if err != nil {
+		return err
+	}
+	config.ChannelGroup.Groups["Orderer"].Groups[o.organization.MSPID()] = configGroup
 	for _, organization := range consortium {
-		config.ChannelGroup.Groups["Consortiums"].Groups["SampleConsortium"].Groups[organization.MSPID()] = protoutil.BuildConfigGroupFromOrganization(organization)
+		configGroup, err := protoutil.BuildConfigGroupFromOrganization(organization, o.tls)
+		if err != nil {
+			return err
+		}
+		config.ChannelGroup.Groups["Consortiums"].Groups["SampleConsortium"].Groups[organization.MSPID()] = configGroup
 	}
 	configEnvelope := &common.ConfigEnvelope{
 		Config:     config,

@@ -63,12 +63,14 @@ type Microfab struct {
 	console                *console.Console
 	proxy                  *proxy.Proxy
 	currentPort            int
+	tls                    *identity.Identity
 }
 
 // State represents the state that should be persisted between instances.
 type State struct {
 	Hash []byte                      `json:"hash"`
 	CAS  map[string]*client.Identity `json:"cas"`
+	TLS  *client.Identity            `json:"tls"`
 }
 
 // New creates an instance of the Microfab application.
@@ -123,6 +125,13 @@ func (m *Microfab) Start() error {
 	if m.state == nil {
 		err = m.ensureDirectory()
 		if err != nil {
+			return err
+		}
+	}
+
+	// If TLS is enabled, generate the TLS material.
+	if m.config.TLS {
+		if err := m.createTLS(); err != nil {
 			return err
 		}
 	}
@@ -198,20 +207,14 @@ func (m *Microfab) Start() error {
 
 	// Create and start the console.
 	consolePort := m.allocatePort()
-	console, err := console.New(m.organizations, m.orderer, m.peers, m.cas, consolePort, fmt.Sprintf("http://console.%s:%d", m.config.Domain, m.config.Port))
-	if err != nil {
+	if err := m.createAndStartConsole(consolePort); err != nil {
 		return err
 	}
-	m.console = console
-	go console.Start()
 
 	// Create and start the proxy.
-	proxy, err := proxy.New(console, m.orderer, m.peers, m.cas, m.couchDB, m.config.Port)
-	if err != nil {
+	if err := m.createAndStartProxy(); err != nil {
 		return err
 	}
-	m.proxy = proxy
-	go proxy.Start()
 
 	// Connect to all of the components.
 	for _, p := range m.peers {
@@ -379,7 +382,34 @@ func (m *Microfab) saveState() error {
 	for _, endorsingOrganization := range m.endorsingOrganizations {
 		state.CAS[endorsingOrganization.Name()] = endorsingOrganization.CA().ToClient()
 	}
+	if m.tls != nil {
+		state.TLS = m.tls.ToClient()
+	}
 	return json.NewEncoder(file).Encode(&state)
+}
+
+func (m *Microfab) createTLS() error {
+	var ca, tls *identity.Identity
+	var err error
+	if m.state != nil {
+		temp := m.state.TLS
+		tls, err = identity.FromClient(temp)
+		if err != nil {
+			return err
+		}
+	}
+	if tls == nil {
+		ca, err = identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
+		if err != nil {
+			return err
+		}
+		tls, err = identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.UsingSigner(ca))
+		if err != nil {
+			return err
+		}
+	}
+	m.tls = tls
+	return nil
 }
 
 func (m *Microfab) createOrderingOrganization(config Organization) error {
@@ -447,16 +477,23 @@ func (m *Microfab) createEndorsingOrganization(config Organization) error {
 func (m *Microfab) createAndStartOrderer(organization *organization.Organization, apiPort, operationsPort int) error {
 	logger.Printf("Creating and starting orderer for ordering organization %s ...", organization.Name())
 	directory := path.Join(m.config.Directory, "orderer")
+	schemeSuffix := ""
+	if m.tls != nil {
+		schemeSuffix = "s"
+	}
 	orderer, err := orderer.New(
 		organization,
 		directory,
 		int32(apiPort),
-		fmt.Sprintf("grpc://orderer-api.%s:%d", m.config.Domain, m.config.Port),
+		fmt.Sprintf("grpc%s://orderer-api.%s:%d", schemeSuffix, m.config.Domain, m.config.Port),
 		int32(operationsPort),
-		fmt.Sprintf("http://orderer-operations.%s:%d", m.config.Domain, m.config.Port),
+		fmt.Sprintf("http%s://orderer-operations.%s:%d", schemeSuffix, m.config.Domain, m.config.Port),
 	)
 	if err != nil {
 		return err
+	}
+	if m.tls != nil {
+		orderer.EnableTLS(m.tls)
 	}
 	m.Lock()
 	m.orderer = orderer
@@ -471,7 +508,12 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 
 func (m *Microfab) waitForCouchDB() error {
 	logger.Printf("Waiting for CouchDB to start ...")
-	couchURL := fmt.Sprintf("http://couchdb.%s:%d", m.config.Domain, m.config.Port)
+	scheme := "http"
+	if m.tls != nil {
+		scheme = "https"
+	}
+	couchURL := fmt.Sprintf("%s://couchdb.%s:%d", scheme, m.config.Domain, m.config.Port)
+	// CouchDB must always run with HTTP as peer does not support CouchDB with HTTPS.
 	couchDB, err := couchdb.New("http://localhost:5984", couchURL)
 	if err != nil {
 		return err
@@ -510,20 +552,27 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
 	peerDirectory := path.Join(m.config.Directory, fmt.Sprintf("peer-%s", lowerOrganizationName))
+	schemeSuffix := ""
+	if m.tls != nil {
+		schemeSuffix = "s"
+	}
 	peer, err := peer.New(
 		organization,
 		peerDirectory,
 		int32(apiPort),
-		fmt.Sprintf("grpc://%speer-api.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("grpc%s://%speer-api.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
 		int32(chaincodePort),
-		fmt.Sprintf("grpc://%speer-chaincode.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("grpc%s://%speer-chaincode.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
 		int32(operationsPort),
-		fmt.Sprintf("http://%speer-operations.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("http%s://%speer-operations.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
 		couchDB,
 		int32(couchDBProxyPort),
 	)
 	if err != nil {
 		return err
+	}
+	if m.tls != nil {
+		peer.EnableTLS(m.tls)
 	}
 	m.Lock()
 	m.peers = append(m.peers, peer)
@@ -541,25 +590,32 @@ func (m *Microfab) createAndStartCA(organization *organization.Organization, api
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
 	caDirectory := path.Join(m.config.Directory, fmt.Sprintf("ca-%s", lowerOrganizationName))
-	theCA, err := ca.New(
+	scheme := "http"
+	if m.tls != nil {
+		scheme = "https"
+	}
+	c, err := ca.New(
 		organization,
 		caDirectory,
 		int32(apiPort),
-		fmt.Sprintf("http://%sca-api.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("%s://%sca-api.%s:%d", scheme, lowerOrganizationName, m.config.Domain, m.config.Port),
 		int32(operationsPort),
-		fmt.Sprintf("http://%sca-operations.%s:%d", lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("%s://%sca-operations.%s:%d", scheme, lowerOrganizationName, m.config.Domain, m.config.Port),
 	)
 	if err != nil {
 		return err
 	}
+	if m.tls != nil {
+		c.EnableTLS(m.tls)
+	}
 	m.Lock()
-	m.cas = append(m.cas, theCA)
+	m.cas = append(m.cas, c)
 	m.Unlock()
-	err = theCA.Start(m.config.Timeout)
+	err = c.Start(m.config.Timeout)
 	if err != nil {
 		return err
 	}
-	conn, err := ca.Connect(theCA)
+	conn, err := ca.Connect(c)
 	if err != nil {
 		return err
 	}
@@ -672,6 +728,68 @@ func (m *Microfab) createAndJoinChannel(config Channel) error {
 		return err
 	}
 	logger.Printf("Created and joined channel %s", config.Name)
+	return nil
+}
+
+func (m *Microfab) createAndStartConsole(port int) error {
+	logger.Print("Creating and starting console ...")
+	schemeSuffix := ""
+	if m.tls != nil {
+		schemeSuffix = "s"
+	}
+	var c *console.Console
+	var err error
+	c, err = console.New(port, fmt.Sprintf("http%s://console.%s:%d", schemeSuffix, m.config.Domain, m.config.Port))
+	if m.tls != nil {
+		if err := c.EnableTLS(m.tls); err != nil {
+			return err
+		}
+	}
+	if err != nil {
+		return err
+	}
+	c.RegisterOrderer(m.orderer)
+	for _, organization := range m.endorsingOrganizations {
+		c.RegisterOrganization(organization)
+	}
+	for _, peer := range m.peers {
+		c.RegisterPeer(peer)
+	}
+	for _, ca := range m.cas {
+		c.RegisterCA(ca)
+	}
+	m.console = c
+	go c.Start()
+	logger.Print("Created and started console")
+	return nil
+}
+
+func (m *Microfab) createAndStartProxy() error {
+	logger.Print("Creating and starting proxy ...")
+	var p *proxy.Proxy
+	var err error
+	if m.tls != nil {
+		p, err = proxy.NewWithTLS(m.tls, m.config.Port)
+	} else {
+		p, err = proxy.New(m.config.Port)
+	}
+	if err != nil {
+		return err
+	}
+	p.RegisterConsole(m.console)
+	p.RegisterOrderer(m.orderer)
+	for _, ca := range m.cas {
+		p.RegisterCA(ca)
+	}
+	for _, peer := range m.peers {
+		p.RegisterPeer(peer)
+	}
+	if m.couchDB != nil {
+		p.RegisterCouchDB(*m.couchDB)
+	}
+	m.proxy = p
+	go p.Start()
+	logger.Print("Created and started proxy")
 	return nil
 }
 

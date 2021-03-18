@@ -48,7 +48,7 @@ func (c *CouchDB) WaitFor(timeout time.Duration) error {
 	}
 }
 
-// URL returns the URL of the CouchDB.
+// URL returns the URL of the CouchDB instance.
 func (c *CouchDB) URL(internal bool) *url.URL {
 	if internal {
 		return c.internalURL

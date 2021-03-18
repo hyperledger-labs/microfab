@@ -6,6 +6,7 @@ package ca
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -35,8 +36,7 @@ func (c *CA) Start(timeout time.Duration) error {
 	if err := ioutil.WriteFile(keyfile, c.identity.PrivateKey().Bytes(), 0644); err != nil {
 		return err
 	}
-	cmd := exec.Command(
-		"fabric-ca-server",
+	args := []string{
 		"start",
 		"--boot",
 		"admin:adminpw",
@@ -48,6 +48,37 @@ func (c *CA) Start(timeout time.Duration) error {
 		strconv.Itoa(int(c.apiPort)),
 		"--operations.listenaddress",
 		fmt.Sprintf("0.0.0.0:%d", c.operationsPort),
+	}
+	if c.tls != nil {
+		tlsDirectory := path.Join(c.directory, "tls")
+		if err := os.MkdirAll(tlsDirectory, 0755); err != nil {
+			return err
+		}
+		certFile := path.Join(tlsDirectory, "cert.pem")
+		keyFile := path.Join(tlsDirectory, "key.pem")
+		args = append(args,
+			"--tls.enabled",
+			"--tls.certfile",
+			certFile,
+			"--tls.keyfile",
+			keyFile,
+			"--operations.tls.enabled",
+			"--operations.tls.certfile",
+			certFile,
+			"--operations.tls.keyfile",
+			keyFile,
+		)
+		if err := ioutil.WriteFile(certFile, c.tls.Certificate().Bytes(), 0644); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(keyFile, c.tls.PrivateKey().Bytes(), 0644); err != nil {
+			return err
+		}
+	}
+	fmt.Print(args)
+	cmd := exec.Command(
+		"fabric-ca-server",
+		args...,
 	)
 	cmd.Dir = c.directory
 	cmd.Env = os.Environ()
@@ -118,8 +149,16 @@ func (c *CA) Stop() error {
 }
 
 func (c *CA) hasStarted() bool {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/healthz", c.operationsPort))
+	cli := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	resp, err := cli.Get(fmt.Sprintf("%s/healthz", c.OperationsURL(true)))
 	if err != nil {
+		log.Printf("error waiting for CA: %v\n", err)
 		return false
 	}
 	if resp.StatusCode != 200 {
