@@ -94,6 +94,14 @@ func (c *CA) APIURL(internal bool) *url.URL {
 	return c.apiURL
 }
 
+// OperationsHostname returns the hostname of the CA.
+func (c *CA) OperationsHostname(internal bool) string {
+	if internal {
+		return "localhost"
+	}
+	return c.operationsURL.Hostname()
+}
+
 // OperationsHost returns the host (hostname:port) of the CA.
 func (c *CA) OperationsHost(internal bool) string {
 	if internal {
