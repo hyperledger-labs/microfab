@@ -8,8 +8,10 @@ import (
 	gotls "crypto/tls"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
@@ -19,6 +21,8 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
 	"github.com/gorilla/mux"
 )
+
+var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)
 
 type jsonHealth struct {
 }
@@ -132,6 +136,7 @@ func New(port int, curl string) (*Console, error) {
 		Handler: router,
 	}
 	console.httpServer = HTTPServer
+	logger.Print("Created new console...")
 	return console, nil
 }
 
@@ -149,6 +154,7 @@ func (c *Console) EnableTLS(tls *identity.Identity) error {
 
 // RegisterOrganization registers the specified organization with the console.
 func (c *Console) RegisterOrganization(organization *organization.Organization) {
+	logger.Printf("[mbw] RegisterOrganization %v", organization)
 	for _, identity := range organization.GetIdentities() {
 		identityHide := identity != organization.Admin()
 		id := strings.ToLower(identity.Name())
@@ -211,6 +217,9 @@ func (c *Console) getHealth(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (c *Console) getComponents(rw http.ResponseWriter, req *http.Request) {
+	logger.Print("Getting components for REST response")
+	logger.Printf("%+v", c.staticComponents)
+	logger.Printf("%+v", c.getDynamicComponents(req))
 	components := []interface{}{}
 	for _, component := range c.staticComponents {
 		components = append(components, component)
@@ -219,6 +228,7 @@ func (c *Console) getComponents(rw http.ResponseWriter, req *http.Request) {
 		components = append(components, component)
 	}
 	rw.Header().Add("Content-Type", "application/json")
+	logger.Printf("components== %+v", components)
 	json.NewEncoder(rw).Encode(components)
 }
 
