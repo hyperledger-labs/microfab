@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+set -euo pipefail
+exec 1>&2
 
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
 
@@ -13,3 +15,4 @@ source "${SCRIPT_DIR}/utils.sh"
 CHAINCODE_METADATA_DIR="$2"
 
 check_chaincode_type "$CHAINCODE_METADATA_DIR" "external"
+

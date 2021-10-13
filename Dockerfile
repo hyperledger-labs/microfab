@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS base
-ADD docker/bintray-apache-couchdb-rpm.repo /etc/yum.repos.d/bintray-apache-couchdb-rpm.repo
+ADD docker/couchdb-rpm.repo /etc/yum.repos.d/couchdb-rpm.repo
 RUN microdnf install couchdb findutils gcc gcc-c++ git gzip make python3 shadow-utils tar unzip xz \
     && groupadd -g 7051 ibp-user \
     && useradd -u 7051 -g ibp-user -G root -s /bin/bash ibp-user \

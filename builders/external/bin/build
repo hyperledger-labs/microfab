@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
+set -euo pipefail
+exec 1>&2
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd -P)
 
 # shellcheck source=builders/external/bin/utils.sh
