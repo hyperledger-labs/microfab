@@ -95,6 +95,7 @@ func New(name string, opts ...Option) (*Identity, error) {
 			IsCA: false,
 		},
 	}
+	identity.Template.DNSNames = []string{name}
 	identity.Parent = identity.Template
 	identity.Signee = &privateKey.PublicKey
 	identity.Signer = privateKey
