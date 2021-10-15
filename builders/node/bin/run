@@ -8,12 +8,14 @@ BUILD_OUTPUT_DIR="$1"
 RUN_METADATA_DIR="$2"
 
 # setup the environment expected by the node chaincode shim
-export CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "$RUN_METADATA_DIR/chaincode.json")"
+CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "$RUN_METADATA_DIR/chaincode.json")"
+CORE_PEER_LOCALMSPID="$(jq -r .mspid "$RUN_METADATA_DIR/chaincode.json")"
+export CORE_CHAINCODE_ID_NAME CORE_PEER_LOCALMSPID
 export CORE_PEER_TLS_ENABLED="true"
 export CORE_TLS_CLIENT_CERT_PATH="$BUILD_OUTPUT_DIR/client.crt"
 export CORE_TLS_CLIENT_KEY_PATH="$BUILD_OUTPUT_DIR/client.key"
 export CORE_PEER_TLS_ROOTCERT_FILE="$BUILD_OUTPUT_DIR/root.crt"
-export CORE_PEER_LOCALMSPID="$(jq -r .mspid "$RUN_METADATA_DIR/chaincode.json")"
+
 
 # populate the key and certificate material used by the node chaincode shim
 # note the base64 encoding for some of these

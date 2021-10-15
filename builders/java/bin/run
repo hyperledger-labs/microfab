@@ -17,8 +17,6 @@ export CORE_TLS_CLIENT_CERT_PATH="$BUILD_OUTPUT_DIR/client.crt"
 export CORE_TLS_CLIENT_KEY_PATH="$BUILD_OUTPUT_DIR/client.key"
 export CORE_PEER_TLS_ROOTCERT_FILE="$BUILD_OUTPUT_DIR/root.crt"
 
-cat "$RUN_METADATA_DIR/chaincode.json" | jq
-
 # Note the processing of the certs/keys. Some need to be PEM, some base64 encoded PEM
 # Java's base64 parsing also fussy about whitepace/newlines hence the --wrap
 jq -r .client_cert "$RUN_METADATA_DIR/chaincode.json" | base64 --wrap=0 > "$CORE_TLS_CLIENT_CERT_PATH"

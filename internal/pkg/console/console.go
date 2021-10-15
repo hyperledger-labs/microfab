@@ -154,7 +154,6 @@ func (c *Console) EnableTLS(tls *identity.Identity) error {
 
 // RegisterOrganization registers the specified organization with the console.
 func (c *Console) RegisterOrganization(organization *organization.Organization) {
-	logger.Printf("[mbw] RegisterOrganization %v", organization)
 	for _, identity := range organization.GetIdentities() {
 		identityHide := identity != organization.Admin()
 		id := strings.ToLower(identity.Name())
