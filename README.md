@@ -145,6 +145,15 @@ The configuration is a JSON object with the following keys:
         "ca": null // Optional: the TLS CA certificate to be used.
       }
 
+- `chaincode_dev_mode:
+
+  Puts the peer into 'chaincode dev mode'.  This means that the chaincode does not need to be installed, but must
+  be running before it is approved/committed (though it still can be if you wish)
+
+  This cannot be enabled at the same time as TLS. It is also NOT the Chaincode-as-a-server feature. 
+
+  Default: `true`
+
 ## Examples
 
 Configuration example for enabling TLS:

@@ -45,6 +45,7 @@ type Config struct {
 	TimeoutString          string         `json:"timeout"`
 	TLS                    TLS            `json:"tls"`
 	Timeout                time.Duration  `json:"-"`
+	ChaincodeDevMode       bool           `json:"chaincode_dev_mode"`
 }
 
 // DefaultConfig returns the default configuration.
@@ -84,6 +85,7 @@ func DefaultConfig() (*Config, error) {
 		TLS: TLS{
 			Enabled: false,
 		},
+		ChaincodeDevMode: true,
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
 		err := json.Unmarshal([]byte(env), config)
@@ -93,6 +95,9 @@ func DefaultConfig() (*Config, error) {
 	}
 	if config.Port >= startPort && config.Port < endPort {
 		logger.Fatalf("Cannot specify port %d, must be outside port range %d-%d", config.Port, 2000, 3000)
+	}
+	if config.TLS.Enabled && config.ChaincodeDevMode {
+		logger.Fatalf("Cannot enabled TLS and ChaincodeDevMode at the same.")
 	}
 	timeout, err := time.ParseDuration(config.TimeoutString)
 	if err != nil {

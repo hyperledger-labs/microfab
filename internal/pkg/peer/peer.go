@@ -16,24 +16,25 @@ import (
 
 // Peer represents a loaded peer definition.
 type Peer struct {
-	organization   *organization.Organization
-	identity       *identity.Identity
-	mspID          string
-	directory      string
-	apiPort        int32
-	apiURL         *url.URL
-	chaincodePort  int32
-	chaincodeURL   *url.URL
-	operationsPort int32
-	operationsURL  *url.URL
-	couchDB        bool
-	couchDBPort    int32
-	command        *exec.Cmd
-	tls            *identity.Identity
+	organization     *organization.Organization
+	identity         *identity.Identity
+	mspID            string
+	directory        string
+	apiPort          int32
+	apiURL           *url.URL
+	chaincodePort    int32
+	chaincodeURL     *url.URL
+	operationsPort   int32
+	operationsURL    *url.URL
+	couchDB          bool
+	couchDBPort      int32
+	command          *exec.Cmd
+	tls              *identity.Identity
+	chaincodeDevMode bool
 }
 
 // New creates a new peer.
-func New(organization *organization.Organization, directory string, apiPort int32, apiURL string, chaincodePort int32, chaincodeURL string, operationsPort int32, operationsURL string, couchDB bool, couchDBPort int32) (*Peer, error) {
+func New(organization *organization.Organization, directory string, apiPort int32, apiURL string, chaincodePort int32, chaincodeURL string, operationsPort int32, operationsURL string, couchDB bool, couchDBPort int32, chaincodeDevMode bool) (*Peer, error) {
 	identityName := fmt.Sprintf("%s Peer", organization.Name())
 	identity, err := identity.New(identityName, identity.WithOrganizationalUnit("peer"), identity.UsingSigner(organization.CA()))
 	if err != nil {
@@ -51,7 +52,7 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	if err != nil {
 		return nil, err
 	}
-	return &Peer{organization, identity, organization.MSPID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, couchDB, couchDBPort, nil, nil}, nil
+	return &Peer{organization, identity, organization.MSPID(), directory, apiPort, parsedAPIURL, chaincodePort, parsedChaincodeURL, operationsPort, parsedOperationsURL, couchDB, couchDBPort, nil, nil, chaincodeDevMode}, nil
 }
 
 // TLS gets the TLS identity for this peer.

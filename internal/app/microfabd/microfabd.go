@@ -617,6 +617,7 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 		fmt.Sprintf("http%s://%speer-operations.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
 		couchDB,
 		int32(couchDBProxyPort),
+		m.config.ChaincodeDevMode,
 	)
 	if err != nil {
 		return err
