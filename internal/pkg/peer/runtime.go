@@ -40,7 +40,7 @@ func (p *Peer) Start(timeout time.Duration) error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command("peer", "node", "start")
+	cmd := exec.Command("peer", "node", "start", fmt.Sprintf("--peer-chaincodedev=%v", p.chaincodeDevMode))
 	cmd.Env = os.Environ()
 	extraEnvs := []string{
 		fmt.Sprintf("FABRIC_CFG_PATH=%s", configDirectory),
