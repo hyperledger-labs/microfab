@@ -48,6 +48,8 @@ func (c *CA) Start(timeout time.Duration) error {
 		strconv.Itoa(int(c.apiPort)),
 		"--operations.listenaddress",
 		fmt.Sprintf("0.0.0.0:%d", c.operationsPort),
+		"--ca.name",
+		fmt.Sprintf("%sca", strings.ToLower(c.organization.Name())),
 	}
 	if c.tls != nil {
 		tlsDirectory := path.Join(c.directory, "tls")
