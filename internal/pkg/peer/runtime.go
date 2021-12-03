@@ -232,6 +232,13 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 	if !ok {
 		return fmt.Errorf("core.yaml missing ledger.state section")
 	}
+
+	snapshots, ok := ledger["snapshots"].(map[interface{}]interface{})
+	if !ok {
+		return fmt.Errorf("core.yaml missing ledger.snapshots section")
+	}
+	snapshots["rootDir"] = path.Join(dataDirectory, "snapshots")
+
 	if p.couchDB {
 		state["stateDatabase"] = "CouchDB"
 		couchDBConfig, ok := state["couchDBConfig"].(map[interface{}]interface{})
