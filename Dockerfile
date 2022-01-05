@@ -17,7 +17,7 @@ RUN chmod +x /tini /usr/local/bin/jq
 RUN mkdir -p /opt/go /opt/node /opt/java \
     && curl -sSL https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz | tar xzf - -C /opt/go --strip-components=1 \
     && curl -sSL https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.7_10.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
-    && curl -sSL https://nodejs.org/download/release/v12.17.0/node-v12.17.0-linux-x64.tar.xz | tar xJf - -C /opt/node --strip-components=1
+    && curl -sSL https://nodejs.org/download/release/v16.4.0/node-v16.4.0-linux-x64.tar.xz | tar xJf - -C /opt/node --strip-components=1
 ENV GOROOT=/opt/go
 ENV GOCACHE=/tmp/gocache
 ENV GOENV=/tmp/goenv
@@ -40,13 +40,14 @@ RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradl
 ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
 ADD builders/java/pom.xml /opt/fabric-chaincode-java/
 RUN mkdir -p /opt/fabric \
-    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.0/hyperledger-fabric-linux-amd64-2.4.0.tar.gz | tar xzf - -C /opt/fabric  \
+    && curl -sSL https://hyperledger-fabric.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-2.4-stable.tar.gz | tar xzf - -C /opt/fabric  \
+    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.1/hyperledger-fabric-linux-amd64-2.4.1.tar.gz | tar xzf - -C /opt/fabric  \
     && curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.5.2/hyperledger-fabric-ca-linux-amd64-1.5.2.tar.gz | tar xzf - -C /opt/fabric  \
     && cd /opt/fabric-chaincode-java \
     && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \
     && npm install --unsafe-perm -g fabric-shim@2.4.1 \
     && rm -rf /tmp/gocache /tmp/goenv /tmp/go /tmp/maven /tmp/npm-cache /tmp/npm-devdir
-ENV FABRIC_CFG_PATH=/opt/fabric/config
+ENV FABRIC_CFG_PATH=/opt/fabric/config 
 ENV PATH=/opt/fabric/bin:${PATH}
 
 FROM base AS builder
@@ -60,6 +61,7 @@ RUN cd /tmp/microfab \
 
 FROM base
 COPY --from=builder /opt/microfab /opt/microfab
+COPY --from=base /opt/fabric/bin/ccaas_builder /opt/microfab/builders/ccaas
 COPY docker/docker-entrypoint.sh /
 ENV MICROFAB_HOME=/opt/microfab
 ENV PATH=/opt/microfab/bin:${PATH}
