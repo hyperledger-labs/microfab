@@ -41,7 +41,7 @@ ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
 ADD builders/java/pom.xml /opt/fabric-chaincode-java/
 RUN mkdir -p /opt/fabric \
     && curl -sSL https://hyperledger-fabric.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-2.4-stable.tar.gz | tar xzf - -C /opt/fabric  \
-    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.1/hyperledger-fabric-linux-amd64-2.4.1.tar.gz | tar xzf - -C /opt/fabric  \
+    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.3/hyperledger-fabric-linux-amd64-2.4.3.tar.gz | tar xzf - -C /opt/fabric  \
     && curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.5.2/hyperledger-fabric-ca-linux-amd64-1.5.2.tar.gz | tar xzf - -C /opt/fabric  \
     && cd /opt/fabric-chaincode-java \
     && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \

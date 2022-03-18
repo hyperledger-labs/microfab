@@ -217,6 +217,13 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 			},
 		},
 		{
+			"path": path.Join(homeDirectory, "builders", "ccaas"),
+			"name": "chaincode-as-a-service-builder",
+			"propagateEnvironment": []string{
+				"CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG",
+			},
+		},
+		{
 			"path": path.Join(homeDirectory, "builders", "external"),
 			"name": "external-service-builder",
 			"propagateEnvironment": []string{
