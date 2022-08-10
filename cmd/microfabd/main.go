@@ -24,4 +24,5 @@ func main() {
 		logger.Fatalf("Failed to start application: %v", err)
 	}
 	microfabd.Wait()
+	logger.Println("Microfabd - started")
 }

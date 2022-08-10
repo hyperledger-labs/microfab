@@ -98,7 +98,6 @@ func (m *Microfab) Start() error {
 	// Grab the start time and say hello.
 	startTime := time.Now()
 	logger.Print("Starting Microfab ...")
-	logger.Print("MBW")
 	// Ensure anything we start is stopped.
 	defer func() {
 		if !m.started {
