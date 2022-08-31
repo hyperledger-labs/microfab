@@ -69,3 +69,13 @@ jobs:
           docker push ibmcom/ibp-microfab:${VERSION}
           docker push ibmcom/ibp-microfab:latest
         if: startsWith(github.ref, 'refs/tags/')
+      - name: Build Binary
+        run: go build -v -o bin/microfabd cmd/microfabd/main.go
+      - name: Package Binary
+        run: |
+          tar -C bin -czvf microfab-${RUNNER_OS}-${RUNNER_ARCH}.tgz microfabd
+      - name: Publish Binary to GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: microfab-*.tgz
