@@ -40,12 +40,11 @@ RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradl
 ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
 ADD builders/java/pom.xml /opt/fabric-chaincode-java/
 RUN mkdir -p /opt/fabric \
-    && curl -sSL https://hyperledger-fabric.jfrog.io/artifactory/fabric-binaries/hyperledger-fabric-linux-amd64-2.4-stable.tar.gz | tar xzf - -C /opt/fabric  \
-    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.3/hyperledger-fabric-linux-amd64-2.4.3.tar.gz | tar xzf - -C /opt/fabric  \
+    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.6/hyperledger-fabric-linux-amd64-2.4.6.tar.gz | tar xzf - -C /opt/fabric  \
     && curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.5.2/hyperledger-fabric-ca-linux-amd64-1.5.2.tar.gz | tar xzf - -C /opt/fabric  \
     && cd /opt/fabric-chaincode-java \
     && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \
-    && npm install --unsafe-perm -g fabric-shim@2.4.1 \
+    && npm install --unsafe-perm -g fabric-shim@2.4.2 \
     && rm -rf /tmp/gocache /tmp/goenv /tmp/go /tmp/maven /tmp/npm-cache /tmp/npm-devdir
 ENV FABRIC_CFG_PATH=/opt/fabric/config 
 ENV PATH=/opt/fabric/bin:${PATH}
@@ -61,7 +60,7 @@ RUN cd /tmp/microfab \
 
 FROM base
 COPY --from=builder /opt/microfab /opt/microfab
-COPY --from=base /opt/fabric/bin/ccaas_builder /opt/microfab/builders/ccaas
+COPY --from=base /opt/fabric/builders/ccaas /opt/microfab/builders/ccaas
 COPY docker/docker-entrypoint.sh /
 ENV MICROFAB_HOME=/opt/microfab
 ENV PATH=/opt/microfab/bin:${PATH}
