@@ -5,14 +5,14 @@ go 1.14
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
 	github.com/Shopify/sarama v1.26.4 // indirect
-	github.com/gogo/protobuf v1.3.1
+	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/go-version v1.2.1 // indirect
 	github.com/hyperledger/fabric v2.1.0+incompatible
 	github.com/hyperledger/fabric-amcl v0.0.0-20200424173818-327c9e2cf77a // indirect
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200424173316-dd554ba3746e
-	github.com/joefitzgerald/rainbow-reporter v0.1.0 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
 	github.com/miekg/pkcs11 v1.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
