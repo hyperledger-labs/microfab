@@ -1,14 +1,12 @@
 # microfab
 
-The IBM Blockchain Platform provides advanced tooling that allows you to quickly build, operate & govern and grow blockchain networks. It uses Hyperledger Fabric, the open source, industry standard for enterprise blockchain. It also helps you to deploy Hyperledger Fabric networks anywhere, either to cloud or on-premises, using Kubernetes.
+'microfab' provides a single container image that allows you to quickly build, operate & govern and grow blockchain networks. It uses Hyperledger Fabric, the open source, industry standard for enterprise blockchain. 
 
-Microfab, provided as part of the IBM Blockchain Platform, is a containerized Hyperledger Fabric runtime for use in development environments.
+This containerized version of Fabric can be easily configured with the selection of channels and orgs you want, and also can be started and stopped in seconds.  You can interfact with it as you would any Fabric setup. Note that this uses *the* fabric binaries and starts Fabric with couchdb and cas for identities. It's not cut down.
 
-## Requirements
+[![asciicast](https://asciinema.org/a/519913.svg)](https://asciinema.org/a/519913)
 
-Microfab has been tested in Docker, Kubernetes, and Red Hat OpenShift.
-
-## Usage
+## Starting microfab
 
 To start Microfab with the default configuration using Docker, run the following command:
 
@@ -28,7 +26,7 @@ Identities (certificate and private key pairs) are returned with a type of `iden
 
     curl http://console.127.0.0.1.nip.io:8080/ak/api/v1/components | jq '.[] | select(.type == "identity")'
 
-## Configuration
+## Configuring microfab
 
 Microfab can be configured by specifying the `MICROFAB_CONFIG` environment variable. For example, to start Microfab with different organizations using Docker, run the following commands:
 
@@ -145,7 +143,7 @@ The configuration is a JSON object with the following keys:
         "ca": null // Optional: the TLS CA certificate to be used.
       }
 
-## Examples
+### Examples
 
 Configuration example for enabling TLS:
 
@@ -158,10 +156,14 @@ Configuration example for enabling TLS:
 
     docker run -p 8443:8443 -e MICROFAB_CONFIG ibmcom/ibp-microfab
 
+## Operational Examples
+
+.......
+
 ## License
 
 Apache-2.0
 
 ## Author Information
 
-Microfab is maintained by the IBM Blockchain Platform development team. For more information on the IBM Blockchain Platform, visit the following website: https://www.ibm.com/cloud/blockchain-platform
+Microfab is maintained by the IBM Blockchain team. 
