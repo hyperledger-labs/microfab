@@ -4,7 +4,7 @@
 
 This containerized version of Fabric can be easily configured with the selection of channels and orgs you want, and also can be started and stopped in seconds.  You can interfact with it as you would any Fabric setup. Note that this uses *the* fabric binaries and starts Fabric with couchdb and cas for identities. It's not cut down.
 
-[![asciicast](https://asciinema.org/a/519913.svg)](https://asciinema.org/a/519913)
+![asciicast](./examples/microfab.svg)
 
 ## Starting microfab
 
