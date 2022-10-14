@@ -1,0 +1,26 @@
+{
+    "endorsing_organizations": [
+        {
+            "name": "org1"
+        },
+        {
+            "name": "org2"
+        }
+    ],
+    "channels": [
+        {
+            "name": "mychannel",
+            "endorsing_organizations": [
+                "org1"
+            ]
+        },
+        {
+            "name": "appchannel",
+            "endorsing_organizations": [
+                "org1",
+                "org2"
+            ]
+        }
+    ],
+    "capability_level": "V2_0"
+}
