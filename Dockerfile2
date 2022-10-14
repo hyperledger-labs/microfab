@@ -1,19 +1,19 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-FROM registry.access.redhat.com/ubi8/ubi-minimal AS base
-ADD docker/couchdb-rpm.repo /etc/yum.repos.d/couchdb-rpm.repo
-RUN microdnf install couchdb findutils gcc gcc-c++ git gzip make python3 shadow-utils tar unzip xz \
-    && groupadd -g 7051 ibp-user \
-    && useradd -u 7051 -g ibp-user -G root -s /bin/bash ibp-user \
-    && microdnf remove shadow-utils \
-    && microdnf clean all
+FROM couchdb:3.1.2 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive 
+
+# # Build tools
+ RUN apt-get update \    
+     && apt-get -y install build-essential gcc gzip \
+     && apt-get -y install python3 python3-distutils libpython3-dev software-properties-common \   
+     && apt-get -y install curl git jq unzip moreutils
 ADD docker/local.ini /opt/couchdb/etc/local.d/local.ini
-ENV PATH=/opt/couchdb/bin:${PATH}
-ENV TINI_VERSION v0.19.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
-ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 /usr/local/bin/jq
-RUN chmod +x /tini /usr/local/bin/jq
+# https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.16.1%2B1/OpenJDK11U-jdk_x64_linux_hotspot_11.0.16.1_1.tar.gz
+# https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.16.1%2B1/OpenJDK11U-jdk_arm_linux_hotspot_11.0.16.1_1.tar.gz
+
 RUN mkdir -p /opt/go /opt/node /opt/java \
     && curl -sSL https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz | tar xzf - -C /opt/go --strip-components=1 \
     && curl -sSL https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.7_10.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
@@ -49,6 +49,7 @@ RUN mkdir -p /opt/fabric \
 ENV FABRIC_CFG_PATH=/opt/fabric/config 
 ENV PATH=/opt/fabric/bin:${PATH}
 
+
 FROM base AS builder
 ADD . /tmp/microfab
 RUN cd /tmp/microfab \
@@ -63,8 +64,8 @@ COPY --from=builder /opt/microfab /opt/microfab
 COPY --from=base /opt/fabric/builders/ccaas /opt/microfab/builders/ccaas
 COPY docker/docker-entrypoint.sh /
 ENV MICROFAB_HOME=/opt/microfab
-ENV PATH=/opt/microfab/bin:${PATH}
+ENV PATH=/opt/microfab/bin:/opt/couchdb/bin:${PATH}
 EXPOSE 8080
 USER 7051
 VOLUME /opt/microfab/data
-ENTRYPOINT [ "/tini", "--", "/docker-entrypoint.sh" ]
+ENTRYPOINT [ "tini", "--", "/docker-entrypoint.sh" ]
