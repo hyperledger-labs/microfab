@@ -1,4 +1,4 @@
-name: Chaincode CI
+name: Container Build
 
 on:
   push:
