@@ -6,6 +6,16 @@ This containerized version of Fabric can be easily configured with the selection
 
 [![asciicast](https://asciinema.org/a/519913.svg)](https://asciinema.org/a/519913)
 
+## Why microfab?
+
+There are other 'form factors' of Fabric some are aimed at production/k8s deployments. Of more development focussed form factors some key ones are.
+
+- test-network with Fabric Samples - a docker-compose approach to starting fabric great for running the samples and as the 'reference standard'
+- minifab - also a good way of standing up a overall fabric network
+- test-network-nano - based around the separate binaries, useful when developing Fabric itself.
+
+Try several out, and see which you prefer and suits your way of working best. 
+
 ## Starting microfab
 
 To start Microfab with the default configuration using Docker, run the following command:
