@@ -18,8 +18,34 @@ on:
       - "*"
   workflow_dispatch: {}
 jobs:
-  build:
-    name: Build
+  binary_build:
+    name: Binary Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goarch: [amd64, arm64]
+    env:
+      GOARCH: ${{ matrix.goarch }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Go 1.17
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: Build Binary
+        run: go build -v -o bin/microfabd cmd/microfabd/main.go
+      - name: Package Binary
+        run: |
+          export GOOS=$(go env GOOS)
+          tar -C bin -czvf microfab-${GOOS}-${GOARCH}.tgz microfabd
+      - name: Publish Binary to GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: microfab-*.tgz
+  docker_build:
+    name: Docker Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -69,13 +95,3 @@ jobs:
           docker push ibmcom/ibp-microfab:${VERSION}
           docker push ibmcom/ibp-microfab:latest
         if: startsWith(github.ref, 'refs/tags/')
-      - name: Build Binary
-        run: go build -v -o bin/microfabd cmd/microfabd/main.go
-      - name: Package Binary
-        run: |
-          tar -C bin -czvf microfab-${RUNNER_OS}-${RUNNER_ARCH}.tgz microfabd
-      - name: Publish Binary to GitHub Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: microfab-*.tgz
