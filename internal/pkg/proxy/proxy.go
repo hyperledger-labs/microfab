@@ -7,9 +7,11 @@ package proxy
 import (
 	gotls "crypto/tls"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"os"
 	"regexp"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
@@ -21,6 +23,8 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
+
+var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)
 
 type route struct {
 	SourceHost string
@@ -61,6 +65,7 @@ func New(port int) (*Proxy, error) {
 		route, ok := p.routeMap[host]
 		if !ok && len(p.routes) > 0 {
 			route = p.routes[0]
+			logger.Printf("No route found for '%s' assuming ['%s','%s']", host, route.SourceHost, route.TargetHost)
 		}
 		if route.UseHTTP2 {
 			req.URL.Scheme = "h2c"
@@ -110,6 +115,7 @@ func NewWithTLS(tls *identity.Identity, port int) (*Proxy, error) {
 		route, ok := p.routeMap[host]
 		if !ok && len(p.routes) > 0 {
 			route = p.routes[0]
+			logger.Printf("No route found for '%s' assuming ['%s','%s']", host, route.SourceHost, route.TargetHost)
 		}
 		if route.UseTLS {
 			req.URL.Scheme = "https"
