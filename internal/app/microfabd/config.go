@@ -81,8 +81,9 @@ func DefaultConfig() (*Config, error) {
 		CouchDB:                true,
 		CertificateAuthorities: true,
 		TimeoutString:          "30s",
+		// TODO: remove option? raft requires TLS
 		TLS: TLS{
-			Enabled: false,
+			Enabled: true,
 		},
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {
