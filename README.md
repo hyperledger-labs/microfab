@@ -155,6 +155,12 @@ The configuration is a JSON object with the following keys:
 
 ### Examples
 
+
+
+```
+
+
+
 Configuration example for enabling TLS:
 
     export MICROFAB_CONFIG='{

@@ -440,6 +440,7 @@ func (m *Microfab) loadTLSFromConfig(config TLS) error {
 }
 
 func (m *Microfab) generateTLS() error {
+	logger.Printf("Creating the TLS material %s", m.config.Domain)
 	ca, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
 	if err != nil {
 		return err
