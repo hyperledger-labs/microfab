@@ -1,6 +1,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+
+
 FROM golang:1.18 AS builder
 ENV DEBIAN_FRONTEND=noninteractive 
 
@@ -8,11 +10,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get -y install build-essential gcc gzip \
     && apt-get -y install python3 python3-distutils libpython3-dev software-properties-common \
-    && apt-get -y install curl git jq unzip moreutils xz-utils
+    && apt-get -y install curl git jq unzip moreutils
 
 WORKDIR $GOPATH/src/github.com/hyperledger
 RUN git clone --depth 1 --branch v2.4.6 https://github.com/hyperledger/fabric.git \
-    && git clone --depth 1 --branch v1.5.5 https://github.com/hyperledger/fabric-ca.git
+    && git clone --depth 1 --branch v1.5.5 https://github.com/hyperledger/fabric-ca.git 
 
 WORKDIR $GOPATH/src/github.com/hyperledger/fabric
 ENV CGO_ENABLED=0
@@ -35,8 +37,12 @@ RUN curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.6/hyp
 
 FROM couchdb:3.1.2
 
+# Though they are populated by docker buildx, the ARG reference is required to make them available for use
+ARG TARGETARCH
+ARG TARGETOS
+
 RUN apt-get update && apt-get install -y \
-    jq \
+    jq xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 7051 microfab \
@@ -44,12 +50,20 @@ RUN groupadd -g 7051 microfab \
     && mkdir -p /home/microfab/builders /home/microfab/data \
     && chown -R microfab:microfab /home/microfab
 
+RUN if [ "${TARGETARCH}" = "amd64" ]; then ARCH=x64; else ARCH=${TARGETARCH}; fi && echo ${ARCH} \
+    && mkdir -p /opt/go /opt/node /opt/java \
+    && curl -sSL https://dl.google.com/go/go1.17.2.$TARGETOS-$TARGETARCH.tar.gz | tar xzf - -C /opt/go --strip-components=1 \
+    && curl -sSL https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.17_8.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
+    && curl -sSL https://nodejs.org/download/release/v16.4.0/node-v16.4.0-${TARGETOS}-${ARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1
+
+
 COPY docker/local.ini /opt/couchdb/etc/local.d/local.ini
 COPY docker/docker-entrypoint.sh /usr/local/bin
 COPY --from=builder /go/src/github.com/hyperledger/fabric/build/bin/* /usr/local/bin/
 COPY --from=builder /go/src/github.com/hyperledger/fabric-ca/release/build/bin/* /usr/local/bin/
 COPY --from=builder /fabric/config /etc/hyperledger/fabric
 COPY --from=builder /go/src/github.com/IBM/microfab/microfabd /usr/local/bin/
+
 COPY --from=builder --chown=microfab:microfab /go/src/github.com/IBM/microfab/builders/ /home/microfab/builders/
 COPY --from=builder --chown=microfab:microfab /go/src/github.com/hyperledger/fabric/release/*/builders/ccaas /home/microfab/builders/ccaas
 
@@ -57,7 +71,7 @@ RUN sed -i 's/opt/home/g' /opt/couchdb/etc/local.d/local.ini
 
 ENV FABRIC_CFG_PATH=/etc/hyperledger/fabric
 ENV MICROFAB_HOME=/home/microfab
-ENV PATH=/opt/couchdb/bin:${PATH}
+ENV PATH=/opt/go/bin:/opt/node/bin:/opt/java/bin:/opt/couchdb/bin:${PATH}
 
 EXPOSE 8080
 USER 7051
