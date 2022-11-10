@@ -27,6 +27,7 @@ microfab: microfab-down
 
     export CFG=$CWDIR/_cfg/uf
     export MICROFAB_CONFIG='{
+        "couchdb":false,
         "endorsing_organizations":[
             {
                 "name": "org1"
@@ -50,6 +51,7 @@ microfab: microfab-down
             }
 
         ],
+        "domain":"localho.st",
         "tls": {
             "enabled":true
         },
@@ -60,10 +62,11 @@ microfab: microfab-down
     echo
     echo "Stating microfab...."
 
-    docker run --name microfab -p 8080:8080 --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}"  tls/microfab
+    #docker run --name microfab -p 8080:8080 --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" --network fabnet -e FABRIC_LOGGING_SPEC=info ibmcom/ibp-microfab
+    docker run --name microfab -p 8080:8080 -p 4000:4000 -p 4001:4001 -d --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" --network fabnet -e FABRIC_LOGGING_SPEC=info tls/microfab
     sleep 5
 
-    curl -s http://console.127-0-0-1.nip.io:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
+    curl -sSL --insecure http://console.127-0-0-1.localho.st:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
     cat << EOF > $CFG/org1admin.env
     export CORE_PEER_LOCALMSPID=org1MSP
     export CORE_PEER_MSPCONFIGPATH=$CFG/_msp/org1/org1admin/msp

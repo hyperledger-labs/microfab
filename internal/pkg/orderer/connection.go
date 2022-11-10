@@ -7,13 +7,17 @@ package orderer
 import (
 	"crypto/tls"
 	"fmt"
+	"log"
 	"net/url"
+	"os"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/pkg/client"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
+
+var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)
 
 // Connection represents a connection to a orderer.
 type Connection struct {
@@ -47,12 +51,27 @@ func Connect(orderer *Orderer, mspID string, identity *identity.Identity) (*Conn
 }
 
 // ConnectClient opens a connection to the orderer using a client orderer object.
-func ConnectClient(orderer *client.OrderingService, mspID string, identity *identity.Identity) (*Connection, error) {
+func ConnectClient(orderer *client.OrderingService, mspID string, identity *identity.Identity, tlsEnabled bool) (*Connection, error) {
 	parsedURL, err := url.Parse(orderer.APIURL)
 	if err != nil {
 		return nil, err
 	}
-	clientConn, err := grpc.Dial(parsedURL.Host, grpc.WithInsecure(), grpc.WithAuthority(orderer.APIOptions.DefaultAuthority))
+
+	var clientConn *grpc.ClientConn
+
+	if tlsEnabled {
+		logger.Printf("Using TLS")
+		creds := credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+
+		clientConn, err = grpc.Dial(parsedURL.Host, grpc.WithTransportCredentials(creds), grpc.WithAuthority(orderer.APIOptions.DefaultAuthority))
+	} else {
+		logger.Printf("Not Using TLS")
+		clientConn, err = grpc.Dial(parsedURL.Host, grpc.WithInsecure(), grpc.WithAuthority(orderer.APIOptions.DefaultAuthority))
+	}
+
+	// clientConn, err := grpc.Dial(parsedURL.Host, grpc.WithInsecure(), grpc.WithAuthority(orderer.APIOptions.DefaultAuthority))
 	if err != nil {
 		return nil, err
 	}

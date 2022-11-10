@@ -266,6 +266,23 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 								Metadata: nil,
 								State:    orderer.ConsensusType_STATE_NORMAL,
 								Type:     "solo",
+								// Metadata: util.MarshalOrPanic(&etcdraft.ConfigMetadata{
+								// 	Consenters: []*etcdraft.Consenter{
+								// 		{
+								// 			Host: o.apiURL.Host,
+								// 			Port: uint32(o.apiPort),
+								// 		},
+								// 	},
+								// 	Options: &etcdraft.Options{
+								// 		TickInterval:         "2500ms",
+								// 		ElectionTick:         5,
+								// 		HeartbeatTick:        1,
+								// 		MaxInflightBlocks:    5,
+								// 		SnapshotIntervalSize: 1048576,
+								// 	},
+								// }),
+								// State: orderer.ConsensusType_STATE_NORMAL,
+								// Type:  "etcdraft",
 							}),
 						},
 					},

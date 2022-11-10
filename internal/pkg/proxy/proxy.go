@@ -5,7 +5,9 @@
 package proxy
 
 import (
+	"crypto/tls"
 	gotls "crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
@@ -24,7 +26,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 )
 
-var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)
+var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "proxy"), log.LstdFlags)
 
 type route struct {
 	SourceHost string
@@ -41,6 +43,8 @@ type Proxy struct {
 	routes     []*route
 	routeMap   routeMap
 	tls        *identity.Identity
+	caCertPool *x509.CertPool
+	peerCert   gotls.Certificate
 }
 
 type h2cTransportWrapper struct {
@@ -67,6 +71,7 @@ func New(port int) (*Proxy, error) {
 			route = p.routes[0]
 			logger.Printf("No route found for '%s' assuming ['%s','%s']", host, route.SourceHost, route.TargetHost)
 		}
+		logger.Printf("Using route mapping for '%s' ['%s','%s','%t']", host, route.SourceHost, route.TargetHost, route.UseTLS)
 		if route.UseHTTP2 {
 			req.URL.Scheme = "h2c"
 		} else {
@@ -107,8 +112,12 @@ func New(port int) (*Proxy, error) {
 // NewWithTLS creates a new instance of a proxy that is TLS enabled.
 func NewWithTLS(tls *identity.Identity, port int) (*Proxy, error) {
 	p := &Proxy{routeMap: routeMap{}, tls: tls}
+	p.caCertPool = x509.NewCertPool()
+	p.caCertPool.AddCert(tls.CA().Certificate())
+
 	director := func(req *http.Request) {
 		host := req.Host
+		logger.Printf("RemoteAddr=%s RequestURI=%s  Host=%s", req.RemoteAddr, req.RequestURI, host)
 		if !portRegex.MatchString(host) {
 			host += fmt.Sprintf(":%d", port)
 		}
@@ -117,6 +126,7 @@ func NewWithTLS(tls *identity.Identity, port int) (*Proxy, error) {
 			route = p.routes[0]
 			logger.Printf("No route found for '%s' assuming ['%s','%s']", host, route.SourceHost, route.TargetHost)
 		}
+		logger.Printf("Using route mapping for '%s' ['%s','%s','%t','%t']", host, route.SourceHost, route.TargetHost, route.UseTLS, route.UseHTTP2)
 		if route.UseTLS {
 			req.URL.Scheme = "https"
 		} else {
@@ -124,10 +134,16 @@ func NewWithTLS(tls *identity.Identity, port int) (*Proxy, error) {
 		}
 		req.URL.Host = route.TargetHost
 	}
+
+	// have attempted to ensure the TLS Cert is passed through. Used a customer 'dialTLS' implementation
+	// but didn't seem to really work
+	// DialTLS:           p.dialTLS,
+
 	httpTransport := &http.Transport{
 		TLSClientConfig: &gotls.Config{
 			InsecureSkipVerify: true,
 		},
+		// DialTLS:           p.dialTLS,
 		ForceAttemptHTTP2: true,
 	}
 	err := http2.ConfigureTransport(httpTransport)
@@ -151,6 +167,7 @@ func NewWithTLS(tls *identity.Identity, port int) (*Proxy, error) {
 		return nil, err
 	}
 	certificate, err := gotls.X509KeyPair(tls.Certificate().Bytes(), tls.PrivateKey().Bytes())
+	p.peerCert = certificate
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +180,38 @@ func NewWithTLS(tls *identity.Identity, port int) (*Proxy, error) {
 	}
 	p.httpServer = httpServer
 	return p, nil
+}
+
+func (p *Proxy) dialTLS(network, addr string) (net.Conn, error) {
+	logger.Printf("dialTLS %s %s", network, addr)
+	conn, err := net.Dial(network, addr)
+	if err != nil {
+		return nil, err
+	}
+
+	// host, _, err := net.SplitHostPort(addr)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	cfg := &tls.Config{
+		RootCAs:            p.caCertPool,
+		Certificates:       []tls.Certificate{p.peerCert},
+		InsecureSkipVerify: true,
+	}
+
+	tlsConn := tls.Client(conn, cfg)
+	if err := tlsConn.Handshake(); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	cs := tlsConn.ConnectionState()
+	cert := cs.PeerCertificates[0]
+
+	// Verify here
+	log.Println(cert.Subject)
+
+	return tlsConn, nil
 }
 
 // RegisterConsole registers the specified console with the proxy.
@@ -271,5 +320,11 @@ func (p *Proxy) Stop() error {
 func (p *Proxy) buildRouteMap() {
 	for _, route := range p.routes {
 		p.routeMap[route.SourceHost] = route
+	}
+}
+
+func (p *Proxy) DumpRouteMap() {
+	for key, route := range p.routeMap {
+		logger.Printf("%s ==> %v \n", key, route)
 	}
 }

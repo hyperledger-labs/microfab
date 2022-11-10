@@ -77,7 +77,7 @@ func (c *CA) Start(timeout time.Duration) error {
 			return err
 		}
 	}
-	fmt.Print(args)
+
 	cmd := exec.Command(
 		"fabric-ca-server",
 		args...,

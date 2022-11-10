@@ -87,7 +87,7 @@ func New(name string, opts ...Option) (*Identity, error) {
 		return nil, err
 	}
 
-	log.Printf("Creating new x509 cert '%s'", name)
+	logger.Printf("Creating new x509 cert '%s'", name)
 
 	identity := &newIdentity{
 		Template: &x509.Certificate{
@@ -101,7 +101,7 @@ func New(name string, opts ...Option) (*Identity, error) {
 				CommonName: name,
 			},
 			IsCA:     false,
-			DNSNames: []string{"*.127-0-0-1.nip.io", "127.0.0.1", "localhost", "0.0.0.0"},
+			DNSNames: []string{"*.127-0-0-1.nip.io", "127.0.0.1", "localhost", "0.0.0.0", "*.localho.st"},
 		},
 	}
 	identity.Parent = identity.Template

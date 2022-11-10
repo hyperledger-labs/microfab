@@ -1,0 +1,360 @@
+
+Stating microfab....
+[       microfabd] 2022/11/18 14:49:23 Starting Microfab ...
+[       microfabd] 2022/11/18 14:49:23 MBW
+[       microfabd] 2022/11/18 14:49:23 Creating endorsing organization org2 ...
+[       microfabd] 2022/11/18 14:49:23 Creating ordering organization Orderer ...
+[       microfabd] 2022/11/18 14:49:23 Creating endorsing organization org1 ...
+[       microfabd] 2022/11/18 14:49:23 Created endorsing organization org2
+[       microfabd] 2022/11/18 14:49:23 Created ordering organization Orderer
+[       microfabd] 2022/11/18 14:49:23 Created endorsing organization org1
+[       microfabd] 2022/11/18 14:49:23 Creating and starting CA for endorsing organization org2 ...
+[       microfabd] 2022/11/18 14:49:23 Creating and starting peer for endorsing organization org1 ...
+[       microfabd] 2022/11/18 14:49:23 Creating and starting orderer for ordering organization Orderer ...
+[       microfabd] 2022/11/18 14:49:23 Creating and starting peer for endorsing organization org2 ...
+[       microfabd] 2022/11/18 14:49:23 Creating and starting CA for endorsing organization org1 ...
+[start --boot admin:adminpw --ca.certfile /opt/microfab/data/ca-org2/ca-cert.pem --ca.keyfile /opt/microfab/data/ca-org2/ca-key.pem --port 2000 --operations.listenaddress 0.0.0.0:2001 --ca.name org2ca][start --boot admin:adminpw --ca.certfile /opt/microfab/data/ca-org1/ca-cert.pem --ca.keyfile /opt/microfab/data/ca-org1/ca-key.pem --port 2005 --operations.listenaddress 0.0.0.0:2006 --ca.name org1ca][          org2ca] 2022/11/18 14:49:23 [INFO] Created default configuration file at /opt/microfab/data/ca-org2/fabric-ca-server-config.yaml
+[          org1ca] 2022/11/18 14:49:23 [INFO] Created default configuration file at /opt/microfab/data/ca-org1/fabric-ca-server-config.yaml
+[         orderer] [34m2022-11-18 14:49:23.548 UTC 0001 INFO[0m [localconfig] [34;1mcompleteInitialization[0m -> Kafka.Version unset, setting to 0.10.2.0
+[         orderer] [34m2022-11-18 14:49:23.548 UTC 0002 INFO[0m [orderer.common.server] [34;1mprettyPrintStruct[0m -> Orderer config values:
+[         orderer] 	General.ListenAddress = "0.0.0.0"
+[         orderer] 	General.ListenPort = 2007
+[         orderer] 	General.TLS.Enabled = false
+[         orderer] 	General.TLS.PrivateKey = "/opt/fabric/config/tls/server.key"
+[         orderer] 	General.TLS.Certificate = "/opt/fabric/config/tls/server.crt"
+[         orderer] 	General.TLS.RootCAs = [/opt/fabric/config/tls/ca.crt]
+[         orderer] 	General.TLS.ClientAuthRequired = false
+[         orderer] 	General.TLS.ClientRootCAs = []
+[         orderer] 	General.TLS.TLSHandshakeTimeShift = 0s
+[         orderer] 	General.Cluster.ListenAddress = ""
+[         orderer] 	General.Cluster.ListenPort = 0
+[         orderer] 	General.Cluster.ServerCertificate = ""
+[         orderer] 	General.Cluster.ServerPrivateKey = ""
+[         orderer] 	General.Cluster.ClientCertificate = ""
+[         orderer] 	General.Cluster.ClientPrivateKey = ""
+[         orderer] 	General.Cluster.RootCAs = []
+[         orderer] 	General.Cluster.DialTimeout = 5s
+[         orderer] 	General.Cluster.RPCTimeout = 7s
+[         orderer] 	General.Cluster.ReplicationBufferSize = 20971520
+[         orderer] 	General.Cluster.ReplicationPullTimeout = 5s
+[         orderer] 	General.Cluster.ReplicationRetryTimeout = 5s
+[         orderer] 	General.Cluster.ReplicationBackgroundRefreshInterval = 5m0s
+[         orderer] 	General.Cluster.ReplicationMaxRetries = 12
+[         orderer] 	General.Cluster.SendBufferSize = 10
+[         orderer] 	General.Cluster.CertExpirationWarningThreshold = 168h0m0s
+[         orderer] 	General.Cluster.TLSHandshakeTimeShift = 0s
+[         orderer] 	General.Keepalive.ServerMinInterval = 1m0s
+[         orderer] 	General.Keepalive.ServerInterval = 2h0m0s
+[         orderer] 	General.Keepalive.ServerTimeout = 20s
+[         orderer] 	General.ConnectionTimeout = 0s
+[         orderer] 	General.GenesisMethod = ""
+[         orderer] 	General.GenesisFile = ""
+[         orderer] 	General.BootstrapMethod = "file"
+[         orderer] 	General.BootstrapFile = "/opt/microfab/data/orderer/config/genesisblock"
+[         orderer] 	General.Profile.Enabled = false
+[         orderer] 	General.Profile.Address = "0.0.0.0:6060"
+[         orderer] 	General.LocalMSPDir = "/opt/microfab/data/orderer/msp"
+[         orderer] 	General.LocalMSPID = "OrdererMSP"
+[         orderer] 	General.BCCSP.Default = "SW"
+[         orderer] 	General.BCCSP.SW.Security = 256
+[         orderer] 	General.BCCSP.SW.Hash = "SHA2"
+[         orderer] 	General.BCCSP.SW.FileKeystore.KeyStorePath = ""
+[         orderer] 	General.Authentication.TimeWindow = 15m0s
+[         orderer] 	General.Authentication.NoExpirationChecks = false
+[         orderer] 	General.MaxRecvMsgSize = 104857600
+[         orderer] 	General.MaxSendMsgSize = 104857600
+[         orderer] 	FileLedger.Location = "/opt/microfab/data/orderer/data"
+[         orderer] 	FileLedger.Prefix = ""
+[         orderer] 	Kafka.Retry.ShortInterval = 5s
+[         orderer] 	Kafka.Retry.ShortTotal = 10m0s
+[         orderer] 	Kafka.Retry.LongInterval = 5m0s
+[         orderer] 	Kafka.Retry.LongTotal = 12h0m0s
+[         orderer] 	Kafka.Retry.NetworkTimeouts.DialTimeout = 10s
+[         orderer] 	Kafka.Retry.NetworkTimeouts.ReadTimeout = 10s
+[         orderer] 	Kafka.Retry.NetworkTimeouts.WriteTimeout = 10s
+[         orderer] 	Kafka.Retry.Metadata.RetryMax = 3
+[         orderer] 	Kafka.Retry.Metadata.RetryBackoff = 250ms
+[         orderer] 	Kafka.Retry.Producer.RetryMax = 3
+[         orderer] 	Kafka.Retry.Producer.RetryBackoff = 100ms
+[         orderer] 	Kafka.Retry.Consumer.RetryBackoff = 2s
+[         orderer] 	Kafka.Verbose = false
+[         orderer] 	Kafka.Version = 0.10.2.0
+[         orderer] 	Kafka.TLS.Enabled = false
+[         orderer] 	Kafka.TLS.PrivateKey = ""
+[         orderer] 	Kafka.TLS.Certificate = ""
+[         orderer] 	Kafka.TLS.RootCAs = []
+[         orderer] 	Kafka.TLS.ClientAuthRequired = false
+[         orderer] 	Kafka.TLS.ClientRootCAs = []
+[         orderer] 	Kafka.TLS.TLSHandshakeTimeShift = 0s
+[         orderer] 	Kafka.SASLPlain.Enabled = false
+[         orderer] 	Kafka.SASLPlain.User = ""
+[         orderer] 	Kafka.SASLPlain.Password = ""
+[         orderer] 	Kafka.Topic.ReplicationFactor = 3
+[         orderer] 	Debug.BroadcastTraceDir = ""
+[         orderer] 	Debug.DeliverTraceDir = ""
+[         orderer] 	Consensus = map[SnapDir:/opt/microfab/data/orderer/data/etcdraft/snapshot WALDir:/opt/microfab/data/orderer/data/etcdraft/wal]
+[         orderer] 	Operations.ListenAddress = "0.0.0.0:2008"
+[         orderer] 	Operations.TLS.Enabled = false
+[         orderer] 	Operations.TLS.PrivateKey = ""
+[         orderer] 	Operations.TLS.Certificate = ""
+[         orderer] 	Operations.TLS.RootCAs = []
+[         orderer] 	Operations.TLS.ClientAuthRequired = false
+[         orderer] 	Operations.TLS.ClientRootCAs = []
+[         orderer] 	Operations.TLS.TLSHandshakeTimeShift = 0s
+[         orderer] 	Metrics.Provider = "prometheus"
+[         orderer] 	Metrics.Statsd.Network = "udp"
+[         orderer] 	Metrics.Statsd.Address = "127.0.0.1:8125"
+[         orderer] 	Metrics.Statsd.WriteInterval = 30s
+[         orderer] 	Metrics.Statsd.Prefix = ""
+[         orderer] 	ChannelParticipation.Enabled = false
+[         orderer] 	ChannelParticipation.MaxRequestBodySize = 1048576
+[         orderer] 	Admin.ListenAddress = "127.0.0.1:9443"
+[         orderer] 	Admin.TLS.Enabled = false
+[         orderer] 	Admin.TLS.PrivateKey = ""
+[         orderer] 	Admin.TLS.Certificate = ""
+[         orderer] 	Admin.TLS.RootCAs = []
+[         orderer] 	Admin.TLS.ClientAuthRequired = true
+[         orderer] 	Admin.TLS.ClientRootCAs = []
+[         orderer] 	Admin.TLS.TLSHandshakeTimeShift = 0s
+[        org2peer] [34m2022-11-18 14:49:23.549 UTC 0001 INFO[0m [nodeCmd] [34;1mserve[0m -> Starting peer:
+[        org2peer]  Version: 2.4.6
+[        org2peer]  Commit SHA: 83596078d
+[        org2peer]  Go version: go1.18.2
+[        org2peer]  OS/Arch: linux/amd64
+[        org2peer]  Chaincode:
+[        org2peer]   Base Docker Label: org.hyperledger.fabric
+[        org2peer]   Docker Namespace: hyperledger
+[        org2peer] [34m2022-11-18 14:49:23.550 UTC 0002 INFO[0m [peer] [34;1mgetLocalAddress[0m -> Auto-detected peer address: 172.19.0.2:2009
+[        org2peer] [34m2022-11-18 14:49:23.550 UTC 0003 INFO[0m [peer] [34;1mgetLocalAddress[0m -> Host is 0.0.0.0 , falling back to auto-detected address: 172.19.0.2:2009
+[        org2peer] [34m2022-11-18 14:49:23.553 UTC 0004 INFO[0m [nodeCmd] [34;1minitGrpcSemaphores[0m -> concurrency limit for endorser service is 2500
+[        org2peer] [34m2022-11-18 14:49:23.553 UTC 0005 INFO[0m [nodeCmd] [34;1minitGrpcSemaphores[0m -> concurrency limit for deliver service is 2500
+[        org2peer] [34m2022-11-18 14:49:23.553 UTC 0006 INFO[0m [nodeCmd] [34;1minitGrpcSemaphores[0m -> concurrency limit for gateway service is 500
+[        org1peer] [34m2022-11-18 14:49:23.556 UTC 0001 INFO[0m [nodeCmd] [34;1mserve[0m -> Starting peer:
+[        org1peer]  Version: 2.4.6
+[        org1peer]  Commit SHA: 83596078d
+[        org1peer]  Go version: go1.18.2
+[        org1peer]  OS/Arch: linux/amd64
+[        org1peer]  Chaincode:
+[        org1peer]   Base Docker Label: org.hyperledger.fabric
+[        org1peer]   Docker Namespace: hyperledger
+[        org1peer] [34m2022-11-18 14:49:23.556 UTC 0002 INFO[0m [peer] [34;1mgetLocalAddress[0m -> Auto-detected peer address: 172.19.0.2:2002
+[        org1peer] [34m2022-11-18 14:49:23.556 UTC 0003 INFO[0m [peer] [34;1mgetLocalAddress[0m -> Host is 0.0.0.0 , falling back to auto-detected address: 172.19.0.2:2002
+[        org1peer] [34m2022-11-18 14:49:23.558 UTC 0004 INFO[0m [nodeCmd] [34;1minitGrpcSemaphores[0m -> concurrency limit for endorser service is 2500
+[        org1peer] [34m2022-11-18 14:49:23.558 UTC 0005 INFO[0m [nodeCmd] [34;1minitGrpcSemaphores[0m -> concurrency limit for deliver service is 2500
+[        org1peer] [34m2022-11-18 14:49:23.558 UTC 0006 INFO[0m [nodeCmd] [34;1minitGrpcSemaphores[0m -> concurrency limit for gateway service is 500
+[          org2ca] 2022/11/18 14:49:23 [INFO] Starting server in home directory: /opt/microfab/data/ca-org2
+[          org2ca] 2022/11/18 14:49:23 [INFO] Server Version: 1.5.2
+[          org2ca] 2022/11/18 14:49:23 [INFO] Server Levels: &{Identity:2 Affiliation:1 Certificate:1 Credential:1 RAInfo:1 Nonce:1}
+[          org2ca] 2022/11/18 14:49:23 [INFO] The CA key and certificate files already exist
+[          org2ca] 2022/11/18 14:49:23 [INFO] Key file location: /opt/microfab/data/ca-org2/ca-key.pem
+[          org2ca] 2022/11/18 14:49:23 [INFO] Certificate file location: /opt/microfab/data/ca-org2/ca-cert.pem
+[          org1ca] 2022/11/18 14:49:23 [INFO] Starting server in home directory: /opt/microfab/data/ca-org1
+[          org1ca] 2022/11/18 14:49:23 [INFO] Server Version: 1.5.2
+[          org1ca] 2022/11/18 14:49:23 [INFO] Server Levels: &{Identity:2 Affiliation:1 Certificate:1 Credential:1 RAInfo:1 Nonce:1}
+[          org1ca] 2022/11/18 14:49:23 [INFO] The CA key and certificate files already exist
+[          org1ca] 2022/11/18 14:49:23 [INFO] Key file location: /opt/microfab/data/ca-org1/ca-key.pem
+[          org1ca] 2022/11/18 14:49:23 [INFO] Certificate file location: /opt/microfab/data/ca-org1/ca-cert.pem
+[         orderer] [34m2022-11-18 14:49:23.647 UTC 0003 INFO[0m [blkstorage] [34;1mNewProvider[0m -> Creating new file ledger directory at /opt/microfab/data/orderer/data/chains
+[         orderer] [34m2022-11-18 14:49:23.723 UTC 0004 INFO[0m [orderer.common.server] [34;1mMain[0m -> Bootstrapping the system channel
+[       microfabd] 2022/11/18 14:49:23 Created and started orderer for ordering organization Orderer
+[         orderer] [34m2022-11-18 14:49:23.763 UTC 0005 INFO[0m [blkstorage] [34;1mnewBlockfileMgr[0m -> Getting block information from block storage
+[        org2peer] [34m2022-11-18 14:49:23.842 UTC 0007 INFO[0m [certmonitor] [34;1mtrackCertExpiration[0m -> The enrollment certificate will expire on 2032-11-15 14:44:23 +0000 UTC
+[        org2peer] [34m2022-11-18 14:49:23.843 UTC 0008 INFO[0m [ledgermgmt] [34;1mNewLedgerMgr[0m -> Initializing LedgerMgr
+[         orderer] [34m2022-11-18 14:49:23.870 UTC 0006 INFO[0m [orderer.common.server] [34;1minitializeBootstrapChannel[0m -> Initialized the system channel 'testchainid' from bootstrap block
+[         orderer] [34m2022-11-18 14:49:23.873 UTC 0007 INFO[0m [orderer.common.server] [34;1mextractSystemChannel[0m -> Found system channel config block, number: 0
+[         orderer] [34m2022-11-18 14:49:23.873 UTC 0008 INFO[0m [orderer.common.server] [34;1mselectClusterBootBlock[0m -> Cluster boot block is bootstrap (genesis) block; Blocks Header.Number system-channel=0, bootstrap=0
+[         orderer] [34m2022-11-18 14:49:23.875 UTC 0009 INFO[0m [orderer.common.server] [34;1mMain[0m -> Starting with system channel: testchainid, consensus type: solo
+[         orderer] [34m2022-11-18 14:49:23.875 UTC 000a INFO[0m [certmonitor] [34;1mtrackCertExpiration[0m -> The enrollment certificate will expire on 2032-11-15 14:44:23 +0000 UTC
+[         orderer] [33m2022-11-18 14:49:23.881 UTC 000b WARN[0m [orderer.consensus.solo] [33;1mHandleChain[0m -> Use of the Solo orderer is deprecated and remains only for use in test environments but may be removed in the future.
+[         orderer] [34m2022-11-18 14:49:23.881 UTC 000c INFO[0m [orderer.commmon.multichannel] [34;1minitSystemChannel[0m -> Starting system channel 'testchainid' with genesis block hash 5653010bf66fae6902ed6f8a8ea5b18f5a082954f1339b65d5de480baadfc58b and orderer type solo
+[         orderer] [34m2022-11-18 14:49:23.881 UTC 000d INFO[0m [orderer.common.server] [34;1mMain[0m -> Starting orderer:
+[         orderer]  Version: 2.4.6
+[         orderer]  Commit SHA: 83596078d
+[         orderer]  Go version: go1.18.2
+[         orderer]  OS/Arch: linux/amd64
+[         orderer] [34m2022-11-18 14:49:23.882 UTC 000e INFO[0m [orderer.common.server] [34;1mMain[0m -> Beginning to serve requests
+[        org1peer] [34m2022-11-18 14:49:23.882 UTC 0007 INFO[0m [certmonitor] [34;1mtrackCertExpiration[0m -> The enrollment certificate will expire on 2032-11-15 14:44:23 +0000 UTC
+[        org1peer] [34m2022-11-18 14:49:23.883 UTC 0008 INFO[0m [ledgermgmt] [34;1mNewLedgerMgr[0m -> Initializing LedgerMgr
+[          org2ca] 2022/11/18 14:49:24 [INFO] Initialized sqlite3 database at /opt/microfab/data/ca-org2/fabric-ca-server.db
+[          org1ca] 2022/11/18 14:49:24 [INFO] Initialized sqlite3 database at /opt/microfab/data/ca-org1/fabric-ca-server.db
+[          org2ca] 2022/11/18 14:49:24 [INFO] The issuer key was successfully stored. The public key is at: /opt/microfab/data/ca-org2/IssuerPublicKey, secret key is at: /opt/microfab/data/ca-org2/msp/keystore/IssuerSecretKey
+[          org2ca] 2022/11/18 14:49:24 [INFO] Idemix issuer revocation public and secret keys were generated for CA 'org2ca'
+[          org2ca] 2022/11/18 14:49:24 [INFO] The revocation key was successfully stored. The public key is at: /opt/microfab/data/ca-org2/IssuerRevocationPublicKey, private key is at: /opt/microfab/data/ca-org2/msp/keystore/IssuerRevocationPrivateKey
+[          org1ca] 2022/11/18 14:49:24 [INFO] The issuer key was successfully stored. The public key is at: /opt/microfab/data/ca-org1/IssuerPublicKey, secret key is at: /opt/microfab/data/ca-org1/msp/keystore/IssuerSecretKey
+[          org1ca] 2022/11/18 14:49:24 [INFO] Idemix issuer revocation public and secret keys were generated for CA 'org1ca'
+[          org1ca] 2022/11/18 14:49:24 [INFO] The revocation key was successfully stored. The public key is at: /opt/microfab/data/ca-org1/IssuerRevocationPublicKey, private key is at: /opt/microfab/data/ca-org1/msp/keystore/IssuerRevocationPrivateKey
+[          org2ca] 2022/11/18 14:49:24 [INFO] Home directory for default CA: /opt/microfab/data/ca-org2
+[          org2ca] 2022/11/18 14:49:24 [INFO] Operation Server Listening on [::]:2001
+[          org2ca] 2022/11/18 14:49:24 [INFO] Listening on http://0.0.0.0:2000
+[          org1ca] 2022/11/18 14:49:24 [INFO] Home directory for default CA: /opt/microfab/data/ca-org1
+[        org2peer] [34m2022-11-18 14:49:24.343 UTC 0009 INFO[0m [leveldbhelper] [34;1mopenDBAndCheckFormat[0m -> DB is empty Setting db format as 2.0
+[          org1ca] 2022/11/18 14:49:24 [INFO] Operation Server Listening on [::]:2006
+[          org1ca] 2022/11/18 14:49:24 [INFO] Listening on http://0.0.0.0:2005
+[        org2peer] [34m2022-11-18 14:49:24.371 UTC 000a INFO[0m [blkstorage] [34;1mNewProvider[0m -> Creating new file ledger directory at /opt/microfab/data/peer-org2/data/ledgersData/chains/chains
+[        org1peer] [34m2022-11-18 14:49:24.391 UTC 0009 INFO[0m [leveldbhelper] [34;1mopenDBAndCheckFormat[0m -> DB is empty Setting db format as 2.0
+[        org1peer] [34m2022-11-18 14:49:24.401 UTC 000a INFO[0m [blkstorage] [34;1mNewProvider[0m -> Creating new file ledger directory at /opt/microfab/data/peer-org1/data/ledgersData/chains/chains
+[        org2peer] [34m2022-11-18 14:49:24.491 UTC 000b INFO[0m [leveldbhelper] [34;1mopenDBAndCheckFormat[0m -> DB is empty Setting db format as 2.0
+[        org1peer] [34m2022-11-18 14:49:24.524 UTC 000b INFO[0m [leveldbhelper] [34;1mopenDBAndCheckFormat[0m -> DB is empty Setting db format as 2.0
+[          org1ca] 2022/11/18 14:49:24 [INFO] signed certificate with serial number 711226723566426841131101014434099982564313390035
+[          org2ca] 2022/11/18 14:49:24 [INFO] signed certificate with serial number 48023021209847742292437240956297591134817149229
+[        org2peer] [34m2022-11-18 14:49:24.605 UTC 000c INFO[0m [leveldbhelper] [34;1mopenDBAndCheckFormat[0m -> DB is empty Setting db format as 2.0
+[        org2peer] [34m2022-11-18 14:49:24.616 UTC 000d INFO[0m [ledgermgmt] [34;1mNewLedgerMgr[0m -> Initialized LedgerMgr
+[        org2peer] [34m2022-11-18 14:49:24.617 UTC 000e INFO[0m [gossip.service] [34;1mNew[0m -> Initialize gossip with endpoint org2peer-api.localho.st:8080
+[        org2peer] [34m2022-11-18 14:49:24.619 UTC 000f INFO[0m [gossip.gossip] [34;1mNew[0m -> Creating gossip service with self membership of Endpoint: org2peer-api.localho.st:8080, InternalEndpoint: org2peer-api.localho.st:8080, PKI-ID: a3eb5cb04c50799af2a27d733a99dbcc5b228693739c09fce64e176ee91de3e9, Metadata: 
+[        org2peer] [34m2022-11-18 14:49:24.619 UTC 0010 INFO[0m [lifecycle] [34;1mInitializeLocalChaincodes[0m -> Initialized lifecycle cache with 0 already installed chaincodes
+[        org2peer] [34m2022-11-18 14:49:24.619 UTC 0011 INFO[0m [gossip.gossip] [34;1mstart[0m -> Gossip instance org2peer-api.localho.st:8080 started
+[        org2peer] [34m2022-11-18 14:49:24.620 UTC 0012 INFO[0m [nodeCmd] [34;1mcomputeChaincodeEndpoint[0m -> Entering computeChaincodeEndpoint with peerHostname: 172.19.0.2
+[        org2peer] [34m2022-11-18 14:49:24.620 UTC 0013 INFO[0m [nodeCmd] [34;1mcomputeChaincodeEndpoint[0m -> Exit with ccEndpoint: 172.19.0.2:2010
+[        org2peer] [34m2022-11-18 14:49:24.621 UTC 0014 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode 'lscc'
+[        org2peer] [34m2022-11-18 14:49:24.621 UTC 0015 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode 'cscc'
+[        org2peer] [34m2022-11-18 14:49:24.622 UTC 0016 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode 'qscc'
+[        org2peer] [34m2022-11-18 14:49:24.622 UTC 0017 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode '_lifecycle'
+[        org2peer] [34m2022-11-18 14:49:24.622 UTC 0018 INFO[0m [nodeCmd] [34;1mserve[0m -> Deployed system chaincodes
+[        org2peer] [34m2022-11-18 14:49:24.622 UTC 0019 INFO[0m [discovery] [34;1mNewService[0m -> Created with config TLS: false, authCacheMaxSize: 1000, authCachePurgeRatio: 0.750000
+[        org2peer] [34m2022-11-18 14:49:24.622 UTC 001a INFO[0m [nodeCmd] [34;1mserve[0m -> Discovery service activated
+[        org2peer] [34m2022-11-18 14:49:24.622 UTC 001b INFO[0m [nodeCmd] [34;1mserve[0m -> Starting peer with Gateway enabled
+[        org2peer] [34m2022-11-18 14:49:24.623 UTC 001c INFO[0m [nodeCmd] [34;1mserve[0m -> Starting peer with ID=[org2peer], network ID=[dev], address=[172.19.0.2:2009]
+[        org2peer] [34m2022-11-18 14:49:24.623 UTC 001d INFO[0m [nodeCmd] [34;1mserve[0m -> Started peer with ID=[org2peer], network ID=[dev], address=[172.19.0.2:2009]
+[        org2peer] [34m2022-11-18 14:49:24.623 UTC 001e INFO[0m [kvledger] [34;1mLoadPreResetHeight[0m -> Loading prereset height from path [/opt/microfab/data/peer-org2/data/ledgersData/chains]
+[        org2peer] [34m2022-11-18 14:49:24.623 UTC 001f INFO[0m [blkstorage] [34;1mpreResetHtFiles[0m -> No active channels passed
+[          org1ca] 2022/11/18 14:49:24 [INFO] 127.0.0.1:39188 POST /enroll 201 0 "OK"
+[          org2ca] 2022/11/18 14:49:24 [INFO] 127.0.0.1:49708 POST /enroll 201 0 "OK"
+[       microfabd] 2022/11/18 14:49:24 Created and started CA for endorsing organization org1
+[       microfabd] 2022/11/18 14:49:24 Created and started CA for endorsing organization org2
+[        org1peer] [34m2022-11-18 14:49:24.634 UTC 000c INFO[0m [leveldbhelper] [34;1mopenDBAndCheckFormat[0m -> DB is empty Setting db format as 2.0
+[        org1peer] [34m2022-11-18 14:49:24.642 UTC 000d INFO[0m [ledgermgmt] [34;1mNewLedgerMgr[0m -> Initialized LedgerMgr
+[        org1peer] [34m2022-11-18 14:49:24.643 UTC 000e INFO[0m [gossip.service] [34;1mNew[0m -> Initialize gossip with endpoint org1peer-api.localho.st:8080
+[        org1peer] [34m2022-11-18 14:49:24.645 UTC 000f INFO[0m [gossip.gossip] [34;1mNew[0m -> Creating gossip service with self membership of Endpoint: org1peer-api.localho.st:8080, InternalEndpoint: org1peer-api.localho.st:8080, PKI-ID: 7275c36b3fb4e7fac547ae84455313786f7d1d25a1faf0c485cd1f09d7259770, Metadata: 
+[        org1peer] [34m2022-11-18 14:49:24.645 UTC 0010 INFO[0m [lifecycle] [34;1mInitializeLocalChaincodes[0m -> Initialized lifecycle cache with 0 already installed chaincodes
+[        org1peer] [34m2022-11-18 14:49:24.645 UTC 0011 INFO[0m [gossip.gossip] [34;1mstart[0m -> Gossip instance org1peer-api.localho.st:8080 started
+[        org1peer] [34m2022-11-18 14:49:24.646 UTC 0012 INFO[0m [nodeCmd] [34;1mcomputeChaincodeEndpoint[0m -> Entering computeChaincodeEndpoint with peerHostname: 172.19.0.2
+[        org1peer] [34m2022-11-18 14:49:24.646 UTC 0013 INFO[0m [nodeCmd] [34;1mcomputeChaincodeEndpoint[0m -> Exit with ccEndpoint: 172.19.0.2:2003
+[        org1peer] [34m2022-11-18 14:49:24.647 UTC 0014 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode 'lscc'
+[        org1peer] [34m2022-11-18 14:49:24.647 UTC 0015 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode 'cscc'
+[        org1peer] [34m2022-11-18 14:49:24.647 UTC 0016 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode 'qscc'
+[        org1peer] [34m2022-11-18 14:49:24.648 UTC 0017 INFO[0m [sccapi] [34;1mDeploySysCC[0m -> deploying system chaincode '_lifecycle'
+[        org1peer] [34m2022-11-18 14:49:24.648 UTC 0018 INFO[0m [nodeCmd] [34;1mserve[0m -> Deployed system chaincodes
+[        org1peer] [34m2022-11-18 14:49:24.648 UTC 0019 INFO[0m [discovery] [34;1mNewService[0m -> Created with config TLS: false, authCacheMaxSize: 1000, authCachePurgeRatio: 0.750000
+[        org1peer] [34m2022-11-18 14:49:24.648 UTC 001a INFO[0m [nodeCmd] [34;1mserve[0m -> Discovery service activated
+[        org1peer] [34m2022-11-18 14:49:24.648 UTC 001b INFO[0m [nodeCmd] [34;1mserve[0m -> Starting peer with Gateway enabled
+[        org1peer] [34m2022-11-18 14:49:24.648 UTC 001c INFO[0m [nodeCmd] [34;1mserve[0m -> Starting peer with ID=[org1peer], network ID=[dev], address=[172.19.0.2:2002]
+[        org1peer] [34m2022-11-18 14:49:24.649 UTC 001d INFO[0m [nodeCmd] [34;1mserve[0m -> Started peer with ID=[org1peer], network ID=[dev], address=[172.19.0.2:2002]
+[        org1peer] [34m2022-11-18 14:49:24.649 UTC 001e INFO[0m [kvledger] [34;1mLoadPreResetHeight[0m -> Loading prereset height from path [/opt/microfab/data/peer-org1/data/ledgersData/chains]
+[        org1peer] [34m2022-11-18 14:49:24.649 UTC 001f INFO[0m [blkstorage] [34;1mpreResetHtFiles[0m -> No active channels passed
+[        org1peer] [34m2022-11-18 14:49:24.743 UTC 0020 INFO[0m [endorser] [34;1mcallChaincode[0m -> finished chaincode: cscc duration: 0ms channel= txID=c52074a5
+[        org2peer] [34m2022-11-18 14:49:24.743 UTC 0020 INFO[0m [endorser] [34;1mcallChaincode[0m -> finished chaincode: cscc duration: 0ms channel= txID=dd7dac60
+[        org1peer] [34m2022-11-18 14:49:24.743 UTC 0021 INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=protos.Endorser grpc.method=ProcessProposal grpc.request_deadline=2022-11-18T14:49:54.741Z grpc.peer_address=127.0.0.1:54928 grpc.code=OK grpc.call_duration=1.5116ms
+[        org2peer] [34m2022-11-18 14:49:24.743 UTC 0021 INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=protos.Endorser grpc.method=ProcessProposal grpc.request_deadline=2022-11-18T14:49:54.74Z grpc.peer_address=127.0.0.1:55140 grpc.code=OK grpc.call_duration=1.7077ms
+[       microfabd] 2022/11/18 14:49:24 Created and started peer for endorsing organization org1
+[       microfabd] 2022/11/18 14:49:24 Created and started peer for endorsing organization org2
+[       microfabd] 2022/11/18 14:49:24 Creating and starting console ...
+[         console] 2022/11/18 14:49:24 Created new console...
+[         console] 2022/11/18 14:49:24 [mbw] RegisterOrganization &{Orderer 0xc00052d080 0xc00021e390 <nil> OrdererMSP}
+[         console] 2022/11/18 14:49:24 [mbw] RegisterOrganization &{org1 0xc0005aaa20 0xc0005abd10 0xc0005ab230 org1MSP}
+[         console] 2022/11/18 14:49:24 [mbw] RegisterOrganization &{org2 0xc0001a2e40 0xc0001b8150 0xc00052c870 org2MSP}
+[       microfabd] 2022/11/18 14:49:24 Created and started console
+[       microfabd] 2022/11/18 14:49:24 Creating and starting proxy ...
+[       microfabd] 2022/11/18 14:49:24 Created and started proxy
+[       microfabd] 2022/11/18 14:49:24 Creating and joining channel appchannel ...
+[       microfabd] 2022/11/18 14:49:24 Creating channel appchannel ...
+[       microfabd] 2022/11/18 14:49:24 Creating and joining channel mychannel ...
+[       microfabd] 2022/11/18 14:49:24 Creating channel mychannel ...
+[         orderer] [34m2022-11-18 14:49:24.756 UTC 000f INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Broadcast grpc.request_deadline=2022-11-18T14:49:54.746Z grpc.peer_address=127.0.0.1:48974 grpc.code=OK grpc.call_duration=9.6377ms
+[         orderer] [34m2022-11-18 14:49:24.762 UTC 0010 INFO[0m [blkstorage] [34;1mnewBlockfileMgr[0m -> Getting block information from block storage
+[         orderer] [33m2022-11-18 14:49:24.772 UTC 0011 WARN[0m [orderer.consensus.solo] [33;1mHandleChain[0m -> Use of the Solo orderer is deprecated and remains only for use in test environments but may be removed in the future.
+[         orderer] [34m2022-11-18 14:49:24.772 UTC 0012 INFO[0m [orderer.commmon.multichannel] [34;1mnewChain[0m -> Created and started new channel mychannel
+[         orderer] [34m2022-11-18 14:49:24.774 UTC 0013 INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Deliver grpc.request_deadline=2022-11-18T14:49:54.757Z grpc.peer_address=127.0.0.1:48974 grpc.code=OK grpc.call_duration=16.267ms
+[         orderer] [34m2022-11-18 14:49:24.776 UTC 0014 INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Deliver grpc.request_deadline=2022-11-18T14:49:54.775Z grpc.peer_address=127.0.0.1:48974 grpc.code=OK grpc.call_duration=758.3µs
+[         orderer] [34m2022-11-18 14:49:24.778 UTC 0015 INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Deliver grpc.request_deadline=2022-11-18T14:49:54.777Z grpc.peer_address=127.0.0.1:48974 grpc.code=OK grpc.call_duration=921.2µs
+[         orderer] [34m2022-11-18 14:49:24.781 UTC 0016 INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Broadcast grpc.request_deadline=2022-11-18T14:49:54.746Z grpc.peer_address=127.0.0.1:48972 grpc.code=OK grpc.call_duration=34.3707ms
+[         orderer] [34m2022-11-18 14:49:24.785 UTC 0017 INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Broadcast grpc.request_deadline=2022-11-18T14:49:54.779Z grpc.peer_address=127.0.0.1:48974 grpc.code=OK grpc.call_duration=5.4379ms
+[       microfabd] 2022/11/18 14:49:24 Created channel mychannel
+[       microfabd] 2022/11/18 14:49:24 Joining channel mychannel on peer for endorsing organization org1 ...
+[         orderer] [34m2022-11-18 14:49:24.786 UTC 0018 INFO[0m [blkstorage] [34;1mnewBlockfileMgr[0m -> Getting block information from block storage
+[        org1peer] [34m2022-11-18 14:49:24.789 UTC 0022 INFO[0m [ledgermgmt] [34;1mCreateLedger[0m -> Creating ledger [mychannel] with genesis block
+[        org1peer] [34m2022-11-18 14:49:24.798 UTC 0023 INFO[0m [blkstorage] [34;1mnewBlockfileMgr[0m -> Getting block information from block storage
+[         orderer] [33m2022-11-18 14:49:24.805 UTC 0019 WARN[0m [orderer.consensus.solo] [33;1mHandleChain[0m -> Use of the Solo orderer is deprecated and remains only for use in test environments but may be removed in the future.
+[         orderer] [34m2022-11-18 14:49:24.806 UTC 001a INFO[0m [orderer.commmon.multichannel] [34;1mnewChain[0m -> Created and started new channel appchannel
+[         orderer] [34m2022-11-18 14:49:24.808 UTC 001b INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Deliver grpc.request_deadline=2022-11-18T14:49:54.782Z grpc.peer_address=127.0.0.1:48972 grpc.code=OK grpc.call_duration=25.8556ms
+[         orderer] [34m2022-11-18 14:49:24.809 UTC 001c INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Deliver grpc.request_deadline=2022-11-18T14:49:54.808Z grpc.peer_address=127.0.0.1:48972 grpc.code=OK grpc.call_duration=886.9µs
+[         orderer] [34m2022-11-18 14:49:24.811 UTC 001d INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Deliver grpc.request_deadline=2022-11-18T14:49:54.81Z grpc.peer_address=127.0.0.1:48972 grpc.code=OK grpc.call_duration=780.2µs
+[         orderer] [34m2022-11-18 14:49:24.819 UTC 001e INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=orderer.AtomicBroadcast grpc.method=Broadcast grpc.request_deadline=2022-11-18T14:49:54.812Z grpc.peer_address=127.0.0.1:48972 grpc.code=OK grpc.call_duration=6.7635ms
+[       microfabd] 2022/11/18 14:49:24 Created channel appchannel
+[       microfabd] 2022/11/18 14:49:24 Joining channel appchannel on peer for endorsing organization org2 ...
+[       microfabd] 2022/11/18 14:49:24 Joining channel appchannel on peer for endorsing organization org1 ...
+[        org2peer] [34m2022-11-18 14:49:24.825 UTC 0022 INFO[0m [ledgermgmt] [34;1mCreateLedger[0m -> Creating ledger [appchannel] with genesis block
+[        org1peer] [34m2022-11-18 14:49:24.831 UTC 0024 INFO[0m [kvledger] [34;1mcommit[0m -> [mychannel] Committed block [0] with 1 transaction(s) in 16ms (state_validation=0ms block_and_pvtdata_commit=9ms state_commit=2ms) commitHash=[]
+[        org1peer] [34m2022-11-18 14:49:24.831 UTC 0025 INFO[0m [kvledger] [34;1mupdateLedgerStatus[0m -> Updating ledger [mychannel] status to [ACTIVE]
+[        org2peer] [34m2022-11-18 14:49:24.833 UTC 0023 INFO[0m [blkstorage] [34;1mnewBlockfileMgr[0m -> Getting block information from block storage
+[        org1peer] [34m2022-11-18 14:49:24.837 UTC 0026 INFO[0m [ledgermgmt] [34;1mCreateLedger[0m -> Created ledger [mychannel] with genesis block
+[        org1peer] [34m2022-11-18 14:49:24.837 UTC 0027 INFO[0m [ledgermgmt] [34;1mCreateLedger[0m -> Creating ledger [appchannel] with genesis block
+[        org1peer] [34m2022-11-18 14:49:24.840 UTC 0028 INFO[0m [gossip.gossip] [34;1mJoinChan[0m -> Joining gossip network of channel mychannel with 1 organizations
+[        org1peer] [34m2022-11-18 14:49:24.840 UTC 0029 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> No configured anchor peers of org1MSP for channel mychannel to learn about
+[        org1peer] [34m2022-11-18 14:49:24.840 UTC 002a INFO[0m [gateway] [34;1mconfigUpdate[0m -> Updating orderer config channel=mychannel
+[        org1peer] [34m2022-11-18 14:49:24.840 UTC 002b INFO[0m [gossip.state] [34;1mNewGossipStateProvider[0m -> Updating metadata information for channel mychannel, current ledger sequence is at = 0, next expected block is = 1
+[        org1peer] [34m2022-11-18 14:49:24.840 UTC 002c INFO[0m [deliveryClient] [34;1mStartDeliverForChannel[0m -> This peer will retrieve blocks from ordering service and disseminate to other peers in the organization for channel mychannel
+[        org1peer] [34m2022-11-18 14:49:24.841 UTC 002d INFO[0m [endorser] [34;1mcallChaincode[0m -> finished chaincode: cscc duration: 54ms channel= txID=5f8753da
+[        org1peer] [34m2022-11-18 14:49:24.841 UTC 002e INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=protos.Endorser grpc.method=ProcessProposal grpc.request_deadline=2022-11-18T14:49:54.785Z grpc.peer_address=127.0.0.1:54932 grpc.code=OK grpc.call_duration=55.1488ms
+[       microfabd] 2022/11/18 14:49:24 Joined channel mychannel on peer for endorsing organization org1
+[       microfabd] 2022/11/18 14:49:24 Created and joined channel mychannel
+[        org1peer] [34m2022-11-18 14:49:24.847 UTC 002f INFO[0m [blkstorage] [34;1mnewBlockfileMgr[0m -> Getting block information from block storage
+[        org1peer] [34m2022-11-18 14:49:24.862 UTC 0030 INFO[0m [gossip.privdata] [34;1mStoreBlock[0m -> Received block [1] from buffer channel=mychannel
+[        org1peer] [34m2022-11-18 14:49:24.866 UTC 0031 INFO[0m [gossip.gossip] [34;1mJoinChan[0m -> Joining gossip network of channel mychannel with 1 organizations
+[        org1peer] [34m2022-11-18 14:49:24.866 UTC 0032 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Learning about the configured anchor peers of org1MSP for channel mychannel: [{org1peer-api.localho.st 8080}]
+[        org1peer] [34m2022-11-18 14:49:24.866 UTC 0033 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Anchor peer for channel mychannel with same endpoint, skipping connecting to myself
+[        org1peer] [34m2022-11-18 14:49:24.866 UTC 0034 INFO[0m [gateway] [34;1mconfigUpdate[0m -> Updating orderer config channel=mychannel
+[        org1peer] [34m2022-11-18 14:49:24.866 UTC 0035 INFO[0m [committer.txvalidator] [34;1mValidate[0m -> [mychannel] Validated block [1] in 3ms
+[        org2peer] [34m2022-11-18 14:49:24.876 UTC 0024 INFO[0m [kvledger] [34;1mcommit[0m -> [appchannel] Committed block [0] with 1 transaction(s) in 26ms (state_validation=0ms block_and_pvtdata_commit=15ms state_commit=6ms) commitHash=[]
+[        org2peer] [34m2022-11-18 14:49:24.877 UTC 0025 INFO[0m [kvledger] [34;1mupdateLedgerStatus[0m -> Updating ledger [appchannel] status to [ACTIVE]
+[        org2peer] [34m2022-11-18 14:49:24.881 UTC 0026 INFO[0m [ledgermgmt] [34;1mCreateLedger[0m -> Created ledger [appchannel] with genesis block
+[        org2peer] [34m2022-11-18 14:49:24.883 UTC 0027 INFO[0m [gossip.gossip] [34;1mJoinChan[0m -> Joining gossip network of channel appchannel with 2 organizations
+[        org2peer] [34m2022-11-18 14:49:24.884 UTC 0028 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> No configured anchor peers of org1MSP for channel appchannel to learn about
+[        org2peer] [34m2022-11-18 14:49:24.884 UTC 0029 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> No configured anchor peers of org2MSP for channel appchannel to learn about
+[        org2peer] [34m2022-11-18 14:49:24.884 UTC 002a INFO[0m [gateway] [34;1mconfigUpdate[0m -> Updating orderer config channel=appchannel
+[        org2peer] [34m2022-11-18 14:49:24.884 UTC 002b INFO[0m [gossip.state] [34;1mNewGossipStateProvider[0m -> Updating metadata information for channel appchannel, current ledger sequence is at = 0, next expected block is = 1
+[        org2peer] [34m2022-11-18 14:49:24.884 UTC 002c INFO[0m [deliveryClient] [34;1mStartDeliverForChannel[0m -> This peer will retrieve blocks from ordering service and disseminate to other peers in the organization for channel appchannel
+[        org2peer] [34m2022-11-18 14:49:24.884 UTC 002d INFO[0m [endorser] [34;1mcallChaincode[0m -> finished chaincode: cscc duration: 62ms channel= txID=29c384b9
+[        org2peer] [34m2022-11-18 14:49:24.884 UTC 002e INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=protos.Endorser grpc.method=ProcessProposal grpc.request_deadline=2022-11-18T14:49:54.82Z grpc.peer_address=127.0.0.1:55144 grpc.code=OK grpc.call_duration=63.8355ms
+[       microfabd] 2022/11/18 14:49:24 Joined channel appchannel on peer for endorsing organization org2
+[        org1peer] [34m2022-11-18 14:49:24.887 UTC 0036 INFO[0m [kvledger] [34;1mcommit[0m -> [appchannel] Committed block [0] with 1 transaction(s) in 23ms (state_validation=0ms block_and_pvtdata_commit=15ms state_commit=5ms) commitHash=[]
+[        org1peer] [34m2022-11-18 14:49:24.887 UTC 0037 INFO[0m [kvledger] [34;1mupdateLedgerStatus[0m -> Updating ledger [appchannel] status to [ACTIVE]
+[        org1peer] [34m2022-11-18 14:49:24.890 UTC 0038 INFO[0m [ledgermgmt] [34;1mCreateLedger[0m -> Created ledger [appchannel] with genesis block
+[        org1peer] [34m2022-11-18 14:49:24.890 UTC 0039 INFO[0m [kvledger] [34;1mcommit[0m -> [mychannel] Committed block [1] with 1 transaction(s) in 23ms (state_validation=0ms block_and_pvtdata_commit=17ms state_commit=2ms) commitHash=[47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254]
+[        org1peer] [34m2022-11-18 14:49:24.892 UTC 003a INFO[0m [gossip.gossip] [34;1mJoinChan[0m -> Joining gossip network of channel appchannel with 2 organizations
+[        org1peer] [34m2022-11-18 14:49:24.892 UTC 003b INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> No configured anchor peers of org1MSP for channel appchannel to learn about
+[        org1peer] [34m2022-11-18 14:49:24.892 UTC 003c INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> No configured anchor peers of org2MSP for channel appchannel to learn about
+[        org1peer] [34m2022-11-18 14:49:24.892 UTC 003d INFO[0m [gateway] [34;1mconfigUpdate[0m -> Updating orderer config channel=appchannel
+[        org1peer] [34m2022-11-18 14:49:24.893 UTC 003e INFO[0m [gossip.state] [34;1mNewGossipStateProvider[0m -> Updating metadata information for channel appchannel, current ledger sequence is at = 0, next expected block is = 1
+[        org1peer] [34m2022-11-18 14:49:24.893 UTC 003f INFO[0m [deliveryClient] [34;1mStartDeliverForChannel[0m -> This peer will retrieve blocks from ordering service and disseminate to other peers in the organization for channel appchannel
+[        org1peer] [34m2022-11-18 14:49:24.893 UTC 0040 INFO[0m [endorser] [34;1mcallChaincode[0m -> finished chaincode: cscc duration: 71ms channel= txID=d6b50e87
+[        org1peer] [34m2022-11-18 14:49:24.893 UTC 0041 INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=protos.Endorser grpc.method=ProcessProposal grpc.request_deadline=2022-11-18T14:49:54.82Z grpc.peer_address=127.0.0.1:54932 grpc.code=OK grpc.call_duration=72.7053ms
+[       microfabd] 2022/11/18 14:49:24 Joined channel appchannel on peer for endorsing organization org1
+[       microfabd] 2022/11/18 14:49:24 Created and joined channel appchannel
+[       microfabd] 2022/11/18 14:49:24 Microfab started in 1418ms
+[        org2peer] [34m2022-11-18 14:49:24.899 UTC 002f INFO[0m [gossip.privdata] [34;1mStoreBlock[0m -> Received block [1] from buffer channel=appchannel
+[        org2peer] [34m2022-11-18 14:49:24.903 UTC 0030 INFO[0m [gossip.gossip] [34;1mJoinChan[0m -> Joining gossip network of channel appchannel with 2 organizations
+[        org2peer] [34m2022-11-18 14:49:24.903 UTC 0031 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Learning about the configured anchor peers of org1MSP for channel appchannel: [{org1peer-api.localho.st 8080}]
+[        org2peer] [34m2022-11-18 14:49:24.903 UTC 0032 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Learning about the configured anchor peers of org2MSP for channel appchannel: [{org2peer-api.localho.st 8080}]
+[        org2peer] [34m2022-11-18 14:49:24.903 UTC 0033 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Anchor peer for channel appchannel with same endpoint, skipping connecting to myself
+[        org2peer] [34m2022-11-18 14:49:24.904 UTC 0034 INFO[0m [gateway] [34;1mconfigUpdate[0m -> Updating orderer config channel=appchannel
+[        org2peer] [34m2022-11-18 14:49:24.904 UTC 0035 INFO[0m [committer.txvalidator] [34;1mValidate[0m -> [appchannel] Validated block [1] in 4ms
+[        org1peer] [34m2022-11-18 14:49:24.908 UTC 0042 INFO[0m [gossip.privdata] [34;1mStoreBlock[0m -> Received block [1] from buffer channel=appchannel
+[        org1peer] [34m2022-11-18 14:49:24.912 UTC 0043 INFO[0m [gossip.gossip] [34;1mJoinChan[0m -> Joining gossip network of channel appchannel with 2 organizations
+[        org1peer] [34m2022-11-18 14:49:24.912 UTC 0044 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Learning about the configured anchor peers of org1MSP for channel appchannel: [{org1peer-api.localho.st 8080}]
+[        org1peer] [34m2022-11-18 14:49:24.912 UTC 0045 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Anchor peer for channel appchannel with same endpoint, skipping connecting to myself
+[        org1peer] [34m2022-11-18 14:49:24.912 UTC 0046 INFO[0m [gossip.gossip] [34;1mlearnAnchorPeers[0m -> Learning about the configured anchor peers of org2MSP for channel appchannel: [{org2peer-api.localho.st 8080}]
+[        org1peer] [34m2022-11-18 14:49:24.912 UTC 0047 INFO[0m [gateway] [34;1mconfigUpdate[0m -> Updating orderer config channel=appchannel
+[        org1peer] [34m2022-11-18 14:49:24.912 UTC 0048 INFO[0m [committer.txvalidator] [34;1mValidate[0m -> [appchannel] Validated block [1] in 4ms
+[        org2peer] [34m2022-11-18 14:49:24.923 UTC 0036 INFO[0m [kvledger] [34;1mcommit[0m -> [appchannel] Committed block [1] with 1 transaction(s) in 18ms (state_validation=0ms block_and_pvtdata_commit=9ms state_commit=4ms) commitHash=[47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254]
+[        org1peer] [34m2022-11-18 14:49:24.931 UTC 0049 INFO[0m [kvledger] [34;1mcommit[0m -> [appchannel] Committed block [1] with 1 transaction(s) in 18ms (state_validation=0ms block_and_pvtdata_commit=12ms state_commit=3ms) commitHash=[47dc540c94ceb704a23875c11273e16bb0b8a87aed84de911f2133568115f254]
+[        org1peer] [34m2022-11-18 14:49:25.108 UTC 004a INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=gossip.Gossip grpc.method=Ping grpc.request_deadline=2022-11-18T14:49:27.108Z grpc.peer_address=127.0.0.1:54952 grpc.code=OK grpc.call_duration=76.4µs
+[        org1peer] [34m2022-11-18 14:49:25.111 UTC 004b INFO[0m [gossip.comm] [34;1mGossipStream[0m -> Peer a3eb5cb04c50799af2a27d733a99dbcc5b228693739c09fce64e176ee91de3e9 (127.0.0.1:54952) probed us
+[        org1peer] [34m2022-11-18 14:49:25.111 UTC 004c INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=gossip.Gossip grpc.method=GossipStream grpc.request_deadline=2022-11-18T14:49:35.11Z grpc.peer_address=127.0.0.1:54952 grpc.code=OK grpc.call_duration=1.4008ms
+[        org2peer] [34m2022-11-18 14:49:25.117 UTC 0037 INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=gossip.Gossip grpc.method=Ping grpc.request_deadline=2022-11-18T14:49:27.117Z grpc.peer_address=127.0.0.1:55170 grpc.code=OK grpc.call_duration=50.7µs
+[        org2peer] [34m2022-11-18 14:49:25.119 UTC 0038 INFO[0m [gossip.comm] [34;1mGossipStream[0m -> Peer 7275c36b3fb4e7fac547ae84455313786f7d1d25a1faf0c485cd1f09d7259770 (127.0.0.1:55170) probed us
+[        org2peer] [34m2022-11-18 14:49:25.119 UTC 0039 INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=gossip.Gossip grpc.method=GossipStream grpc.request_deadline=2022-11-18T14:49:35.118Z grpc.peer_address=127.0.0.1:55170 grpc.code=OK grpc.call_duration=720µs
+[        org2peer] [34m2022-11-18 14:49:25.168 UTC 003a INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=gossip.Gossip grpc.method=Ping grpc.request_deadline=2022-11-18T14:49:27.168Z grpc.peer_address=127.0.0.1:55170 grpc.code=OK grpc.call_duration=56.2µs
+[        org1peer] [34m2022-11-18 14:49:25.313 UTC 004d INFO[0m [comm.grpc.server] [34;1m1[0m -> unary call completed grpc.service=gossip.Gossip grpc.method=Ping grpc.request_deadline=2022-11-18T14:49:27.313Z grpc.peer_address=127.0.0.1:54952 grpc.code=OK grpc.call_duration=58.7µs
+[        org2peer] [34m2022-11-18 14:49:25.315 UTC 003b INFO[0m [comm.grpc.server] [34;1m1[0m -> streaming call completed grpc.service=gossip.Gossip grpc.method=GossipStream grpc.peer_address=127.0.0.1:55170 error="rpc error: code = Canceled desc = context canceled" grpc.code=Canceled grpc.call_duration=145.985ms
+[        org2peer] [34m2022-11-18 14:49:29.884 UTC 003c INFO[0m [gossip.channel] [34;1mreportMembershipChanges[0m -> [[appchannel] Membership view has changed. peers went online:  [[org1peer-api.localho.st:8080 ]] , current view:  [[org1peer-api.localho.st:8080 ]]]
+[        org1peer] [34m2022-11-18 14:49:29.893 UTC 004e INFO[0m [gossip.channel] [34;1mreportMembershipChanges[0m -> [[appchannel] Membership view has changed. peers went online:  [[org2peer-api.localho.st:8080 ]] , current view:  [[org2peer-api.localho.st:8080 ]]]

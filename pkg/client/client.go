@@ -5,6 +5,7 @@
 package client
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -14,7 +15,9 @@ import (
 
 // Client represents a Microfab client.
 type Client struct {
-	url *url.URL
+	url        *url.URL
+	httpClient *http.Client
+	tlsEnabled bool
 }
 
 // Options represents connection options for a peer or ordering service.
@@ -67,16 +70,36 @@ type Identity struct {
 }
 
 // New creates a new Microfab client.
-func New(url *url.URL) (*Client, error) {
+func New(url *url.URL, tlsEnabled bool) (*Client, error) {
+
+	if tlsEnabled {
+		httpClient := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
+		return &Client{
+			url:        url,
+			tlsEnabled: true,
+			httpClient: httpClient,
+		}, nil
+	}
+
 	return &Client{
-		url: url,
+		url:        url,
+		tlsEnabled: false,
+		httpClient: http.DefaultClient,
 	}, nil
+
 }
 
 // Ping tests the connection to Microfab.
 func (c *Client) Ping() error {
+
 	target := c.url.ResolveReference(&url.URL{Path: "/ak/api/v1/health"})
-	resp, err := http.Get(target.String())
+	resp, err := c.httpClient.Get(target.String())
 	if err != nil {
 		return err
 	} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -194,7 +217,7 @@ func (c *Client) GetIdentity(organization string) (*Identity, error) {
 
 func (c *Client) getComponents() ([]map[string]interface{}, error) {
 	target := c.url.ResolveReference(&url.URL{Path: "/ak/api/v1/components"})
-	resp, err := http.Get(target.String())
+	resp, err := c.httpClient.Get(target.String())
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
