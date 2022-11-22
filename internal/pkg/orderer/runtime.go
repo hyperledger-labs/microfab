@@ -319,7 +319,8 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 					ModPolicy: "/Channel/Orderer/Admins",
 					Value: util.MarshalOrPanic(&common.OrdererAddresses{
 						Addresses: []string{
-							o.apiURL.Host,
+							// o.apiURL.Host,
+							o.APIHost(true),
 						},
 					}),
 				},

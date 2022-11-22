@@ -163,12 +163,12 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		return fmt.Errorf("core.yaml missing peer.gossip section")
 	}
 
-	logger.Printf("Creating peer with gossip URL %s", p.gossipURL)
-	gossip["bootstrap"] = p.gossipURL.Host //p.p.apiURL.Host
+	gossip["bootstrap"] = p.GossipHost(true)
 	gossip["useLeaderElection"] = false
 	gossip["orgLeader"] = true
-	gossip["endpoint"] = p.gossipURL.Host
-	gossip["externalEndpoint"] = p.gossipURL.Host
+	gossip["endpoint"] = p.GossipHost(true)
+	gossip["externalEndpoint"] = p.GossipHost(true)
+	logger.Printf("Creating peer with gossip URL %s", gossip["bootstrap"])
 
 	metrics, ok := config["metrics"].(map[interface{}]interface{})
 	if !ok {

@@ -63,29 +63,128 @@ microfab: microfab-down
     echo "Stating microfab...."
 
     #docker run --name microfab -p 8080:8080 --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" --network fabnet -e FABRIC_LOGGING_SPEC=info ibmcom/ibp-microfab
-    docker run --name microfab -p 8080:8080 -p 4000:4000 -p 4001:4001 -d --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" --network fabnet -e FABRIC_LOGGING_SPEC=info tls/microfab
+    docker run --name microfab -p 8080:8080 -p 4000:4000 -p 2001:2001 -p 2002:2002 -p 2003:2003 -p 2004:2004 -p 2005:2005 -p 2006:2006 -p 2007:2007 -p 2008:2008 -p 2009:2009 -p 2011:2011 -d --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" --network fabnet -e FABRIC_LOGGING_SPEC=info tls/microfab
     sleep 5
 
-    curl -sSL --insecure http://console.127-0-0-1.localho.st:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
+    curl -sSL --insecure https://console.127-0-0-1.localho.st:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
     cat << EOF > $CFG/org1admin.env
     export CORE_PEER_LOCALMSPID=org1MSP
     export CORE_PEER_MSPCONFIGPATH=$CFG/_msp/org1/org1admin/msp
-    export CORE_PEER_ADDRESS=org1peer-api.127-0-0-1.nip.io:8080
+    export CORE_PEER_ADDRESS=org1peer-api.localho.st:8080
     export FABRIC_CFG_PATH=$CWDIR/config
     export CORE_PEER_CLIENT_CONNTIMEOUT=15s
     export CORE_PEER_DELIVERYCLIENT_CONNTIMEOUT=15s
+    export CORE_PEER_TLS_ENABLED=true
+    export CORE_PEER_TLS_ROOTCERT_FILE=${CFG}/_msp/tls/org1peer/tlsca-org1peer-cert.pem
     EOF
 
     cat << EOF > $CFG/org2admin.env
     export CORE_PEER_LOCALMSPID=org2MSP
     export CORE_PEER_MSPCONFIGPATH=$CFG/_msp/org2/org2admin/msp
-    export CORE_PEER_ADDRESS=org2peer-api.127-0-0-1.nip.io:8080
+    export CORE_PEER_ADDRESS=org2peer-api.localho.st:8080
     export FABRIC_CFG_PATH=$CWDIR/config
     export CORE_PEER_CLIENT_CONNTIMEOUT=15s
     export CORE_PEER_DELIVERYCLIENT_CONNTIMEOUT=15s
+    export CORE_PEER_TLS_ROOTCERT_FILE=${CFG}/_msp/tls/org2peer/tlsca-org2peer-cert.pem
+    export CORE_PEET_TLS_ENABLED=true
     EOF
 
     echo
     echo "To get an peer cli environment run:"
     echo
     echo 'source $WORKSHOP_PATH/_cfg/uf/org1admin.env'
+
+
+deploy:
+    #!/bin/bash
+
+    set -e -o pipefail
+    export CFG=$CWDIR/_cfg/uf
+    rm -rf ${CFG}    
+    curl -sSL --insecure https://console.localho.st:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
+
+    export PACKAGE_ID=asset-transfer-basic-go:ed56e159a158aa1043e7475b43fe88234b6406c433d68d864afc60705611de16
+    export CORE_PEER_TLS_ROOTCERT_FILE=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/tls/org1peer/org1pee-cert.pem
+    export CORE_PEER_LOCALMSPID=org1MSP
+    export CORE_PEER_MSPCONFIGPATH=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/org1/org1admin/msp
+    export CORE_PEER_ADDRESS=org1peer-api.localho.st:8080
+    export CORE_PEER_CLIENT_CONNTIMEOUT=15s
+    export CORE_PEER_DELIVERYCLIENT_CONNTIMEOUT=15s
+    export CORE_PEER_TLS_ROOTCERT_FILE=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/tls/org1peer/org1peer-cert.pem
+    export CORE_PEER_TLS_ENABLED=true
+    export ORDERER_CA=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/tls/orderer/tlsca-orderer-cert.pem
+
+    peer lifecycle chaincode install ./asset-transfer-basic-go.tgz
+    peer lifecycle chaincode approveformyorg --orderer orderer-api.localho.st:8080 --channelID mychannel --name atx -v 0 --package-id ${PACKAGE_ID} --sequence 1 --tls --cafile ${ORDERER_CA}
+    peer lifecycle chaincode commit --orderer orderer-api.localho.st:8080 --channelID mychannel --name atx -v 0 --sequence 1 --tls --cafile ${ORDERER_CA} --waitForEvent
+
+    peer chaincode query -C mychannel -n atx -c '{"Args":["org.hyperledger.fabric:GetMetadata"]}' | jq
+
+deploy2:
+    #!/bin/bash
+
+    set -ex -o pipefail
+    export CFG=$CWDIR/_cfg/uf
+    rm -rf ${CFG}    
+    curl -sSL --insecure https://console.localho.st:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
+
+    export PACKAGE_ID=asset-transfer-basic-go:ed56e159a158aa1043e7475b43fe88234b6406c433d68d864afc60705611de16
+    export CORE_PEER_TLS_ROOTCERT_FILE=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/tls/org1peer/org1pee-cert.pem
+    export CORE_PEER_LOCALMSPID=org1MSP
+    export CORE_PEER_MSPCONFIGPATH=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/org1/org1admin/msp
+    export CORE_PEER_ADDRESS=org1peer-api.localho.st:8080
+    export CORE_PEER_CLIENT_CONNTIMEOUT=15s
+    export CORE_PEER_DELIVERYCLIENT_CONNTIMEOUT=15s
+    export CORE_PEER_TLS_ROOTCERT_FILE=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/tls/org1peer/org1peer-cert.pem
+    export CORE_PEER_TLS_ENABLED=true
+    export ORDERER_CA=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/tls/orderer/tlsca-orderer-cert.pem
+
+    peer lifecycle chaincode install ./asset-transfer-basic-go.tgz
+    peer lifecycle chaincode approveformyorg --orderer orderer-api.localho.st:8080 --channelID appchannel --name atx -v 0 --package-id ${PACKAGE_ID} --sequence 1 --tls --cafile ${ORDERER_CA}
+    
+    export CORE_PEER_LOCALMSPID=org2MSP
+    export CORE_PEER_ADDRESS=org2peer-api.localho.st:8080
+    export CORE_PEER_MSPCONFIGPATH=/home/matthew/github.com/hyperledger-labs/microfab/examples/_cfg/uf/_msp/org2/org2admin/msp
+    peer lifecycle chaincode install ./asset-transfer-basic-go.tgz
+    peer lifecycle chaincode approveformyorg --orderer orderer-api.localho.st:8080 --channelID appchannel --name atx -v 0 --package-id ${PACKAGE_ID} --sequence 1 --tls --cafile ${ORDERER_CA}
+        
+    peer lifecycle chaincode commit --orderer orderer-api.localho.st:8080 --channelID appchannel --name atx -v 0 --sequence 1 --tls --cafile ${ORDERER_CA} --waitForEvent
+
+    peer chaincode query -C appchannel -n atx -c '{"Args":["org.hyperledger.fabric:GetMetadata"]}' 
+
+
+debug:
+    #!/bin/bash
+    export MICROFAB_CONFIG='{
+        "couchdb":false,
+        "endorsing_organizations":[
+            {
+                "name": "org1"
+            },
+            {
+                "name": "org2"
+            }
+        ],
+        "channels":[
+            {
+                "name": "mychannel",
+                "endorsing_organizations":[
+                    "org1"
+                ]
+            },
+            {
+                "name": "appchannel",
+                "endorsing_organizations":[
+                    "org1","org2"
+                ]
+            }            
+        ],
+        "domain":"localho.st",
+        "tls": {
+            "enabled":true
+        },
+        "capability_level":"V2_0"
+    }'
+
+    # docker run --name microfab -p 8080:8080 -p 4000:4000 -p 2001:2001 -p 2002:2002 -p 2003:2003 -p 2004:2004 -p 2005:2005 -p 2006:2006 -p 2007:2007 -p 2008:2008 -p 2009:2009 -p 2011:2011 --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" --network fabnet -e FABRIC_LOGGING_SPEC=info tls/microfab
+    docker run --name microfab -p 8080:8080 --add-host host.docker.internal:host-gateway --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" --network fabnet -e FABRIC_LOGGING_SPEC=info tls/microfab

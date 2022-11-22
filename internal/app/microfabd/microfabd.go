@@ -552,10 +552,11 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 	orderer, err := orderer.New(
 		organization,
 		directory,
+		int32(m.config.Port),
 		int32(apiPort),
-		fmt.Sprintf("grpc%s://orderer-api.%s:%d", schemeSuffix, m.config.Domain, m.config.Port),
+		fmt.Sprintf("grpc%s://orderer-api.%s", schemeSuffix, m.config.Domain),
 		int32(operationsPort),
-		fmt.Sprintf("http%s://orderer-operations.%s:%d", schemeSuffix, m.config.Domain, m.config.Port),
+		fmt.Sprintf("http%s://orderer-operations.%s", schemeSuffix, m.config.Domain),
 	)
 	if err != nil {
 		return err
@@ -571,6 +572,8 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 		return err
 	}
 	logger.Printf("Created and started orderer for ordering organization %s", organization.Name())
+	logger.Printf("Orderer API Internal: %s External: %s", m.orderer.APIURL(true), m.orderer.APIURL(false))
+	logger.Printf("Orderer Operations Internal: %s External: %s", m.orderer.OperationsURL(true), m.orderer.OperationsURL(false))
 	return nil
 }
 
@@ -628,18 +631,17 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 	peer, err := peer.New(
 		organization,
 		peerDirectory,
+		int32(m.config.Port),
 		int32(apiPort),
-		fmt.Sprintf("grpc%s://%speer-api.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, apiPort),
+		fmt.Sprintf("grpc%s://%speer-api.%s", schemeSuffix, lowerOrganizationName, m.config.Domain),
 		int32(chaincodePort),
-		// fmt.Sprintf("grpc%s://%speer-chaincode.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
-		fmt.Sprintf("grpc%s://%speer-chaincode.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, chaincodePort),
+		fmt.Sprintf("grpc%s://%speer-chaincode.%s", schemeSuffix, lowerOrganizationName, m.config.Domain),
 		int32(operationsPort),
-		fmt.Sprintf("http%s://%speer-operations.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, operationsPort),
-		// fmt.Sprintf("http%s://%speer-operations.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("http%s://%speer-operations.%s", schemeSuffix, lowerOrganizationName, m.config.Domain),
 		couchDB,
 		int32(couchDBProxyPort),
 		int32(gossipPort),
-		fmt.Sprintf("http%s://%speer-gossip.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, gossipPort), // note the difference
+		fmt.Sprintf("http%s://%speer-gossip.%s", schemeSuffix, lowerOrganizationName, m.config.Domain), // note the difference
 	)
 	if err != nil {
 		return err
@@ -655,6 +657,11 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 		return err
 	}
 	logger.Printf("Created and started peer for endorsing organization %s", organization.Name())
+	logger.Printf("Peer API Internal: %s External: %s", peer.APIURL(true), peer.APIURL(false))
+	logger.Printf("Peer Operations Internal: %s External: %s", peer.OperationsURL(true), peer.OperationsURL(false))
+	logger.Printf("Peer Chaincode Internal: %s External: %s", peer.ChaincodeURL(true), peer.ChaincodeURL(false))
+	logger.Printf("Peer Gossip Internal: %s External: %s", peer.GossipURL(true), peer.GossipURL(false))
+
 	return nil
 }
 
@@ -755,7 +762,7 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			}
 		}
 		if found {
-			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(false), peer.APIPort(false)))
+			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(true), peer.APIPort(true)))
 		}
 	}
 	err = channel.UpdateChannel(ordererConnection, config.Name, opts...)
