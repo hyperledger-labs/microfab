@@ -181,6 +181,9 @@ func (m *Microfab) Start() error {
 		operationsPort := m.allocatePort()
 		return m.createAndStartOrderer(m.ordererOrganization, apiPort, operationsPort)
 	})
+
+	time.Sleep(8 * time.Second)
+
 	for i := range m.endorsingOrganizations {
 		organization := m.endorsingOrganizations[i]
 		eg.Go(func() error {

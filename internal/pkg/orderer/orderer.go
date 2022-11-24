@@ -101,7 +101,7 @@ func (o *Orderer) APIURL(internal bool) *url.URL {
 		return url
 	}
 
-	url, _ := url.Parse(fmt.Sprintf("%s:/wibble/%s", scheme, o.APIHost(false)))
+	url, _ := url.Parse(fmt.Sprintf("%s://%s", scheme, o.APIHost(false)))
 	return url
 }
 

@@ -177,7 +177,7 @@ debug:
                 "endorsing_organizations":[
                     "org1","org2"
                 ]
-            }            
+            }
         ],
         "domain":"localho.st",
         "tls": {

@@ -22,6 +22,7 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
+	"github.com/hyperledger/fabric-protos-go/orderer/etcdraft"
 	"github.com/pkg/errors"
 )
 
@@ -47,6 +48,7 @@ func (o *Orderer) Start(consortium []*organization.Organization, timeout time.Du
 	cmd := exec.Command("orderer", "start")
 	cmd.Env = os.Environ()
 	extraEnvs := []string{
+		"FABRIC_LOGGING_SPEC=info",
 		fmt.Sprintf("ORDERER_GENERAL_LOCALMSPDIR=%s", mspDirectory),
 		fmt.Sprintf("ORDERER_GENERAL_LOCALMSPID=%s", o.mspID),
 		"ORDERER_GENERAL_BOOTSTRAPMETHOD=file",
@@ -263,26 +265,28 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 						"ConsensusType": {
 							ModPolicy: "Admins",
 							Value: util.MarshalOrPanic(&orderer.ConsensusType{
-								Metadata: nil,
-								State:    orderer.ConsensusType_STATE_NORMAL,
-								Type:     "solo",
-								// Metadata: util.MarshalOrPanic(&etcdraft.ConfigMetadata{
-								// 	Consenters: []*etcdraft.Consenter{
-								// 		{
-								// 			Host: o.apiURL.Host,
-								// 			Port: uint32(o.apiPort),
-								// 		},
-								// 	},
-								// 	Options: &etcdraft.Options{
-								// 		TickInterval:         "2500ms",
-								// 		ElectionTick:         5,
-								// 		HeartbeatTick:        1,
-								// 		MaxInflightBlocks:    5,
-								// 		SnapshotIntervalSize: 1048576,
-								// 	},
-								// }),
-								// State: orderer.ConsensusType_STATE_NORMAL,
-								// Type:  "etcdraft",
+								// Metadata: nil,
+								// State:    orderer.ConsensusType_STATE_NORMAL,
+								// Type:     "solo",
+								Metadata: util.MarshalOrPanic(&etcdraft.ConfigMetadata{
+									Consenters: []*etcdraft.Consenter{
+										{
+											Host:          o.APIHostname(true),
+											Port:          uint32(o.APIPort(true)),
+											ServerTlsCert: o.tls.Certificate().Bytes(),
+											ClientTlsCert: o.tls.Certificate().Bytes(),
+										},
+									},
+									Options: &etcdraft.Options{
+										TickInterval:         "2500ms",
+										ElectionTick:         5,
+										HeartbeatTick:        1,
+										MaxInflightBlocks:    5,
+										SnapshotIntervalSize: 1048576,
+									},
+								}),
+								State: orderer.ConsensusType_STATE_NORMAL,
+								Type:  "etcdraft",
 							}),
 						},
 					},
