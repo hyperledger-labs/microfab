@@ -26,10 +26,11 @@ type Orderer struct {
 	operationsURL  *url.URL
 	command        *exec.Cmd
 	tls            *identity.Identity
+	ordererType    string
 }
 
 // New creates a new orderer.
-func New(organization *organization.Organization, directory string, microFabPort int32, apiPort int32, apiURL string, operationsPort int32, operationsURL string) (*Orderer, error) {
+func New(organization *organization.Organization, directory string, microFabPort int32, apiPort int32, apiURL string, operationsPort int32, operationsURL string, ordererType string) (*Orderer, error) {
 	identityName := fmt.Sprintf("%s Orderer", organization.Name())
 	identity, err := identity.New(identityName, identity.WithOrganizationalUnit("orderer"), identity.UsingSigner(organization.CA()))
 	if err != nil {
@@ -43,7 +44,7 @@ func New(organization *organization.Organization, directory string, microFabPort
 	if err != nil {
 		return nil, err
 	}
-	return &Orderer{organization, organization.MSPID(), identity, directory, microFabPort, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil}, nil
+	return &Orderer{organization, organization.MSPID(), identity, directory, microFabPort, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil, ordererType}, nil
 }
 
 // TLS gets the TLS identity for this orderer.

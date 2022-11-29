@@ -20,7 +20,7 @@ var _ = Describe("the orderer package", func() {
 
 	BeforeEach(func() {
 		var err error
-		testOrganization, err = organization.New("Org1", nil)
+		testOrganization, err = organization.New("Org1", nil, nil)
 		Expect(err).NotTo(HaveOccurred())
 		testDirectory, err = ioutil.TempDir("", "ut-peer")
 		Expect(err).NotTo(HaveOccurred())
@@ -30,7 +30,7 @@ var _ = Describe("the orderer package", func() {
 
 		When("called", func() {
 			It("creates a new peer", func() {
-				p, err := orderer.New(testOrganization, testDirectory, 7051, "grpc://orderer-api.127-0-0-1.nip.io:8080", 8443, "http://orderer-operations.127-0-0-1.nip.io:8080")
+				p, err := orderer.New(testOrganization, testDirectory, 8080, 7051, "grpc://orderer-api.127-0-0-1.nip.io:8080", 8443, "http://orderer-operations.127-0-0-1.nip.io:8080", "solo")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(p.Organization()).To(Equal(testOrganization))
 				Expect(p.MSPID()).To(Equal(testOrganization.MSPID()))
@@ -53,14 +53,14 @@ var _ = Describe("the orderer package", func() {
 
 		When("called with an invalid API URL", func() {
 			It("returns an error", func() {
-				_, err := orderer.New(testOrganization, testDirectory, 7051, "!@£$%^&*()_+", 8443, "http://orderer-operations.127-0-0-1.nip.io:8080")
+				_, err := orderer.New(testOrganization, testDirectory, 8080, 7051, "!@£$%^&*()_+", 8443, "http://orderer-operations.127-0-0-1.nip.io:8080", "solo")
 				Expect(err).To(HaveOccurred())
 			})
 		})
 
 		When("called with an invalid operations URL", func() {
 			It("returns an error", func() {
-				_, err := orderer.New(testOrganization, testDirectory, 7051, "grpc://orderer-api.127-0-0-1.nip.io:8080", 8443, "!@£$%^&*()_+")
+				_, err := orderer.New(testOrganization, testDirectory, 8080, 7051, "grpc://orderer-api.127-0-0-1.nip.io:8080", 8443, "!@£$%^&*()_+", "solo")
 				Expect(err).To(HaveOccurred())
 			})
 		})

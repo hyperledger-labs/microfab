@@ -323,6 +323,7 @@ func (p *Proxy) buildRouteMap() {
 	}
 }
 
+// DumpRouteMap logs the route mappings that have been registered
 func (p *Proxy) DumpRouteMap() {
 	for key, route := range p.routeMap {
 		logger.Printf("%s ==> %v \n", key, route)

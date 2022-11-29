@@ -197,6 +197,7 @@ func (p *Peer) OperationsURL(internal bool) *url.URL {
 	return url
 }
 
+// GossipHost returns the host of the gossip connection
 func (p *Peer) GossipHost(internal bool) string {
 	if internal {
 		return fmt.Sprintf("localhost:%d", p.gossipPort)
@@ -204,6 +205,7 @@ func (p *Peer) GossipHost(internal bool) string {
 	return fmt.Sprintf("%s:%d", p.GossipHostname(false), p.microfabPort)
 }
 
+// GossipHostname returns just the host name used for the gossip connection
 func (p *Peer) GossipHostname(internal bool) string {
 	if internal {
 		return "localhost"
@@ -211,6 +213,7 @@ func (p *Peer) GossipHostname(internal bool) string {
 	return p.gossipURL.Hostname()
 }
 
+// GossipURL returns the full URL used for the gossip connection
 func (p *Peer) GossipURL(internal bool) *url.URL {
 	scheme := "http"
 	if p.tls != nil {

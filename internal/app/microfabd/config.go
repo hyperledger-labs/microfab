@@ -31,20 +31,26 @@ type TLS struct {
 	CA          *string `json:"ca"`
 }
 
+// OrderingService configuration
+type OrderingService struct {
+	Type string `json:"type"`
+}
+
 // Config represents the configuration.
 type Config struct {
-	Domain                 string         `json:"domain"`
-	Port                   int            `json:"port"`
-	Directory              string         `json:"directory"`
-	OrderingOrganization   Organization   `json:"ordering_organization"`
-	EndorsingOrganizations []Organization `json:"endorsing_organizations"`
-	Channels               []Channel      `json:"channels"`
-	CapabilityLevel        string         `json:"capability_level"`
-	CouchDB                bool           `json:"couchdb"`
-	CertificateAuthorities bool           `json:"certificate_authorities"`
-	TimeoutString          string         `json:"timeout"`
-	TLS                    TLS            `json:"tls"`
-	Timeout                time.Duration  `json:"-"`
+	Domain                 string          `json:"domain"`
+	Port                   int             `json:"port"`
+	Directory              string          `json:"directory"`
+	OrderingOrganization   Organization    `json:"ordering_organization"`
+	EndorsingOrganizations []Organization  `json:"endorsing_organizations"`
+	Channels               []Channel       `json:"channels"`
+	CapabilityLevel        string          `json:"capability_level"`
+	CouchDB                bool            `json:"couchdb"`
+	CertificateAuthorities bool            `json:"certificate_authorities"`
+	TimeoutString          string          `json:"timeout"`
+	TLS                    TLS             `json:"tls"`
+	Timeout                time.Duration   `json:"-"`
+	OrderingSrvConfig      OrderingService `json:"ordering_service"`
 }
 
 // DefaultConfig returns the default configuration.
@@ -83,6 +89,9 @@ func DefaultConfig() (*Config, error) {
 		TimeoutString:          "30s",
 		TLS: TLS{
 			Enabled: false,
+		},
+		OrderingSrvConfig: OrderingService{
+			Type: "solo",
 		},
 	}
 	if env, ok := os.LookupEnv("MICROFAB_CONFIG"); ok {

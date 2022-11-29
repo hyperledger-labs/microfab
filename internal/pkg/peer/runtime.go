@@ -157,17 +157,17 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 	peer["fileSystemPath"] = dataDirectory
 	peer["address"] = fmt.Sprintf("0.0.0.0:%d", p.apiPort)
 	peer["listenAddress"] = fmt.Sprintf("0.0.0.0:%d", p.apiPort)
-	peer["chaincodeListenAddress"] = fmt.Sprintf("0.0.0.0:%d", p.chaincodePort)
+	peer["chaincodeListenAddress"] = fmt.Sprintf("127.0.0.1:%d", p.chaincodePort)
 	gossip, ok := peer["gossip"].(map[interface{}]interface{})
 	if !ok {
 		return fmt.Errorf("core.yaml missing peer.gossip section")
 	}
 
-	gossip["bootstrap"] = p.GossipHost(true)
+	gossip["bootstrap"] = p.APIHost(true)
 	gossip["useLeaderElection"] = false
 	gossip["orgLeader"] = true
-	gossip["endpoint"] = p.GossipHost(true)
-	gossip["externalEndpoint"] = p.GossipHost(true)
+	gossip["endpoint"] = p.APIHost(true)
+	gossip["externalEndpoint"] = p.APIHost(true)
 	logger.Printf("Creating peer with gossip URL %s", gossip["bootstrap"])
 
 	metrics, ok := config["metrics"].(map[interface{}]interface{})

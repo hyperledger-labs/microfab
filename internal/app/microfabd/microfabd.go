@@ -141,6 +141,11 @@ func (m *Microfab) Start() error {
 		if err := m.createTLS(); err != nil {
 			return err
 		}
+	} else {
+		// no TLS therefore need to default to the SOLO orderer
+		if m.config.OrderingSrvConfig.Type == "RAFT" {
+			return fmt.Errorf("unable to start RAFT orderer with TLS disabled")
+		}
 	}
 
 	// Create all of the organizations.
@@ -149,6 +154,7 @@ func (m *Microfab) Start() error {
 	eg.Go(func() error {
 		return m.createOrderingOrganization(m.config.OrderingOrganization)
 	})
+
 	for i := range m.config.EndorsingOrganizations {
 		organization := m.config.EndorsingOrganizations[i]
 		eg.Go(func() error {
@@ -496,7 +502,14 @@ func (m *Microfab) createOrderingOrganization(config Organization) error {
 			}
 		}
 	}
-	organization, err := organization.New(config.Name, ca)
+
+	// create tls CA id
+	tlsCA, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
+	if err != nil {
+		return err
+	}
+
+	organization, err := organization.New(config.Name, ca, tlsCA)
 	if err != nil {
 		return err
 	}
@@ -527,7 +540,14 @@ func (m *Microfab) createEndorsingOrganization(config Organization) error {
 			}
 		}
 	}
-	organization, err := organization.New(config.Name, ca)
+
+	// create tls CA id
+	tlsCA, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
+	if err != nil {
+		return err
+	}
+
+	organization, err := organization.New(config.Name, ca, tlsCA)
 	if err != nil {
 		return err
 	}
@@ -560,6 +580,7 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 		fmt.Sprintf("grpc%s://orderer-api.%s", schemeSuffix, m.config.Domain),
 		int32(operationsPort),
 		fmt.Sprintf("http%s://orderer-operations.%s", schemeSuffix, m.config.Domain),
+		m.config.OrderingSrvConfig.Type,
 	)
 	if err != nil {
 		return err
@@ -765,7 +786,7 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			}
 		}
 		if found {
-			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(true), peer.APIPort(true)))
+			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(false), peer.APIPort(true)))
 		}
 	}
 	err = channel.UpdateChannel(ordererConnection, config.Name, opts...)

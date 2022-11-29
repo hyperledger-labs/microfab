@@ -39,14 +39,22 @@ function process_chaincode_metadata_json {
         export CORE_TLS_CLIENT_KEY_FILE
         export CORE_PEER_TLS_ROOTCERT_FILE
 
-        jq -r .client_cert "$METADATA_DIR/chaincode.json" > "$CORE_TLS_CLIENT_CERT_FILE"
-        jq -r .client_key  "$METADATA_DIR/chaincode.json" > "$CORE_TLS_CLIENT_KEY_FILE"
-        jq -r .root_cert   "$METADATA_DIR/chaincode.json" > "$CORE_PEER_TLS_ROOTCERT_FILE"
+        jq -r .client_cert "$METADATA_DIR/chaincode.json" >"$CORE_TLS_CLIENT_CERT_FILE"
+        jq -r .client_key "$METADATA_DIR/chaincode.json" >"$CORE_TLS_CLIENT_KEY_FILE"
+        jq -r .root_cert "$METADATA_DIR/chaincode.json" >"$CORE_PEER_TLS_ROOTCERT_FILE"
     fi
 }
 
-
 # extract the required environment variables
 process_chaincode_metadata_json
+
+echo $CORE_PEER_TLS_ENABLED
+echo $CORE_PEER_ADDRESS
+echo $CORE_TLS_CLIENT_CERT_FILE
+echo $CORE_TLS_CLIENT_KEY_FILE
+echo $CORE_PEER_TLS_ROOTCERT_FILE
+cat $CORE_PEER_TLS_ROOTCERT_FILE
+cat $CORE_TLS_CLIENT_CERT_FILE
+cat $CORE_TLS_CLIENT_KEY_FILE
 
 exec "${BUILD_OUTPUT_DIR}/chaincode" -peer.address="${CORE_PEER_ADDRESS}"

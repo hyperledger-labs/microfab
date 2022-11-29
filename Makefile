@@ -18,6 +18,3 @@ unit:
 integration:
 	go run github.com/onsi/ginkgo/ginkgo integration
 
-debug:
-	go build -o microfabd cmd/microfabd/main.go
-	MICROFAB_CONFIG='{"couchdb":false,"endorsing_organizations":[{"name": "org1" },{"name": "org2"}],"certificate_authorities":false}'	./microfabd

@@ -185,8 +185,46 @@ func (o *Orderer) hasStarted() bool {
 }
 
 func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) error {
+	logger.Printf("[createGenesisBlock] >\n")
 	txID := txid.New(o.mspID, o.identity)
 	header := protoutil.BuildHeader(common.HeaderType_CONFIG, "testchainid", txID)
+
+	var consensusType []byte
+	if o.ordererType == "raft" {
+		logger.Printf("[createGenesisBlock] Using RAFT\n")
+		consensusType = util.MarshalOrPanic(&orderer.ConsensusType{
+			// Metadata: nil,
+			// State:    orderer.ConsensusType_STATE_NORMAL,
+			// Type:     "solo",
+			Metadata: util.MarshalOrPanic(&etcdraft.ConfigMetadata{
+				Consenters: []*etcdraft.Consenter{
+					{
+						Host:          o.APIHostname(true),
+						Port:          uint32(o.APIPort(true)),
+						ServerTlsCert: o.tls.Certificate().Bytes(),
+						ClientTlsCert: o.tls.Certificate().Bytes(),
+					},
+				},
+				Options: &etcdraft.Options{
+					TickInterval:         "2500ms",
+					ElectionTick:         5,
+					HeartbeatTick:        1,
+					MaxInflightBlocks:    5,
+					SnapshotIntervalSize: 1048576,
+				},
+			}),
+			State: orderer.ConsensusType_STATE_NORMAL,
+			Type:  "etcdraft",
+		})
+	} else {
+		logger.Printf("[createGenesisBlock] Using Solo\n")
+		consensusType = util.MarshalOrPanic(&orderer.ConsensusType{
+			Metadata: nil,
+			State:    orderer.ConsensusType_STATE_NORMAL,
+			Type:     "solo",
+		})
+	}
+
 	config := &common.Config{
 		ChannelGroup: &common.ConfigGroup{
 			Groups: map[string]*common.ConfigGroup{
@@ -264,30 +302,7 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 						},
 						"ConsensusType": {
 							ModPolicy: "Admins",
-							Value: util.MarshalOrPanic(&orderer.ConsensusType{
-								// Metadata: nil,
-								// State:    orderer.ConsensusType_STATE_NORMAL,
-								// Type:     "solo",
-								Metadata: util.MarshalOrPanic(&etcdraft.ConfigMetadata{
-									Consenters: []*etcdraft.Consenter{
-										{
-											Host:          o.APIHostname(true),
-											Port:          uint32(o.APIPort(true)),
-											ServerTlsCert: o.tls.Certificate().Bytes(),
-											ClientTlsCert: o.tls.Certificate().Bytes(),
-										},
-									},
-									Options: &etcdraft.Options{
-										TickInterval:         "2500ms",
-										ElectionTick:         5,
-										HeartbeatTick:        1,
-										MaxInflightBlocks:    5,
-										SnapshotIntervalSize: 1048576,
-									},
-								}),
-								State: orderer.ConsensusType_STATE_NORMAL,
-								Type:  "etcdraft",
-							}),
+							Value:     consensusType,
 						},
 					},
 				},

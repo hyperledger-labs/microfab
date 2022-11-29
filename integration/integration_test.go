@@ -139,85 +139,85 @@ var _ = Describe("Integration", func() {
 
 	})
 
-	// Context("Java chaincode", func() {
+	Context("Java chaincode", func() {
 
-	// 	When("a Java chaincode is deployed", func() {
-	// 		It("should be available for transactions", func() {
-	// 			pkg, err := ioutil.ReadFile("data/asset-transfer-basic-java.tgz")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			for _, peerConnection := range peerConnections {
-	// 				packageID, err := peerConnection.InstallChaincode(pkg)
-	// 				Expect(err).NotTo(HaveOccurred())
-	// 				err = channel.ApproveChaincodeDefinition([]*peer.Connection{peerConnection}, ordererConnection, "channel1", 1, "atb-java", "1.0.0", packageID)
-	// 				Expect(err).NotTo(HaveOccurred())
-	// 			}
-	// 			err = channel.CommitChaincodeDefinition(peerConnections, ordererConnection, "channel1", 1, "atb-java", "1.0.0")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			_, err = channel.SubmitTransaction(peerConnections, ordererConnection, "channel1", "atb-java", "InitLedger")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			data, err := channel.EvaluateTransaction(peerConnections, ordererConnection, "channel1", "atb-java", "GetAllAssets")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			assets := []map[string]interface{}{}
-	// 			err = json.Unmarshal(data, &assets)
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			Expect(assets).To(HaveLen(6))
-	// 		})
-	// 	})
+		When("a Java chaincode is deployed", func() {
+			It("should be available for transactions", func() {
+				pkg, err := ioutil.ReadFile("data/asset-transfer-basic-java.tgz")
+				Expect(err).NotTo(HaveOccurred())
+				for _, peerConnection := range peerConnections {
+					packageID, err := peerConnection.InstallChaincode(pkg)
+					Expect(err).NotTo(HaveOccurred())
+					err = channel.ApproveChaincodeDefinition([]*peer.Connection{peerConnection}, ordererConnection, "channel1", 1, "atb-java", "1.0.0", packageID)
+					Expect(err).NotTo(HaveOccurred())
+				}
+				err = channel.CommitChaincodeDefinition(peerConnections, ordererConnection, "channel1", 1, "atb-java", "1.0.0")
+				Expect(err).NotTo(HaveOccurred())
+				_, err = channel.SubmitTransaction(peerConnections, ordererConnection, "channel1", "atb-java", "InitLedger")
+				Expect(err).NotTo(HaveOccurred())
+				data, err := channel.EvaluateTransaction(peerConnections, ordererConnection, "channel1", "atb-java", "GetAllAssets")
+				Expect(err).NotTo(HaveOccurred())
+				assets := []map[string]interface{}{}
+				err = json.Unmarshal(data, &assets)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(assets).To(HaveLen(6))
+			})
+		})
 
-	// })
+	})
 
-	// Context("JavaScript chaincode", func() {
+	Context("JavaScript chaincode", func() {
 
-	// 	When("a JavaScript chaincode is deployed", func() {
-	// 		It("should be available for transactions", func() {
-	// 			pkg, err := ioutil.ReadFile("data/asset-transfer-basic-javascript.tgz")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			for _, peerConnection := range peerConnections {
-	// 				packageID, err := peerConnection.InstallChaincode(pkg)
-	// 				Expect(err).NotTo(HaveOccurred())
-	// 				err = channel.ApproveChaincodeDefinition([]*peer.Connection{peerConnection}, ordererConnection, "channel1", 1, "atb-javascript", "1.0.0", packageID)
-	// 				Expect(err).NotTo(HaveOccurred())
-	// 			}
-	// 			err = channel.CommitChaincodeDefinition(peerConnections, ordererConnection, "channel1", 1, "atb-javascript", "1.0.0")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			_, err = channel.SubmitTransaction(peerConnections, ordererConnection, "channel1", "atb-javascript", "InitLedger")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			data, err := channel.EvaluateTransaction(peerConnections, ordererConnection, "channel1", "atb-javascript", "GetAllAssets")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			assets := []map[string]interface{}{}
-	// 			err = json.Unmarshal(data, &assets)
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			Expect(assets).To(HaveLen(6))
-	// 		})
-	// 	})
+		When("a JavaScript chaincode is deployed", func() {
+			It("should be available for transactions", func() {
+				pkg, err := ioutil.ReadFile("data/asset-transfer-basic-javascript.tgz")
+				Expect(err).NotTo(HaveOccurred())
+				for _, peerConnection := range peerConnections {
+					packageID, err := peerConnection.InstallChaincode(pkg)
+					Expect(err).NotTo(HaveOccurred())
+					err = channel.ApproveChaincodeDefinition([]*peer.Connection{peerConnection}, ordererConnection, "channel1", 1, "atb-javascript", "1.0.0", packageID)
+					Expect(err).NotTo(HaveOccurred())
+				}
+				err = channel.CommitChaincodeDefinition(peerConnections, ordererConnection, "channel1", 1, "atb-javascript", "1.0.0")
+				Expect(err).NotTo(HaveOccurred())
+				_, err = channel.SubmitTransaction(peerConnections, ordererConnection, "channel1", "atb-javascript", "InitLedger")
+				Expect(err).NotTo(HaveOccurred())
+				data, err := channel.EvaluateTransaction(peerConnections, ordererConnection, "channel1", "atb-javascript", "GetAllAssets")
+				Expect(err).NotTo(HaveOccurred())
+				assets := []map[string]interface{}{}
+				err = json.Unmarshal(data, &assets)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(assets).To(HaveLen(6))
+			})
+		})
 
-	// })
+	})
 
-	// Context("TypeScript chaincode", func() {
+	Context("TypeScript chaincode", func() {
 
-	// 	When("a TypeScript chaincode is deployed", func() {
-	// 		It("should be available for transactions", func() {
-	// 			pkg, err := ioutil.ReadFile("data/asset-transfer-basic-typescript.tgz")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			for _, peerConnection := range peerConnections {
-	// 				packageID, err := peerConnection.InstallChaincode(pkg)
-	// 				Expect(err).NotTo(HaveOccurred())
-	// 				err = channel.ApproveChaincodeDefinition([]*peer.Connection{peerConnection}, ordererConnection, "channel1", 1, "atb-typescript", "1.0.0", packageID)
-	// 				Expect(err).NotTo(HaveOccurred())
-	// 			}
-	// 			err = channel.CommitChaincodeDefinition(peerConnections, ordererConnection, "channel1", 1, "atb-typescript", "1.0.0")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			_, err = channel.SubmitTransaction(peerConnections, ordererConnection, "channel1", "atb-typescript", "InitLedger")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			data, err := channel.EvaluateTransaction(peerConnections, ordererConnection, "channel1", "atb-typescript", "GetAllAssets")
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			assets := []map[string]interface{}{}
-	// 			err = json.Unmarshal(data, &assets)
-	// 			Expect(err).NotTo(HaveOccurred())
-	// 			Expect(assets).To(HaveLen(6))
-	// 		})
-	// 	})
+		When("a TypeScript chaincode is deployed", func() {
+			It("should be available for transactions", func() {
+				pkg, err := ioutil.ReadFile("data/asset-transfer-basic-typescript.tgz")
+				Expect(err).NotTo(HaveOccurred())
+				for _, peerConnection := range peerConnections {
+					packageID, err := peerConnection.InstallChaincode(pkg)
+					Expect(err).NotTo(HaveOccurred())
+					err = channel.ApproveChaincodeDefinition([]*peer.Connection{peerConnection}, ordererConnection, "channel1", 1, "atb-typescript", "1.0.0", packageID)
+					Expect(err).NotTo(HaveOccurred())
+				}
+				err = channel.CommitChaincodeDefinition(peerConnections, ordererConnection, "channel1", 1, "atb-typescript", "1.0.0")
+				Expect(err).NotTo(HaveOccurred())
+				_, err = channel.SubmitTransaction(peerConnections, ordererConnection, "channel1", "atb-typescript", "InitLedger")
+				Expect(err).NotTo(HaveOccurred())
+				data, err := channel.EvaluateTransaction(peerConnections, ordererConnection, "channel1", "atb-typescript", "GetAllAssets")
+				Expect(err).NotTo(HaveOccurred())
+				assets := []map[string]interface{}{}
+				err = json.Unmarshal(data, &assets)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(assets).To(HaveLen(6))
+			})
+		})
 
-	// })
+	})
 
 })
