@@ -42,7 +42,7 @@ ARG TARGETARCH
 ARG TARGETOS
 
 RUN apt-get update && apt-get install -y \
-    jq xz-utils \
+    jq xz-utils unzip vim\
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 7051 microfab \
@@ -72,6 +72,28 @@ RUN sed -i 's/opt/home/g' /opt/couchdb/etc/local.d/local.ini
 ENV FABRIC_CFG_PATH=/etc/hyperledger/fabric
 ENV MICROFAB_HOME=/home/microfab
 ENV PATH=/opt/go/bin:/opt/node/bin:/opt/java/bin:/opt/couchdb/bin:${PATH}
+
+
+RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-5.6.4-bin.zip \
+    && unzip -qq /tmp/gradle.zip -d /opt \
+    && mkdir -p /opt/gradle/bin \
+    && cd /opt/gradle/bin       \
+    && /opt/gradle-5.6.4/bin/gradle wrapper \
+    && rm -f /tmp/gradle.zip \
+    && rm -rf /opt/gradle-5.6.4 \
+    && cd - \
+    && curl -sSL https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz | tar xzf - -C /opt \
+    && mv /opt/apache-maven-3.6.3 /opt/maven
+ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
+ADD builders/java/pom.xml /opt/fabric-chaincode-java/
+RUN mkdir -p /opt/fabric \
+    && curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.6/hyperledger-fabric-linux-amd64-2.4.6.tar.gz | tar xzf - -C /opt/fabric  \
+    && curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.5.2/hyperledger-fabric-ca-linux-amd64-1.5.2.tar.gz | tar xzf - -C /opt/fabric  \
+    && cd /opt/fabric-chaincode-java \
+    && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \
+    && npm install --unsafe-perm -g fabric-shim@2.4.2 \
+    && rm -rf /tmp/gocache /tmp/goenv /tmp/go /tmp/maven /tmp/npm-cache /tmp/npm-devdir
+
 
 EXPOSE 8080
 USER 7051
