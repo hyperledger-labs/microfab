@@ -14,7 +14,10 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
+	"fmt"
+	"log"
 	"math/big"
+	"os"
 	"strings"
 	"time"
 
@@ -22,6 +25,8 @@ import (
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/privatekey"
 	"github.com/IBM-Blockchain/microfab/pkg/client"
 )
+
+var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)
 
 // Identity represents a loaded identity (X509 certificate and ECDSA private key pair).
 type Identity struct {
@@ -81,6 +86,9 @@ func New(name string, opts ...Option) (*Identity, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	logger.Printf("Creating new x509 cert '%s'", name)
+
 	identity := &newIdentity{
 		Template: &x509.Certificate{
 			NotBefore:             notBefore,
@@ -92,7 +100,8 @@ func New(name string, opts ...Option) (*Identity, error) {
 			Subject: pkix.Name{
 				CommonName: name,
 			},
-			IsCA: false,
+			IsCA:     false,
+			DNSNames: []string{"*.127-0-0-1.nip.io", "127.0.0.1", "localhost", "0.0.0.0", "*.localho.st"},
 		},
 	}
 	identity.Parent = identity.Template

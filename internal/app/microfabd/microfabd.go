@@ -46,6 +46,8 @@ var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "microfabd"), log.LstdFla
 const startPort = 2000
 const endPort = 3000
 
+const gossipPortStart = 4000
+
 // Microfab represents an instance of the Microfab application.
 type Microfab struct {
 	sync.Mutex
@@ -67,6 +69,7 @@ type Microfab struct {
 	console                *console.Console
 	proxy                  *proxy.Proxy
 	currentPort            int
+	currentGossipPort      int
 	tls                    *identity.Identity
 }
 
@@ -84,11 +87,12 @@ func New() (*Microfab, error) {
 		return nil, err
 	}
 	return &Microfab{
-		config:      config,
-		sigs:        make(chan os.Signal, 1),
-		done:        make(chan struct{}, 1),
-		started:     false,
-		currentPort: startPort,
+		config:            config,
+		sigs:              make(chan os.Signal, 1),
+		done:              make(chan struct{}, 1),
+		started:           false,
+		currentPort:       startPort,
+		currentGossipPort: gossipPortStart,
 	}, nil
 }
 
@@ -145,6 +149,7 @@ func (m *Microfab) Start() error {
 	eg.Go(func() error {
 		return m.createOrderingOrganization(m.config.OrderingOrganization)
 	})
+
 	for i := range m.config.EndorsingOrganizations {
 		organization := m.config.EndorsingOrganizations[i]
 		eg.Go(func() error {
@@ -183,12 +188,13 @@ func (m *Microfab) Start() error {
 			peerAPIPort := m.allocatePort()
 			peerChaincodePort := m.allocatePort()
 			peerOperationsPort := m.allocatePort()
+			peerGossipPort := m.allocateGossipPort()
 			if m.config.CouchDB {
 				couchDBProxyPort := m.allocatePort()
 				go m.createAndStartCouchDBProxy(organization, couchDBProxyPort)
-				return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, m.config.CouchDB, couchDBProxyPort)
+				return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, m.config.CouchDB, couchDBProxyPort, peerGossipPort)
 			}
-			return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, false, 0)
+			return m.createAndStartPeer(organization, peerAPIPort, peerChaincodePort, peerOperationsPort, false, 0, peerGossipPort)
 		})
 		if m.config.CertificateAuthorities {
 			eg.Go(func() error {
@@ -294,6 +300,17 @@ func (m *Microfab) allocatePort() int {
 	}
 	result := m.currentPort
 	m.currentPort++
+	return result
+}
+
+func (m *Microfab) allocateGossipPort() int {
+	m.Lock()
+	defer m.Unlock()
+	// if m.currentGossipPort >= endPort {
+	// 	logger.Fatalf("Failed to allocate port, port range %d-%d exceeded", startPort, endPort)
+	// }
+	result := m.currentGossipPort
+	m.currentGossipPort++
 	return result
 }
 
@@ -440,6 +457,7 @@ func (m *Microfab) loadTLSFromConfig(config TLS) error {
 }
 
 func (m *Microfab) generateTLS() error {
+	logger.Printf("Creating the TLS material %s", m.config.Domain)
 	ca, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
 	if err != nil {
 		return err
@@ -475,7 +493,14 @@ func (m *Microfab) createOrderingOrganization(config Organization) error {
 			}
 		}
 	}
-	organization, err := organization.New(config.Name, ca)
+
+	// create tls CA id
+	tlsCA, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
+	if err != nil {
+		return err
+	}
+
+	organization, err := organization.New(config.Name, ca, tlsCA)
 	if err != nil {
 		return err
 	}
@@ -506,7 +531,14 @@ func (m *Microfab) createEndorsingOrganization(config Organization) error {
 			}
 		}
 	}
-	organization, err := organization.New(config.Name, ca)
+
+	// create tls CA id
+	tlsCA, err := identity.New(fmt.Sprintf("*.%s", m.config.Domain), identity.WithIsCA(true))
+	if err != nil {
+		return err
+	}
+
+	organization, err := organization.New(config.Name, ca, tlsCA)
 	if err != nil {
 		return err
 	}
@@ -534,10 +566,11 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 	orderer, err := orderer.New(
 		organization,
 		directory,
+		int32(m.config.Port),
 		int32(apiPort),
-		fmt.Sprintf("grpc%s://orderer-api.%s:%d", schemeSuffix, m.config.Domain, m.config.Port),
+		fmt.Sprintf("grpc%s://orderer-api.%s", schemeSuffix, m.config.Domain),
 		int32(operationsPort),
-		fmt.Sprintf("http%s://orderer-operations.%s:%d", schemeSuffix, m.config.Domain, m.config.Port),
+		fmt.Sprintf("http%s://orderer-operations.%s", schemeSuffix, m.config.Domain),
 	)
 	if err != nil {
 		return err
@@ -553,6 +586,8 @@ func (m *Microfab) createAndStartOrderer(organization *organization.Organization
 		return err
 	}
 	logger.Printf("Created and started orderer for ordering organization %s", organization.Name())
+	logger.Printf("Orderer API Internal: %s External: %s", m.orderer.APIURL(true), m.orderer.APIURL(false))
+	logger.Printf("Orderer Operations Internal: %s External: %s", m.orderer.OperationsURL(true), m.orderer.OperationsURL(false))
 	return nil
 }
 
@@ -597,7 +632,7 @@ func (m *Microfab) createAndStartCouchDBProxy(organization *organization.Organiz
 	return nil
 }
 
-func (m *Microfab) createAndStartPeer(organization *organization.Organization, apiPort, chaincodePort, operationsPort int, couchDB bool, couchDBProxyPort int) error {
+func (m *Microfab) createAndStartPeer(organization *organization.Organization, apiPort, chaincodePort, operationsPort int, couchDB bool, couchDBProxyPort int, gossipPort int) error {
 	logger.Printf("Creating and starting peer for endorsing organization %s ...", organization.Name())
 	organizationName := organization.Name()
 	lowerOrganizationName := strings.ToLower(organizationName)
@@ -606,17 +641,21 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 	if m.tls != nil {
 		schemeSuffix = "s"
 	}
+
 	peer, err := peer.New(
 		organization,
 		peerDirectory,
+		int32(m.config.Port),
 		int32(apiPort),
-		fmt.Sprintf("grpc%s://%speer-api.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("grpc%s://%speer-api.%s", schemeSuffix, lowerOrganizationName, m.config.Domain),
 		int32(chaincodePort),
-		fmt.Sprintf("grpc%s://%speer-chaincode.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("grpc%s://%speer-chaincode.%s", schemeSuffix, lowerOrganizationName, m.config.Domain),
 		int32(operationsPort),
-		fmt.Sprintf("http%s://%speer-operations.%s:%d", schemeSuffix, lowerOrganizationName, m.config.Domain, m.config.Port),
+		fmt.Sprintf("http%s://%speer-operations.%s", schemeSuffix, lowerOrganizationName, m.config.Domain),
 		couchDB,
 		int32(couchDBProxyPort),
+		int32(gossipPort),
+		fmt.Sprintf("http%s://%speer-gossip.%s", schemeSuffix, lowerOrganizationName, m.config.Domain), // note the difference
 	)
 	if err != nil {
 		return err
@@ -632,6 +671,11 @@ func (m *Microfab) createAndStartPeer(organization *organization.Organization, a
 		return err
 	}
 	logger.Printf("Created and started peer for endorsing organization %s", organization.Name())
+	logger.Printf("Peer API Internal: %s External: %s", peer.APIURL(true), peer.APIURL(false))
+	logger.Printf("Peer Operations Internal: %s External: %s", peer.OperationsURL(true), peer.OperationsURL(false))
+	logger.Printf("Peer Chaincode Internal: %s External: %s", peer.ChaincodeURL(true), peer.ChaincodeURL(false))
+	logger.Printf("Peer Gossip Internal: %s External: %s", peer.GossipURL(true), peer.GossipURL(false))
+
 	return nil
 }
 
@@ -732,7 +776,7 @@ func (m *Microfab) createChannel(config Channel) (*common.Block, error) {
 			}
 		}
 		if found {
-			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(false), peer.APIPort(false)))
+			opts = append(opts, channel.AddAnchorPeer(peer.MSPID(), peer.APIHostname(false), peer.APIPort(true)))
 		}
 	}
 	err = channel.UpdateChannel(ordererConnection, config.Name, opts...)
@@ -833,6 +877,7 @@ func (m *Microfab) createAndStartProxy() error {
 		p.RegisterCA(ca)
 	}
 	for _, peer := range m.peers {
+		logger.Printf("Registering peer %s", peer.APIHost(false))
 		p.RegisterPeer(peer)
 	}
 	if m.couchDB != nil {
@@ -841,6 +886,7 @@ func (m *Microfab) createAndStartProxy() error {
 	m.proxy = p
 	go p.Start()
 	logger.Print("Created and started proxy")
+	p.DumpRouteMap()
 	return nil
 }
 

@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/url"
 	"os/exec"
-	"strconv"
 
 	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
@@ -20,6 +19,7 @@ type Orderer struct {
 	mspID          string
 	identity       *identity.Identity
 	directory      string
+	microfabPort   int32
 	apiPort        int32
 	apiURL         *url.URL
 	operationsPort int32
@@ -29,7 +29,7 @@ type Orderer struct {
 }
 
 // New creates a new orderer.
-func New(organization *organization.Organization, directory string, apiPort int32, apiURL string, operationsPort int32, operationsURL string) (*Orderer, error) {
+func New(organization *organization.Organization, directory string, microFabPort int32, apiPort int32, apiURL string, operationsPort int32, operationsURL string) (*Orderer, error) {
 	identityName := fmt.Sprintf("%s Orderer", organization.Name())
 	identity, err := identity.New(identityName, identity.WithOrganizationalUnit("orderer"), identity.UsingSigner(organization.CA()))
 	if err != nil {
@@ -43,7 +43,7 @@ func New(organization *organization.Organization, directory string, apiPort int3
 	if err != nil {
 		return nil, err
 	}
-	return &Orderer{organization, organization.MSPID(), identity, directory, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil}, nil
+	return &Orderer{organization, organization.MSPID(), identity, directory, microFabPort, apiPort, parsedAPIURL, operationsPort, parsedOperationsURL, nil, nil}, nil
 }
 
 // TLS gets the TLS identity for this orderer.
@@ -79,7 +79,7 @@ func (o *Orderer) APIHost(internal bool) string {
 	if internal {
 		return fmt.Sprintf("localhost:%d", o.apiPort)
 	}
-	return o.apiURL.Host
+	return fmt.Sprintf("%s:%d", o.APIHostname(false), o.microfabPort)
 }
 
 // APIPort returns the API port of the orderer.
@@ -87,8 +87,7 @@ func (o *Orderer) APIPort(internal bool) int32 {
 	if internal {
 		return o.apiPort
 	}
-	port, _ := strconv.Atoi(o.apiURL.Port())
-	return int32(port)
+	return o.microfabPort
 }
 
 // APIURL returns the API URL of the orderer.
@@ -101,7 +100,9 @@ func (o *Orderer) APIURL(internal bool) *url.URL {
 		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, o.apiPort))
 		return url
 	}
-	return o.apiURL
+
+	url, _ := url.Parse(fmt.Sprintf("%s://%s", scheme, o.APIHost(false)))
+	return url
 }
 
 // OperationsHostname returns the hostname of the orderer.
@@ -117,7 +118,7 @@ func (o *Orderer) OperationsHost(internal bool) string {
 	if internal {
 		return fmt.Sprintf("localhost:%d", o.operationsPort)
 	}
-	return o.operationsURL.Host
+	return fmt.Sprintf("%s:%d", o.OperationsHostname(false), o.microfabPort)
 }
 
 // OperationsPort returns the operations port of the orderer.
@@ -125,8 +126,7 @@ func (o *Orderer) OperationsPort(internal bool) int32 {
 	if internal {
 		return o.operationsPort
 	}
-	port, _ := strconv.Atoi(o.operationsURL.Port())
-	return int32(port)
+	return o.microfabPort
 }
 
 // OperationsURL returns the operations URL of the orderer.
@@ -139,5 +139,6 @@ func (o *Orderer) OperationsURL(internal bool) *url.URL {
 		url, _ := url.Parse(fmt.Sprintf("%s://localhost:%d", scheme, o.operationsPort))
 		return url
 	}
-	return o.operationsURL
+	url, _ := url.Parse(fmt.Sprintf("%s://%s", scheme, o.OperationsHost(false)))
+	return url
 }

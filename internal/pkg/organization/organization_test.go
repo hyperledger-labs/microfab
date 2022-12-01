@@ -16,7 +16,7 @@ var _ = Describe("the organization package", func() {
 
 		When("called with a name with no special characters", func() {
 			It("creates a new organization", func() {
-				o, err := organization.New("Org1", nil)
+				o, err := organization.New("Org1", nil, nil)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(o.Name()).To(Equal("Org1"))
 				Expect(o.MSPID()).To(Equal("Org1MSP"))
@@ -35,7 +35,7 @@ var _ = Describe("the organization package", func() {
 
 		When("called with a name with special characters", func() {
 			It("creates a new organization", func() {
-				o, err := organization.New("Org @ 1", nil)
+				o, err := organization.New("Org @ 1", nil, nil)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(o.Name()).To(Equal("Org @ 1"))
 				Expect(o.MSPID()).To(Equal("Org1MSP"))
