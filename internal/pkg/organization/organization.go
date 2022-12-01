@@ -18,10 +18,11 @@ type Organization struct {
 	admin   *identity.Identity
 	caAdmin *identity.Identity
 	mspID   string
+	tlsCA   *identity.Identity
 }
 
 // New creates a new organization.
-func New(name string, ca *identity.Identity) (*Organization, error) {
+func New(name string, ca *identity.Identity, tlsCA *identity.Identity) (*Organization, error) {
 	if ca == nil {
 		caName := fmt.Sprintf("%s CA", name)
 		var err error
@@ -38,7 +39,7 @@ func New(name string, ca *identity.Identity) (*Organization, error) {
 	safeRegex := regexp.MustCompile("[^a-zA-Z0-9]+")
 	safeName := safeRegex.ReplaceAllString(name, "")
 	mspID := fmt.Sprintf("%sMSP", safeName)
-	return &Organization{name, ca, admin, nil, mspID}, nil
+	return &Organization{name, ca, admin, nil, mspID, tlsCA}, nil
 }
 
 // Name returns the name of the organization.

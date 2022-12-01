@@ -28,11 +28,13 @@ func Connect(peer *Peer, mspID string, identity *identity.Identity) (*Connection
 	var clientConn *grpc.ClientConn
 	var err error
 	if peer.tls != nil {
+		logger.Println("Peer TLS Enabled")
 		creds := credentials.NewTLS(&tls.Config{
 			InsecureSkipVerify: true,
 		})
 		clientConn, err = grpc.Dial(fmt.Sprintf("localhost:%d", peer.apiPort), grpc.WithTransportCredentials(creds))
 	} else {
+		logger.Println("Peer _not_ TLS Enabled")
 		clientConn, err = grpc.Dial(fmt.Sprintf("localhost:%d", peer.apiPort), grpc.WithInsecure())
 	}
 	if err != nil {
@@ -47,15 +49,31 @@ func Connect(peer *Peer, mspID string, identity *identity.Identity) (*Connection
 }
 
 // ConnectClient opens a connection to the peer using a client peer object.
-func ConnectClient(peer *client.Peer, mspID string, identity *identity.Identity) (*Connection, error) {
+func ConnectClient(peer *client.Peer, mspID string, identity *identity.Identity, tlsEnabled bool) (*Connection, error) {
 	parsedURL, err := url.Parse(peer.APIURL)
 	if err != nil {
 		return nil, err
 	}
-	clientConn, err := grpc.Dial(parsedURL.Host, grpc.WithInsecure(), grpc.WithAuthority(peer.APIOptions.DefaultAuthority))
+	logger.Printf("ConnectionClient Peer has parsedURL %s\n", parsedURL)
+
+	var clientConn *grpc.ClientConn
+
+	if tlsEnabled {
+		logger.Printf("Using TLS")
+		creds := credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})
+
+		clientConn, err = grpc.Dial(parsedURL.Host, grpc.WithTransportCredentials(creds), grpc.WithAuthority(peer.APIOptions.DefaultAuthority))
+	} else {
+		logger.Printf("Not Using TLS")
+		clientConn, err = grpc.Dial(parsedURL.Host, grpc.WithInsecure(), grpc.WithAuthority(peer.APIOptions.DefaultAuthority))
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	return &Connection{
 		peer:       nil,
 		clientConn: clientConn,

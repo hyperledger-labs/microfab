@@ -47,6 +47,7 @@ func (o *Orderer) Start(consortium []*organization.Organization, timeout time.Du
 	cmd := exec.Command("orderer", "start")
 	cmd.Env = os.Environ()
 	extraEnvs := []string{
+		"FABRIC_LOGGING_SPEC=info",
 		fmt.Sprintf("ORDERER_GENERAL_LOCALMSPDIR=%s", mspDirectory),
 		fmt.Sprintf("ORDERER_GENERAL_LOCALMSPID=%s", o.mspID),
 		"ORDERER_GENERAL_BOOTSTRAPMETHOD=file",
@@ -302,7 +303,7 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 					ModPolicy: "/Channel/Orderer/Admins",
 					Value: util.MarshalOrPanic(&common.OrdererAddresses{
 						Addresses: []string{
-							o.apiURL.Host,
+							o.APIHost(true),
 						},
 					}),
 				},

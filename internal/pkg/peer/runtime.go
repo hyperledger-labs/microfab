@@ -22,6 +22,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)
+
 // Start starts the peer.
 func (p *Peer) Start(timeout time.Duration) error {
 	err := p.createDirectories()
@@ -155,16 +157,19 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 	peer["fileSystemPath"] = dataDirectory
 	peer["address"] = fmt.Sprintf("0.0.0.0:%d", p.apiPort)
 	peer["listenAddress"] = fmt.Sprintf("0.0.0.0:%d", p.apiPort)
-	peer["chaincodeListenAddress"] = fmt.Sprintf("0.0.0.0:%d", p.chaincodePort)
+	peer["chaincodeListenAddress"] = fmt.Sprintf("127.0.0.1:%d", p.chaincodePort)
 	gossip, ok := peer["gossip"].(map[interface{}]interface{})
 	if !ok {
 		return fmt.Errorf("core.yaml missing peer.gossip section")
 	}
-	gossip["bootstrap"] = p.apiURL.Host
+
+	gossip["bootstrap"] = p.APIHost(true)
 	gossip["useLeaderElection"] = false
 	gossip["orgLeader"] = true
-	gossip["endpoint"] = p.apiURL.Host
-	gossip["externalEndpoint"] = p.apiURL.Host
+	gossip["endpoint"] = p.APIHost(true)
+	gossip["externalEndpoint"] = p.APIHost(true)
+	logger.Printf("Creating peer with gossip URL %s", gossip["bootstrap"])
+
 	metrics, ok := config["metrics"].(map[interface{}]interface{})
 	if !ok {
 		return fmt.Errorf("core.yaml missing metrics section")
@@ -269,7 +274,9 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		tls["enabled"] = true
 		tls["cert"] = map[string]string{"file": certFile}
 		tls["key"] = map[string]string{"file": keyFile}
+
 		tls["rootcert"] = map[string]string{"file": caFile}
+		tls["clientRootCAs"] = map[string]string{"file": caFile}
 		tls, ok = operations["tls"].(map[interface{}]interface{})
 		if !ok {
 			return fmt.Errorf("core.yaml missing operations.tls section")
@@ -277,6 +284,7 @@ func (p *Peer) createConfig(dataDirectory, mspDirectory string) error {
 		tls["enabled"] = true
 		tls["cert"] = map[string]string{"file": certFile}
 		tls["key"] = map[string]string{"file": keyFile}
+
 		if err := ioutil.WriteFile(certFile, p.tls.Certificate().Bytes(), 0644); err != nil {
 			return err
 		}
