@@ -3,6 +3,9 @@ name: Container Build
 on:
   push:    
     tags: [ v* ]
+    branches: [ main ]
+  pull_requests:
+    branches: [ main ]
   workflow_dispatch: {}    
 
 jobs:

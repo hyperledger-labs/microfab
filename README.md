@@ -76,7 +76,7 @@ The configuration is a JSON object with the following keys:
 
   The directory to store data in within the container.
 
-  Default value: `"/opt/microfab/data"`
+  Default value: `"/home/microfab/data"`
 
 - `ordering_organization`
 
