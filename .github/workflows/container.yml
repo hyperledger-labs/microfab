@@ -4,7 +4,7 @@ on:
   push:    
     tags: [ v* ]
     branches: [ main ]
-  pull_requests:
+  pull_request:
     branches: [ main ]
   workflow_dispatch: {}    
 
