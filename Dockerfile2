@@ -96,5 +96,11 @@ RUN chmod 666 /etc/passwd
 
 EXPOSE 8080
 USER 7051
+
+ENV GOROOT=/opt/go
+ENV GOCACHE=/tmp/gocache
+ENV GOENV=/tmp/goenv
+ENV GOPATH=/tmp/go
+
 VOLUME /home/microfab/data
 ENTRYPOINT [ "tini", "--", "/usr/local/bin/docker-entrypoint.sh" ]

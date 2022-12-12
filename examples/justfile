@@ -1,0 +1,112 @@
+#
+# Copyright IBM 2022
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Main justfile to run all the development scripts
+# To install 'just' see https://github.com/casey/just#installation
+
+
+# Ensure all properties are exported as shell env-vars
+set export
+
+# set the current directory, and the location of the test dats
+CWDIR := justfile_directory()
+
+_default:
+  @just -f {{justfile()}} --list
+
+# Removes running Micorfab, and cleans the _cfg direcotyr
+clean:
+    #!/bin/bash
+    set -euo pipefail
+
+    export CFG=$CWDIR/../_cfg
+    rm -rf "${CFG}" || mkdir -p "${CFG}"
+    mkdir -p "${CFG}/data"
+
+    if docker inspect microfab &>/dev/null; then
+        echo "Removing existing microfab container:"
+        docker kill microfab
+    fi
+
+# Run a TLS enabled microfab; simple two org/one channel config
+tls-mf: clean
+    #!/bin/bash
+    set -euo pipefail
+
+    export MICROFAB_CONFIG='{
+            "couchdb":false,
+            "endorsing_organizations":[
+                {
+                    "name": "org1"
+                }, 
+                {
+                    "name":"org2"
+                }
+
+            ],
+            "channels":[
+                {
+                    "name": "ch-a",
+                    "endorsing_organizations":[
+                        "org1","org2"
+                    ]
+                }
+            ],
+            "tls": {
+                "enabled":true
+            },
+            "capability_level":"V2_0"
+        }'
+
+        docker run -d --name microfab -p 8080:8080 --add-host host.docker.internal:host-gateway \
+                    --rm -e MICROFAB_CONFIG="${MICROFAB_CONFIG}" \
+                    -e FABRIC_LOGGING_SPEC=info \
+                    tls/microfab
+        
+        # Get the configuration and extract the information
+        sleep 10 
+
+        export CFG=$CWDIR/../_cfg
+
+        curl -sSL --insecure https://console.localho.st:8080/ak/api/v1/components > $CFG/cfg.json 
+        weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f --config $CFG/cfg.json
+
+
+registerEnrollUser:
+    #!/bin/bash
+    set -xeuo pipefail
+
+    # ID under Org1
+
+    fabric-ca-client  register --debug \
+        --id.name       owner \
+        --id.secret     ownerpw \
+        --id.type       client \
+        --url           https://org1ca-api.127-0-0-1.nip.io:8080 \
+        --tls.certfiles $CWDIR/../_cfg/_msp/tls/org1peer/tlsca-org1peer-cert.pem \
+        --mspdir $CWDIR/../_cfg/_msp/org1/org1caadmin/msp
+
+
+    fabric-ca-client enroll -u https://owner:ownerpw@org1ca-api.127-0-0-1.nip.io:8080 \
+                            --caname org1ca \
+                            -M  $CWDIR/../_cfg/_msp/org1/org1fred \
+                            --tls.certfiles $CWDIR/../_cfg/_msp/tls/org1peer/tlsca-org1peer-cert.pem  
+
+    # ID under ORG2
+
+    fabric-ca-client  register --debug \
+        --id.name       buyer \
+        --id.secret     buyerpw \
+        --id.type       client \
+        --url           https://org2ca-api.127-0-0-1.nip.io:8080 \
+        --tls.certfiles $CWDIR/../_cfg/_msp/tls/org2peer/tlsca-org1peer-cert.pem \
+        --mspdir $CWDIR/../_cfg/_msp/org2/org2caadmin/msp
+
+
+    fabric-ca-client enroll -u https://buyer:buyerpw@org2ca-api.127-0-0-1.nip.io:8080 \
+                            --caname org2ca \
+                            -M  $CWDIR/../_cfg/_msp/org2/org2buyer \
+                            --tls.certfiles $CWDIR/../_cfg/_msp/tls/org2peer/tlsca-org2peer-cert.pem  
