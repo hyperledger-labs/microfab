@@ -65,7 +65,7 @@ jobs:
       - name: Install Fabric dependencies
         run: |
           sudo mkdir -p /opt/fabric
-          curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.0/hyperledger-fabric-linux-amd64-2.4.0.tar.gz | sudo tar xzf - -C /opt/fabric
+          curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.6/hyperledger-fabric-linux-amd64-2.4.6.tar.gz | sudo tar xzf - -C /opt/fabric
           curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.5.2/hyperledger-fabric-ca-linux-amd64-1.5.2.tar.gz | sudo tar xzf - -C /opt/fabric
           cd builders/java
           sudo mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib
@@ -78,12 +78,22 @@ jobs:
         run: |
           export PATH="/opt/fabric/bin:${PATH}"
           export FABRIC_CFG_PATH=/opt/fabric/config
+
           make integration
       - name: Run ShellCheck
         run: shellcheck $(ls builders/*/bin/* -1 | grep -v ccaas)
       - name: Build Docker image
         run: |
           docker build -t ibmcom/ibp-microfab:latest .
+      - name: Setup the Fabric Binaries
+        run: |
+          npm install -g @hyperledger-labs/weft
+      - name: Run container tests
+        run: |
+          export PATH="/opt/fabric/bin:${PATH}"
+          export FABRIC_CFG_PATH=/opt/fabric/config
+
+          ./scripts/test-container.sh          
       - name: Publish Docker image to Docker Hub
         env:
             DOCKER_HUB_USER_NAME: ${{ secrets.DOCKER_HUB_USER_NAME }}
