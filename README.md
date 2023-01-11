@@ -1,6 +1,6 @@
 # microfab
 
-'microfab' provides a single container image that allows you to quickly build, operate & govern and grow blockchain networks. It uses Hyperledger Fabric, the open source, industry standard for enterprise blockchain. 
+'microfab' provides a single container image that allows you to quickly build, operate Hyperledger Fabric, the open source, industry standard for enterprise blockchain. 
 
 This containerized version of Fabric can be easily configured with the selection of channels and orgs you want, and also can be started and stopped in seconds.  You can interfact with it as you would any Fabric setup. Note that this uses *the* fabric binaries and starts Fabric with couchdb and cas for identities. It's not cut down.
 
