@@ -1,6 +1,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+# NOTE THIS DOCKERFILE IS CONSIDERED DEPRECATED
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS base
 ADD docker/couchdb-rpm.repo /etc/yum.repos.d/couchdb-rpm.repo
 RUN microdnf install couchdb findutils gcc gcc-c++ git gzip make python3 shadow-utils tar unzip xz \
