@@ -14,12 +14,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
 	"github.com/gorilla/mux"
+	"github.com/hyperledger-labs/microfab/internal/pkg/ca"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/orderer"
+	"github.com/hyperledger-labs/microfab/internal/pkg/organization"
+	"github.com/hyperledger-labs/microfab/internal/pkg/peer"
 )
 
 var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)

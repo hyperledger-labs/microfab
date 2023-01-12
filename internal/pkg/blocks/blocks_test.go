@@ -7,10 +7,10 @@ package blocks_test
 import (
 	"errors"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks/fakes"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
+	"github.com/hyperledger-labs/microfab/internal/pkg/blocks"
+	"github.com/hyperledger-labs/microfab/internal/pkg/blocks/fakes"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/hyperledger/fabric-protos-go/orderer"

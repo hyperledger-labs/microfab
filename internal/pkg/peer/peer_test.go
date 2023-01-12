@@ -7,8 +7,8 @@ package peer_test
 import (
 	"io/ioutil"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
+	"github.com/hyperledger-labs/microfab/internal/pkg/organization"
+	"github.com/hyperledger-labs/microfab/internal/pkg/peer"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

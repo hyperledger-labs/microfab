@@ -7,10 +7,10 @@ package peer
 import (
 	"fmt"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/protoutil"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-labs/microfab/internal/pkg/protoutil"
+	"github.com/hyperledger-labs/microfab/internal/pkg/txid"
+	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
 )

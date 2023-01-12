@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/pkg/client"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/pkg/client"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

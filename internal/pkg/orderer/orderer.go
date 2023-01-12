@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"os/exec"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/organization"
 )
 
 // Orderer represents a loaded orderer definition.

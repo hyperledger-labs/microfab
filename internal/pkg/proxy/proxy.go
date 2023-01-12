@@ -16,12 +16,12 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/ca"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/console"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/couchdb"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
+	"github.com/hyperledger-labs/microfab/internal/pkg/ca"
+	"github.com/hyperledger-labs/microfab/internal/pkg/console"
+	"github.com/hyperledger-labs/microfab/internal/pkg/couchdb"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/orderer"
+	"github.com/hyperledger-labs/microfab/internal/pkg/peer"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )

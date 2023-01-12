@@ -7,10 +7,10 @@ package blocks
 import (
 	"errors"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/protoutil"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/protoutil"
+	"github.com/hyperledger-labs/microfab/internal/pkg/txid"
+	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
 )

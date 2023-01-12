@@ -15,12 +15,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/IBM-Blockchain/microfab/internal/app/microfabd"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/channel"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
-	"github.com/IBM-Blockchain/microfab/pkg/client"
+	"github.com/hyperledger-labs/microfab/internal/app/microfabd"
+	"github.com/hyperledger-labs/microfab/internal/pkg/channel"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/orderer"
+	"github.com/hyperledger-labs/microfab/internal/pkg/peer"
+	"github.com/hyperledger-labs/microfab/pkg/client"
 )
 
 var _ = Describe("Integration", func() {

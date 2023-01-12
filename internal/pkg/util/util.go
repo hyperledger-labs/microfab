@@ -9,8 +9,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
 )
 
 // GetHomeDirectory returns the Microfab home directory.

@@ -7,12 +7,12 @@ package channel
 import (
 	"fmt"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/orderer"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/peer"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/protoutil"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
+	"github.com/hyperledger-labs/microfab/internal/pkg/blocks"
+	"github.com/hyperledger-labs/microfab/internal/pkg/orderer"
+	"github.com/hyperledger-labs/microfab/internal/pkg/peer"
+	"github.com/hyperledger-labs/microfab/internal/pkg/protoutil"
+	"github.com/hyperledger-labs/microfab/internal/pkg/txid"
+	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	fpeer "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
