@@ -1,4 +1,4 @@
-module github.com/IBM-Blockchain/microfab
+module github.com/hyperledger-labs/microfab
 
 go 1.14
 

@@ -8,9 +8,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/txid"
+	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

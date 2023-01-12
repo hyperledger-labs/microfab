@@ -8,12 +8,12 @@ import (
 	"crypto/sha256"
 	"time"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/organization"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/txid"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/organization"
+	"github.com/hyperledger-labs/microfab/internal/pkg/txid"
+	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/msp"
 )

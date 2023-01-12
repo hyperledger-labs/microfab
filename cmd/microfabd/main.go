@@ -9,7 +9,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/IBM-Blockchain/microfab/internal/app/microfabd"
+	"github.com/hyperledger-labs/microfab/internal/app/microfabd"
 )
 
 var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "microfabd"), log.LstdFlags)

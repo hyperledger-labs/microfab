@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/util"
+	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )

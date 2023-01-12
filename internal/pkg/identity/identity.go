@@ -21,9 +21,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/certificate"
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity/privatekey"
-	"github.com/IBM-Blockchain/microfab/pkg/client"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity/certificate"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity/privatekey"
+	"github.com/hyperledger-labs/microfab/pkg/client"
 )
 
 var logger = log.New(os.Stdout, fmt.Sprintf("[%16s] ", "console"), log.LstdFlags)

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/identity"
+	"github.com/hyperledger-labs/microfab/internal/pkg/identity"
 )
 
 // Organization represents a loaded organization definition.

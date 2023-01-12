@@ -10,7 +10,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/IBM-Blockchain/microfab/internal/pkg/blocks"
+	"github.com/hyperledger-labs/microfab/internal/pkg/blocks"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
 )
