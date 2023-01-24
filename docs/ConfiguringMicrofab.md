@@ -80,7 +80,7 @@ The configuration is a JSON object with the following keys:
           "endorsing_organizations": [ // The list of endorsing organizations that are members of the channel.
             "Org1"
           ],
-          "capability_level": "V2_0" // Optional: the application capability level of the channel.
+          "capability_level": "V2_5" // Optional: the application capability level of the channel.
         }
       ]
 
@@ -88,7 +88,7 @@ The configuration is a JSON object with the following keys:
 
   The application capability level of all channels. Can be overriden on a per-channel basis.
 
-  Default value: `"V2_0"`
+  Default value: `"V2_5"`
 
 - `couchdb`
 

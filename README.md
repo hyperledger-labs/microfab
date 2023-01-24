@@ -1,9 +1,5 @@
 # microfab
 
-_Latest Fabric 2.4 version == [ghcr.io/hyperledger-labs/microfab:0.0.17](https://github.com/hyperledger-labs/microfab/pkgs/container/microfab/63125170?tag=0.0.17)_
-
----
-
 'microfab' provides a single container image that allows you to quickly start Hyperledger Fabric when you are developing solutions. You can use it to rapidly iterate over changes to chaincode, and client applications. Configured with your selection of channels and orgs you want, it can be started and stopped in seconds.  
 
 To learn how to use Microfab as part of the development workflow, follow the smart contract part of the [Hyperledger Fabric Sample's Full Stack Tutorial](https://github.com/hyperledger/fabric-samples/blob/main/full-stack-asset-transfer-guide/docs/SmartContractDev/00-Introduction.md)
@@ -28,10 +24,11 @@ Depending on your circumstances, familiarity and requirements different tools ma
 
 ## What Fabric version does Microfab use?
 
-The main branch supports the current LTS release of Fabric; the main docker image and binaries published are for the current Fabric LTS.
+The idea is to have branches per release of Fabric.
 
-There is (will be) an beta branch that will target the development stream of Fabric - that may or may not work of course.
-
+- `fabric-2.5` is Microfab using the 2.5 LTS for example. (and this is the default branch)
+- `fabric-2.4` uses thes (non-LTS) Fabric 2.4
+- `beta-3.0` will start to use Fabric 3.0 when it starts to become available
 
 ## Reference
 

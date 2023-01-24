@@ -154,7 +154,7 @@ func CreateChannel(o *orderer.Connection, channel string, opts ...Option) error 
 							ModPolicy: "Admins",
 							Value: util.MarshalOrPanic(&common.Capabilities{
 								Capabilities: map[string]*common.Capability{
-									"V2_0": {},
+									"V2_5": {},
 								},
 							}),
 						},

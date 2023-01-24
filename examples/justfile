@@ -58,7 +58,7 @@ tls-mf: clean
             "tls": {
                 "enabled":true
             },
-            "capability_level":"V2_0"
+            "capability_level":"V2_5"
         }'
 
         docker run -d --name microfab -p 8080:8080 --add-host host.docker.internal:host-gateway \
