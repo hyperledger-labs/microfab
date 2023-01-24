@@ -32,11 +32,14 @@ jobs:
       - name: Install Fabric dependencies
         run: |
           sudo mkdir -p /opt/fabric
-          curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.4.6/hyperledger-fabric-linux-amd64-2.4.6.tar.gz | sudo tar xzf - -C /opt/fabric
-          curl -sSL https://github.com/hyperledger/fabric-ca/releases/download/v1.5.2/hyperledger-fabric-ca-linux-amd64-1.5.2.tar.gz | sudo tar xzf - -C /opt/fabric
+          pushd /opt/fabric
+          curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s -- binary --fabric-version 2.5.0-alpha3 --ca-version 1.5.6-beta3
+          popd
+
+
           cd builders/java
           sudo mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib
-          npm install -g fabric-shim@2.4.1
+          npm install -g fabric-shim@2.5.1
       - name: Run Go formatters and linters
         run: make lint
       - name: Run Go unit tests

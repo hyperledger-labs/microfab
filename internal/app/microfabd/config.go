@@ -77,7 +77,7 @@ func DefaultConfig() (*Config, error) {
 				},
 			},
 		},
-		CapabilityLevel:        "V2_0",
+		CapabilityLevel:        "V2_5",
 		CouchDB:                true,
 		CertificateAuthorities: true,
 		TimeoutString:          "30s",

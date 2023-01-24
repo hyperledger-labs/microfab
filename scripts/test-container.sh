@@ -41,7 +41,7 @@ export MICROFAB_CONFIG='{
         "tls": {
             "enabled":true
         },
-        "capability_level":"V2_0"
+        "capability_level":"V2_5"
     }'
 
 # docker run  --name microfab -u $(id -u) -p 8080:8080 --add-host host.docker.internal:host-gateway \
