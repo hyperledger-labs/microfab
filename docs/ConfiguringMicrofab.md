@@ -1,4 +1,5 @@
-
+# Configuration
+You can configure the 'topology' that microfab creates, and also some limited configuration of the Fabric components.
 ## Configuring microfab
 
 Microfab can be configured by specifying the `MICROFAB_CONFIG` environment variable. For example, to start Microfab with different organizations using Docker, run the following commands:
@@ -21,6 +22,8 @@ Microfab can be configured by specifying the `MICROFAB_CONFIG` environment varia
 
     docker run -p 8080:8080 -e MICROFAB_CONFIG ibmcom/ibp-microfab
 
+
+
 The configuration is a JSON object with the following keys:
 
 - `domain`
@@ -40,6 +43,8 @@ The configuration is a JSON object with the following keys:
   The directory to store data in within the container.
 
   Default value: `"/home/microfab/data"`
+
+  It is possible to map this externally as a volume mount; however often you can run into issues with the user inside the docker container having a different `id` to the host user. It is suggested that _do not_ volume mount this.
 
 - `ordering_organization`
 
@@ -128,3 +133,9 @@ Configuration example for enabling TLS:
     }'
 
     docker run -p 8443:8443 -e MICROFAB_CONFIG ibmcom/ibp-microfab
+
+
+## Configuring Fabric components
+
+To alter the logging level of the Fabric Components, add ` -e FABRIC_LOGGING_SPEC=info` to the docker run command. Any other environment variables set will be inheritted by the Fabric Components.
+

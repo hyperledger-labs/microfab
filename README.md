@@ -31,16 +31,13 @@ There is (will be) an beta branch that will target the development stream of Fab
 
 ## Reference
 
-- [Starting Microfab](./docs/StartingMicrofab.md)
 - [Configuring Microfab](./docs/ConfiguringMicrofab.md)
-- [Running Development of Contracts](./docs/DevelopingContracts.md)
-- [Examples](./examples/README.md)
-
+- [Getting Started Tutorial](./docs/Tutorial.md)
+- [Connecting Clients](./docs/ConnectingClients.md)
 ### What Microfab can't do
 
 - Run in production, please just don't do it. It's development and test only
-- It doesn't yet support RAFT
-
+- It doesn't yet support RAFT  
 
 ## License
 
