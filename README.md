@@ -1,5 +1,11 @@
 # microfab
 
+---
+
+_Latest Fabric 2.4 version == ghcr.io/hyperledger-labs/microfab:0.0.17_
+
+---
+
 'microfab' provides a single container image that allows you to quickly start Hyperledger Fabric when you are developing solutions. You can use it to rapidly iterate over changes to chaincode, and client applications. Configured with your selection of channels and orgs you want, it can be started and stopped in seconds.  
 
 To learn how to use Microfab as part of the development workflow, follow the smart contract part of the [Hyperledger Fabric Sample's Full Stack Tutorial](https://github.com/hyperledger/fabric-samples/blob/main/full-stack-asset-transfer-guide/docs/SmartContractDev/00-Introduction.md)
