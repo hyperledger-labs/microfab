@@ -1,8 +1,6 @@
 # microfab
 
----
-
-_Latest Fabric 2.4 version == ghcr.io/hyperledger-labs/microfab:0.0.17_
+_Latest Fabric 2.4 version == [ghcr.io/hyperledger-labs/microfab:0.0.17](https://github.com/hyperledger-labs/microfab/pkgs/container/microfab/63125170?tag=0.0.17)_
 
 ---
 
