@@ -16,15 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Use Go 1.17
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.17
-      - name: Use Java 11
-        uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '11'
       - name: Use Node.js 12
         uses: actions/setup-node@v2
         with:
@@ -35,8 +35,6 @@ jobs:
           pushd /opt/fabric
           curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s -- binary --fabric-version 2.5.0-alpha3 --ca-version 1.5.6-beta3
           popd
-
-
           cd builders/java
           sudo mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib
           npm install -g fabric-shim@2.5.1
@@ -52,3 +50,40 @@ jobs:
           make integration
       - name: Run ShellCheck
         run: shellcheck $(ls builders/*/bin/* -1 | grep -v ccaas)
+
+  fvt:
+    name: Functional Tests
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Setup Fabric
+        run: |
+          curl -sSL https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh | bash -s -- binary
+         
+          # set the path and cfg env var for the rest of the step
+          echo "FABRIC_CFG_PATH=$GITHUB_WORKSPACE/config" >> $GITHUB_ENV
+          echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH
+
+      - name: Build Docker image
+        id: dockerbuild
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile2
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: dev-microfab
+          
+
+      - name: Run against image
+        run: |
+          docker images
+          ./scripts/test-container.sh
+        env:
+          MICROFAB_IMAGE: dev-microfab
+

@@ -12,7 +12,7 @@ export CFG=$DIR/_cfg
 rm -rf "${CFG}" || mkdir -p "${CFG}"
 mkdir -p "${CFG}/data"
 
-: ${MICROFAB_IMAGE:="ibmcom/ibp-microfab:latest"}
+: ${MICROFAB_IMAGE:="ghcr.io/hyperledger-labs/microfab:latest"}
 
 if docker inspect microfab &>/dev/null; then
     echo "Removing existing microfab container:"
@@ -58,7 +58,7 @@ docker run -d --name microfab  -p 8080:8080 --add-host host.docker.internal:host
 sleep 25
 
 curl -sSL --insecure https://console.127-0-0-1.nip.io:8080/ak/api/v1/components
-curl -sSL --insecure https://console.127-0-0-1.nip.io:8080/ak/api/v1/components | weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
+curl -sSL --insecure https://console.127-0-0-1.nip.io:8080/ak/api/v1/components | npx @hyperledger-labs/weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
 
 # Chaincodes are all ready packaged up in the integration directory
 
