@@ -43,5 +43,3 @@ The idea is to have branches per release of Fabric.
 ## License
 
 Apache-2.0
-
-
