@@ -35,10 +35,25 @@ The idea is to have branches per release of Fabric.
 - [Configuring Microfab](./docs/ConfiguringMicrofab.md)
 - [Getting Started Tutorial](./docs/Tutorial.md)
 - [Connecting Clients](./docs/ConnectingClients.md)
+
 ### What Microfab can't do
 
 - Run in production, please just don't do it. It's development and test only
 - It doesn't yet support RAFT  
+
+### Unable to connect errors
+
+If you experience connection rejected type errors please check if your DNS is correctly able to resolve the `nip.io` addresses
+
+```
+ping server.127-0-0-1.nip.io
+PING server.127-0-0-1.nip.io (127.0.0.1) 56(84) bytes of data.
+64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.488 ms
+64 bytes from localhost (127.0.0.1): icmp_seq=2 ttl=64 time=0.035 ms
+```
+
+Some DNS servcies reject the DNS rewriting that this service uses and causes problems as you might image with microfab's proxy. 
+A feature we'd to add is a detailed list of all the ports that internal services are using, so you expose them directly. Help appreciated!
 
 ## License
 
