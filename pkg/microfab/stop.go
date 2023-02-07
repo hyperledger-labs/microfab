@@ -12,8 +12,9 @@ import (
 )
 
 var stopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Stops the microfab image running",
+	Use:     "stop",
+	Short:   "Stops the microfab image running",
+	GroupID: "mf",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return Stop("microfab")
 	},

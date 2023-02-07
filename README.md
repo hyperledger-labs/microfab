@@ -12,6 +12,12 @@ Check the [reference](./docs/DevelopingContracts.md) in this repo for details in
 ## Tutorial
 
 Check the [Quick Start Tutorial](./docs/Tutorial.md) - nothing to deployed smart contract in under 5minutes;
+
+```
+curl -sSL https://github.com/hyperledger-labs/microfab/releases/download/v0.0.18/microfab-linux-amd64 -o microfab
+microfab start --log
+```
+
 ## Why microfab?
 
 There are other 'form factors' of Fabric some are aimed at production/k8s deployments others more development focussed.

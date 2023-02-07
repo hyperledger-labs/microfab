@@ -10,8 +10,9 @@ import (
 )
 
 var pingCmd = &cobra.Command{
-	Use:   "ping",
-	Short: "Pings the microfab image to see if it's running",
+	Use:     "ping",
+	Short:   "Pings the microfab image to see if it's running",
+	GroupID: "mf",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return ping()
 	},
