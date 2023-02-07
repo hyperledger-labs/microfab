@@ -14,11 +14,17 @@ import (
 )
 
 var connectCmd = &cobra.Command{
-	Use:   "connect",
-	Short: "Writes out connection details for use by the Peer CLI and SDKs",
+	Use:     "connect",
+	Short:   "Writes out connection details for use by the Peer CLI and SDKs",
+	GroupID: "mf",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return connect()
 	},
+}
+
+func init() {
+	connectCmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "Force overwriting details directory")
+	connectCmd.PersistentFlags().StringVar(&mspdir, "msp", "_mfcfg", "msp output directory")
 }
 
 func connect() error {
@@ -35,7 +41,7 @@ func connect() error {
 	log.Printf("Identity and Configuration '%s'\n", rootDir)
 
 	// check to see if the directory exists, and if it does emptry
-	cfgExists, err := exists(rootDir)
+	cfgExists, err := Exists(rootDir)
 	if err != nil {
 		return err
 	}
@@ -97,10 +103,12 @@ func connect() error {
 			return errors.Wrapf(err, "Unable to form path for context")
 		}
 
-		f.WriteString(fmt.Sprintf("CORE_PEER_ADDRESS=%s\n", u.Host))
-		f.WriteString(fmt.Sprintf("CORE_PEER_LOCALMSPID=%s\n", peer.MSPID))
-		f.WriteString(fmt.Sprintf("CORE_PEER_MSPCONFIGPATH=%s\n", idRoot))
+		f.WriteString(fmt.Sprintf("export CORE_PEER_ADDRESS=%s\n", u.Host))
+		f.WriteString(fmt.Sprintf("export CORE_PEER_LOCALMSPID=%s\n", peer.MSPID))
+		f.WriteString(fmt.Sprintf("export CORE_PEER_MSPCONFIGPATH=%s\n", idRoot))
 		f.Sync()
+
+		log.Printf("For %s context run  'source %s'", org, f.Name())
 
 	}
 	return nil
@@ -119,16 +127,4 @@ func isEmpty(name string) (bool, error) {
 		return true, nil
 	}
 	return false, err // Either not empty or error, suits both cases
-}
-
-// exists returns whether the given file or directory exists
-func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }

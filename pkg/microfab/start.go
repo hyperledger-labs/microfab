@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/go-connections/nat"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -15,14 +17,26 @@ import (
 )
 
 var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Starts the microfab image running",
+	Use:     "start",
+	Short:   "Starts the microfab image running",
+	GroupID: "mf",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return start()
 	},
 }
 
+var logs bool
+
 func init() {
+	startCmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "Force restart if microfab already running")
+	startCmd.PersistentFlags().BoolVarP(&logs, "logs", "l", false, "Display the logs (docker logs -f microfab)")
+
+	startCmd.PersistentFlags().StringVar(&cfg, "config", defaultCfg, "Microfab config")
+	startCmd.PersistentFlags().StringVar(&cfgFile, "configFile", "", "Microfab config file")
+
+	startCmd.MarkFlagsMutuallyExclusive("config", "configFile")
+
+	viper.BindPFlag("MICROFAB_CONFIG", rootCmd.PersistentFlags().Lookup("config"))
 
 }
 
@@ -38,10 +52,9 @@ func start() error {
 
 	log.Printf("Starting microfab container..\n")
 
-	cfg = viper.GetString("MICROFAB_CONFIG")
-
-	if cfg == "" {
-		return errors.Errorf("Can't start - config is blank")
+	cfg, err = GetConfig()
+	if err != nil {
+		return errors.Wrapf(err, "Unable to determine config")
 	}
 
 	env[0] = "FABRIC_LOGGING_SPEC=info"
@@ -96,6 +109,14 @@ func start() error {
 
 	log.Printf("Container ID %s\n", resp.ID)
 	log.Printf("Microfab is up and running\n")
+	if logs {
+		out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Follow: true})
+		if err != nil {
+			return err
+		}
+
+		stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	}
 
 	return nil
 }

@@ -16,9 +16,12 @@ var rootCmd = &cobra.Command{
 	SilenceErrors: true,
 }
 
+var defaultCfg = `{"endorsing_organizations":[{"name":"org1"}],"channels":[{"name":"mychannel","endorsing_organizations":["org1"]},{"name":"appchannel","endorsing_organizations":["org1"]}],"capability_level":"V2_5"}`
+
 var cfg string
 var mspdir string
 var force bool
+var cfgFile string
 
 // Execute the microfab command
 func Execute() {
@@ -31,12 +34,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfg, "config", "", "Microfab config")
-	rootCmd.PersistentFlags().StringVar(&mspdir, "msp", "_mfcfg", "msp output directory")
-	rootCmd.PersistentFlags().BoolVar(&force, "force", false, "Force overwriting msp directory")
 
-	viper.BindPFlag("MICROFAB_CONFIG", rootCmd.PersistentFlags().Lookup("config"))
-
+	rootCmd.AddGroup(&cobra.Group{ID: "mf", Title: "microfab"})
 	rootCmd.AddCommand(startCmd)
 	rootCmd.AddCommand(stopCmd)
 	rootCmd.AddCommand(connectCmd)

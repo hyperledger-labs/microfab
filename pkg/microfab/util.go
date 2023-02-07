@@ -6,11 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )
 
@@ -99,4 +102,40 @@ func ImageRunning(containerName string) (bool, error) {
 
 	return found, nil
 
+}
+
+// GetConfig resolves the microfab configuration
+func GetConfig() (string, error) {
+	cfg = viper.GetString("MICROFAB_CONFIG")
+	if cfg == "" {
+		cf := path.Clean(cfgFile)
+		exist, err := Exists(cf)
+		if err != nil {
+			return "", err
+		}
+
+		if exist {
+			cfgData, err := os.ReadFile(cf)
+			if err != nil {
+				return "", err
+			}
+			cfg = string(cfgData)
+		} else {
+			return "", errors.Errorf("Unable to locate config from file, envvar or cli option")
+		}
+
+	}
+	return cfg, nil
+}
+
+// Exists returns whether the given file or directory exists
+func Exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
