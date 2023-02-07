@@ -64,7 +64,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: bin/microfab-${GOARCH}
+          files: bin/microfab-*
 
   # Build the container images and push to the ghcr.io repo
   # amd64/arm64
