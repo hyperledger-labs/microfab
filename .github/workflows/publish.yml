@@ -15,7 +15,7 @@ jobs:
   # Build the daemon binary and if a release publish if a 'tag' build
   # amd64/arm64
   binary_build:
-    name: Binary Build
+    name: Binary Daemon Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -25,10 +25,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Use Go 1.17
+      - name: Use Go 1.18
         uses: actions/setup-go@v2
         with:
-          go-version: 1.17
+          go-version: 1.18
       - name: Build Binary
         run: go build -v -o bin/microfabd cmd/microfabd/main.go
       - name: Package Binary
@@ -41,6 +41,35 @@ jobs:
         with:
           files: microfab-*.tgz
   
+  # Build the cli binary and if a release publish if a 'tag' build
+  # amd64/arm64
+  binary_cli_build:
+    name: Binary CLI Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goarch: [amd64, arm64]
+    env:
+      GOARCH: ${{ matrix.goarch }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Go 1.18
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+      - name: Build Binary
+        run: go build -v -o bin/microfab cmd/microfab/main.go
+      - name: Package Binary
+        run: |
+          export GOOS=$(go env GOOS)
+          tar -C bin -czvf microfab-cli-${GOOS}-${GOARCH}.tgz microfab
+      - name: Publish Binary to GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: microfab-cli-*.tgz
+
   # Build the container images and push to the ghcr.io repo
   # amd64/arm64
   container_build:
