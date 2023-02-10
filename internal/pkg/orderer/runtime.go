@@ -22,6 +22,7 @@ import (
 	"github.com/hyperledger-labs/microfab/internal/pkg/util"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
+	"github.com/hyperledger/fabric-protos-go/orderer/etcdraft"
 	"github.com/pkg/errors"
 )
 
@@ -186,6 +187,44 @@ func (o *Orderer) hasStarted() bool {
 func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) error {
 	txID := txid.New(o.mspID, o.identity)
 	header := protoutil.BuildHeader(common.HeaderType_CONFIG, "testchainid", txID)
+
+	var consensusType *orderer.ConsensusType
+
+	if o.tls != nil {
+		// can either create a SOLO or full RAFT orderering service
+		consensusType = &orderer.ConsensusType{
+			// Metadata: nil,
+			// State:    orderer.ConsensusType_STATE_NORMAL,
+			// Type:     "solo",
+			Metadata: util.MarshalOrPanic(&etcdraft.ConfigMetadata{
+				Consenters: []*etcdraft.Consenter{
+					{
+						Host: o.apiURL.Host,
+						Port: uint32(o.apiPort),
+						// TODO: errr... what certificates?!
+						ClientTlsCert: o.tls.Certificate().Bytes(),
+						ServerTlsCert: o.tls.Certificate().Bytes(),
+					},
+				},
+				Options: &etcdraft.Options{
+					TickInterval:         "2500ms",
+					ElectionTick:         5,
+					HeartbeatTick:        1,
+					MaxInflightBlocks:    5,
+					SnapshotIntervalSize: 1048576,
+				},
+			}),
+			State: orderer.ConsensusType_STATE_NORMAL,
+			Type:  "etcdraft",
+		}
+	} else {
+		consensusType = &orderer.ConsensusType{
+			Metadata: nil,
+			State:    orderer.ConsensusType_STATE_NORMAL,
+			Type:     "solo",
+		}
+	}
+
 	config := &common.Config{
 		ChannelGroup: &common.ConfigGroup{
 			Groups: map[string]*common.ConfigGroup{
@@ -263,11 +302,7 @@ func (o *Orderer) createGenesisBlock(consortium []*organization.Organization) er
 						},
 						"ConsensusType": {
 							ModPolicy: "Admins",
-							Value: util.MarshalOrPanic(&orderer.ConsensusType{
-								Metadata: nil,
-								State:    orderer.ConsensusType_STATE_NORMAL,
-								Type:     "solo",
-							}),
+							Value:     util.MarshalOrPanic(consensusType),
 						},
 					},
 				},
