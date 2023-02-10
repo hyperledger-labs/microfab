@@ -239,6 +239,9 @@ func (m *Microfab) Start() error {
 		}
 	}()
 
+	// wait for the orderer to wakeup
+	time.Sleep(8 * time.Second)
+
 	// Create and join all of the channels.
 	if m.state == nil {
 		for i := range m.config.Channels {

@@ -17,3 +17,11 @@ unit:
 
 integration:
 	go run github.com/onsi/ginkgo/ginkgo integration
+
+binary:
+	go build -o microfabd cmd/microfabd/main.go	
+	go build -o microfab cmd/microfab/main.go
+
+.PHONY: docker
+docker:
+	docker build -t microfab -f Dockerfile2 .
