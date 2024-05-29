@@ -57,6 +57,13 @@ docker run -d --name microfab  -p 8080:8080 --add-host host.docker.internal:host
 # Get the configuration and extract the information
 sleep 25
 
+docker ps -a
+
+
+docker exec -it dev-microfab ps -ef
+
+docker logs dev-microfab
+
 curl -sSL --insecure https://console.127-0-0-1.nip.io:8080/ak/api/v1/components
 curl -sSL --insecure https://console.127-0-0-1.nip.io:8080/ak/api/v1/components | npx @hyperledger-labs/weft microfab -w $CFG/_wallets -p $CFG/_gateways -m $CFG/_msp -f
 
