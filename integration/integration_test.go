@@ -208,7 +208,7 @@ var _ = Describe("Integration TLS", func() {
 		testDirectory, err = ioutil.TempDir("", "microfab-it")
 		Expect(err).NotTo(HaveOccurred())
 
-		var tlsEnabled = false
+		var tlsEnabled = true
 		tls := map[string]interface{}{
 			"enabled": tlsEnabled,
 		}
