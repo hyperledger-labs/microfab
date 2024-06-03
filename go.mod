@@ -7,7 +7,7 @@ require (
 	github.com/docker/go-connections v0.4.0
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0
 	github.com/gogo/protobuf v1.3.2
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.7.4
 	github.com/hyperledger/fabric v2.1.0+incompatible
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200424173316-dd554ba3746e
@@ -19,9 +19,9 @@ require (
 	github.com/spf13/viper v1.15.0
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
-	golang.org/x/net v0.4.0
+	golang.org/x/net v0.9.0
 	golang.org/x/sync v0.1.0
-	google.golang.org/grpc v1.52.0
+	google.golang.org/grpc v1.56.3
 	gopkg.in/yaml.v2 v2.4.0
 	sourcegraph.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518
 )
@@ -53,12 +53,12 @@ require (
 	github.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/sykesm/zap-logfmt v0.0.3 // indirect
-	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
-	golang.org/x/tools v0.2.0 // indirect
-	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
+	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
