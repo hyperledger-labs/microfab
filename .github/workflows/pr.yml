@@ -27,10 +27,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
-      - name: Use Node.js 12
+      - name: Use Node.js 20
         uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 20
       - name: Install Fabric dependencies
         run: |
           sudo mkdir -p /opt/fabric
