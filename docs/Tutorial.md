@@ -22,9 +22,10 @@ curl -sSL https://github.com/hyperledger-labs/microfab/raw/main/integration/data
 
 - Start Microfab with it's default configuration; (in a separate terminal run `docker logs -f microfab` so you can see what it's doing)
 ```
-curl -sSL https://github.com/hyperledger-labs/microfab/releases/download/v0.0.18/microfab-linux-amd64 -o microfab
-
-microfab start
+curl -sSL https://github.com/hyperledger-labs/microfab/releases/download/v0.0.19/microfab-amd64 -o microfab
+chmod +x ./microfab
+curl -s https://raw.githubusercontent.com/hyperledger-labs/microfab/main/examples/two-orgs.json -o config.json
+./microfab start --configFile ./config.json
 ```
 
 - We need to get the configuration of microfab and the address identities that it created; using the Hyperledger Labs *weft* tool is the quickest
