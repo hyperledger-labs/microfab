@@ -56,6 +56,8 @@ RUN groupadd -g 7051 microfab \
     && mkdir -p /home/microfab/builders /home/microfab/data \
     && chown -R microfab:microfab /home/microfab
 
+RUN mkdir /working && chown microfab /working
+
 RUN mkdir -p /opt/go /opt/node /opt/java   \
     && curl -sSL https://dl.google.com/go/go1.22.3.$TARGETOS-$TARGETARCH.tar.gz | tar xzf - -C /opt/go --strip-components=1 
 
@@ -83,6 +85,8 @@ COPY --from=builder /tmp/go/src/github.com/IBM/microfab/microfabd /usr/local/bin
 
 COPY --from=builder --chown=microfab:microfab /tmp/go/src/github.com/IBM/microfab/builders/ /home/microfab/builders/
 COPY --from=builder --chown=microfab:microfab /tmp/go/src/github.com/hyperledger/fabric/release/*/builders/ccaas /home/microfab/builders/ccaas
+
+ADD examples/vscode_tasks /opt/examples/vscode_tasks
 
 RUN sed -i 's/opt/home/g' /opt/couchdb/etc/local.d/local.ini
 
@@ -120,4 +124,5 @@ ENV GOENV=/tmp/goenv
 ENV GOPATH=/tmp/go
 
 VOLUME /home/microfab/data
+VOLUME /working
 ENTRYPOINT [ "tini", "--", "/usr/local/bin/docker-entrypoint.sh" ]

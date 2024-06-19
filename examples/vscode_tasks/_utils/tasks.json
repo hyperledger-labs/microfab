@@ -1,0 +1,123 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "options": {
+    "env": {
+      "local_directory": "/Users/celder/SupportOffering/testit",
+      "CORE_PEER_MSPCONFIGPATH": "/working/_msp/Org1/org1admin/msp",
+      "CORE_PEER_ADDRESS": "org1peer-api.127-0-0-1.nip.io:8080",
+      "CORE_PEER_LOCALMSPID": "Org1MSP"
+    }
+  },
+  "tasks": [
+    {
+      "label": "Chaincode - List built chaincode packages",
+      "type": "shell",
+      "command": "cd $local_directory && ls _packaged/",
+      "problemMatcher": []
+    },
+    {
+      "label": "Fabric - Start",
+      "type": "shell",
+      "command": "docker run -d --rm -p 8080:8080 -u microfab -v $local_directory:/working --name microfab microfab:latest && sleep 8 && cd $local_directory && docker cp microfab:opt/examples/vscode_tasks/_utils $local_directory/_utils  && curl -s http://console.127-0-0-1.nip.io:8080/ak/api/v1/components | npx @hyperledger-labs/weft microfab -w _wallets -p _gateways -m _msp -f",
+      "problemMatcher": []
+    },
+    {
+      "label": "Fabric - Stop",
+      "type": "shell",
+      "command": "docker stop microfab",
+      "problemMatcher": []
+    },
+    {
+      "label": "Fabric - Show Logs",
+      "type": "shell",
+      "command": "docker logs microfab -f",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Fabric - Peer Admin Shell ",
+      "type": "shell",
+      "command": "docker exec -it -e CORE_PEER_MSPCONFIGPATH=$CORE_PEER_MSPCONFIGPATH -e CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS -e CORE_PEER_LOCALMSPID=$CORE_PEER_LOCALMSPID microfab bash && cd /working",
+      "problemMatcher": []
+    },
+    {
+      "label": "Chaincode - Package open project",
+      "type": "shell",
+      "command": "cd $local_directory && rm -rf _chaincode_src && mkdir -p _chaincode_src && mkdir -p _packaged && cp -R ${workspaceFolder} _chaincode_src/temp && docker exec -it microfab /working/_utils/package.sh ${input:chaincodeName} ${input:chaincodeVersion} ${input:language} ${input:chaincodeType} /working/_chaincode_src/temp",
+      "problemMatcher": []
+    },
+    {
+      "label": "Chaincode - List Committed",
+      "type": "shell",
+      "command": "docker exec -it -e CORE_PEER_MSPCONFIGPATH=$CORE_PEER_MSPCONFIGPATH -e CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS -e CORE_PEER_LOCALMSPID=$CORE_PEER_LOCALMSPID microfab peer lifecycle chaincode querycommitted -C channel1",
+      "problemMatcher": []
+    },
+    {
+      "label": "Chaincode - List Installed ",
+      "type": "shell",
+      "command": "docker exec -it -e CORE_PEER_MSPCONFIGPATH=$CORE_PEER_MSPCONFIGPATH -e CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS -e CORE_PEER_LOCALMSPID=$CORE_PEER_LOCALMSPID microfab peer lifecycle chaincode queryinstalled",
+      "problemMatcher": []
+    },
+    {
+      "label": "Chaincode - Deploy",
+      "type": "shell",
+      "command": "docker exec -it -e CORE_PEER_MSPCONFIGPATH=$CORE_PEER_MSPCONFIGPATH -e CORE_PEER_ADDRESS=$CORE_PEER_ADDRESS -e CORE_PEER_LOCALMSPID=$CORE_PEER_LOCALMSPID microfab /working/_utils/deployCC.sh ${input:openDialog}",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "type": "pickString",
+      "id": "language",
+      "description": "Chaincode language",
+      "options": [
+        "golang",
+        "node",
+        "java"
+      ],
+      "default": "golang"
+    },    
+    {
+      "type": "pickString",
+      "id": "chaincodeType",
+      "description": "Chaincode Type",
+      "options": [
+        "tar",
+        "cds"
+      ],
+      "default": "tar"
+    },       
+    {
+      "type": "promptString",
+      "id": "chaincodeName",
+      "description": "Enter the name of the chaincode"
+    },
+    {
+      "type": "promptString",
+      "id": "chaincodeVersion",
+      "description": "Enter the version of the chaincode"
+    },
+    {
+      "id": "openDialog",
+      "type": "command",
+      "command": "extension.commandvariable.file.openDialog",
+      "args": {
+        "canSelect": "files",
+        "defaultUri": "/Users/celder/SupportOffering/testit",
+        "transform": {
+          "text": "${fileBasename}"
+        },  
+      }
+    }
+  ]
+} 
+
