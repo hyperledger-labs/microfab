@@ -3,11 +3,11 @@ module github.com/hyperledger-labs/microfab
 go 1.18
 
 require (
-	github.com/docker/docker v24.0.9+incompatible
+	github.com/docker/docker v25.0.6+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0
 	github.com/gogo/protobuf v1.3.2
-	github.com/golang/protobuf v1.5.3
+	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.7.4
 	github.com/hyperledger/fabric v2.1.0+incompatible
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200424173316-dd554ba3746e
@@ -19,9 +19,9 @@ require (
 	github.com/spf13/viper v1.15.0
 	golang.org/x/exp v0.0.0-20230206171751-46f607a40771
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
-	golang.org/x/net v0.23.0
-	golang.org/x/sync v0.1.0
-	google.golang.org/grpc v1.56.3
+	golang.org/x/net v0.26.0
+	golang.org/x/sync v0.7.0
+	google.golang.org/grpc v1.64.0
 	gopkg.in/yaml.v2 v2.4.0
 	sourcegraph.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518
 )
@@ -30,9 +30,13 @@ require (
 	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/Shopify/sarama v1.26.4 // indirect
-	github.com/docker/distribution v2.8.2+incompatible // indirect
+	github.com/containerd/log v0.1.0 // indirect
+	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/hashicorp/go-version v1.2.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hyperledger/fabric-amcl v0.0.0-20200424173818-327c9e2cf77a // indirect
@@ -53,12 +57,18 @@ require (
 	github.com/sqs/goreturns v0.0.0-20181028201513-538ac6014518 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/sykesm/zap-logfmt v0.0.3 // indirect
-	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.53.0 // indirect
+	go.opentelemetry.io/otel v1.28.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.28.0 // indirect
+	go.opentelemetry.io/otel/metric v1.28.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.28.0 // indirect
+	go.opentelemetry.io/otel/trace v1.28.0 // indirect
+	golang.org/x/mod v0.17.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
