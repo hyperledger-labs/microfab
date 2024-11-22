@@ -10,7 +10,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -32,7 +33,7 @@ func DownloadImage(microFabImage string) error {
 	}
 	defer cli.Close()
 
-	images, err := cli.ImageList(ctx, types.ImageListOptions{})
+	images, err := cli.ImageList(ctx, image.ListOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "Unable to list images")
 	}
@@ -47,7 +48,7 @@ func DownloadImage(microFabImage string) error {
 
 	if !found {
 		log.Printf("Pulling image %s", microFabImage)
-		out, err := cli.ImagePull(ctx, microFabImage, types.ImagePullOptions{})
+		out, err := cli.ImagePull(ctx, microFabImage, image.PullOptions{})
 		if err != nil {
 			return errors.Wrapf(err, "Unable to pull images")
 		}
@@ -82,7 +83,7 @@ func ImageRunning(containerName string) (bool, error) {
 	}
 	defer cli.Close()
 
-	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{})
+	containers, err := cli.ContainerList(ctx, container.ListOptions{})
 	if err != nil {
 		return false, errors.Wrapf(err, "Unable to list containers")
 	}
