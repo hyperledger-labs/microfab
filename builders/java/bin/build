@@ -13,7 +13,7 @@ if [ -f build.gradle ] || [ -f build.gradle.kts ]; then
         chmod +x ./gradlew
         ./gradlew build shadowJar -x test
     else
-        /opt/gradle/bin/gradlew build shadowJar -x test
+        /opt/gradle/bin/gradle build shadowJar -x test
     fi
     cp build/libs/chaincode.jar "${BUILD_OUTPUT_DIR}/"
     touch "${BUILD_OUTPUT_DIR}/.uberjar"

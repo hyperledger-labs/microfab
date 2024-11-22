@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-FROM debian:bullseye-slim AS builder
-ENV DEBIAN_FRONTEND=noninteractive 
+FROM debian:bookworm-slim AS builder
+ENV DEBIAN_FRONTEND=noninteractive
 
 ARG TARGETARCH
 ARG TARGETOS
@@ -14,15 +14,15 @@ RUN apt-get update \
     && apt-get -y install python3 python3-distutils libpython3-dev software-properties-common \
     && apt-get -y install curl git jq unzip moreutils
 
-RUN curl -sL https://go.dev/dl/go1.22.3.${TARGETOS}-${TARGETARCH}.tar.gz | tar zxf - -C /usr/local
-ENV PATH="/usr/local/go/bin:$PATH"   
+RUN curl -sL https://go.dev/dl/go1.23.3.${TARGETOS}-${TARGETARCH}.tar.gz | tar zxf - -C /usr/local
+ENV PATH="/usr/local/go/bin:$PATH"
 
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/tmp/go
 
 WORKDIR $GOPATH/src/github.com/hyperledger
 RUN git clone --depth 1 --branch release-2.5 https://github.com/hyperledger/fabric.git \
-    && git clone --depth 1 --branch v1.5.5 https://github.com/hyperledger/fabric-ca.git 
+    && git clone --depth 1 --branch v1.5.13 https://github.com/hyperledger/fabric-ca.git
 WORKDIR $GOPATH/src/github.com/hyperledger/fabric
 ENV CGO_ENABLED=0
 RUN make orderer \
@@ -33,15 +33,15 @@ ENV CGO_ENABLED=1
 RUN make release/build/bin/fabric-ca-client \
     && make release/build/bin/fabric-ca-server
 
-WORKDIR $GOPATH/src/github.com/IBM/microfab
+WORKDIR $GOPATH/src/github.com/hyperledger-labs/microfab
 ENV CGO_ENABLED=0
-ADD . $GOPATH/src/github.com/IBM/microfab
+ADD . $GOPATH/src/github.com/hyperledger-labs/microfab
 RUN go build -o microfabd cmd/microfabd/main.go
 
 WORKDIR /fabric
-RUN curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.5.7/hyperledger-fabric-linux-amd64-2.5.7.tar.gz | tar xzf - config
+RUN curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.5.10/hyperledger-fabric-linux-amd64-2.5.10.tar.gz | tar xzf - config
 
-FROM couchdb:3.3.3
+FROM couchdb:3.4
 
 # Though they are populated by docker buildx, the ARG reference is required to make them available for use
 ARG TARGETARCH
@@ -57,31 +57,24 @@ RUN groupadd -g 7051 microfab \
     && chown -R microfab:microfab /home/microfab
 
 RUN mkdir -p /opt/go /opt/node /opt/java   \
-    && curl -sSL https://dl.google.com/go/go1.22.3.$TARGETOS-$TARGETARCH.tar.gz | tar xzf - -C /opt/go --strip-components=1 
+    && curl -sSL https://dl.google.com/go/go1.23.3.$TARGETOS-$TARGETARCH.tar.gz | tar xzf - -C /opt/go --strip-components=1
 
-# OpenJDK11U-jdk_x64_linux_hotspot_11.0.17_8.tar.gz
-# node-v18.12.1-linux-x64.tar.xz
-RUN if [ "${TARGETARCH}" = "amd64" ]; then ARCH=x64  \
-    && curl -sSL https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jdk_${ARCH}_${TARGETOS}_hotspot_11.0.17_8.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
-    && curl -sSL https://nodejs.org/download/release/v20.14.0/node-v20.14.0-${TARGETOS}-${ARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
+RUN if [ "${TARGETARCH}" = "amd64" ]; then ARCH=x64 \
+    && curl -sSL https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.9%2B9/OpenJDK17U-jdk_${ARCH}_${TARGETOS}_hotspot_17.0.9_9.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
+    && curl -sSL https://nodejs.org/download/release/v22.11.0/node-v22.11.0-${TARGETOS}-${ARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
+    ; elif [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64 \
+    && curl -sSL https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.9%2B9/OpenJDK17U-jdk_${ARCH}_${TARGETOS}_hotspot_17.0.9_9.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
+    && curl -sSL https://nodejs.org/download/release/v22.11.0/node-v22.11.0-${TARGETOS}-${TARGETARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
     ; fi
-
-# node-v18.12.1-linux-arm64.tar.xz
-# OpenJDK11U-jdk_aarch64_linux_hotspot_11.0.17_8.tar.gz
-RUN if [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64 \
-    && curl -sSL https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.17%2B8/OpenJDK11U-jdk_${ARCH}_${TARGETOS}_hotspot_11.0.17_8.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
-    && curl -sSL https://nodejs.org/download/release/v20.14.0/node-v20.14.0-${TARGETOS}-${TARGETARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
-    ; fi  
-
 
 COPY docker/local.ini /opt/couchdb/etc/local.d/local.ini
 COPY docker/docker-entrypoint.sh /usr/local/bin
 COPY --from=builder /tmp/go/src/github.com/hyperledger/fabric/build/bin/* /usr/local/bin/
 COPY --from=builder /tmp/go/src/github.com/hyperledger/fabric-ca/release/build/bin/* /usr/local/bin/
 COPY --from=builder /fabric/config /etc/hyperledger/fabric
-COPY --from=builder /tmp/go/src/github.com/IBM/microfab/microfabd /usr/local/bin/
+COPY --from=builder /tmp/go/src/github.com/hyperledger-labs/microfab/microfabd /usr/local/bin/
 
-COPY --from=builder --chown=microfab:microfab /tmp/go/src/github.com/IBM/microfab/builders/ /home/microfab/builders/
+COPY --from=builder --chown=microfab:microfab /tmp/go/src/github.com/hyperledger-labs/microfab/builders/ /home/microfab/builders/
 COPY --from=builder --chown=microfab:microfab /tmp/go/src/github.com/hyperledger/fabric/release/*/builders/ccaas /home/microfab/builders/ccaas
 
 RUN sed -i 's/opt/home/g' /opt/couchdb/etc/local.d/local.ini
@@ -91,22 +84,18 @@ ENV MICROFAB_HOME=/home/microfab
 ENV PATH=/opt/go/bin:/opt/node/bin:/opt/java/bin:/opt/couchdb/bin:${PATH}
 
 
-RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-5.6.4-bin.zip \
+RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.11.1-bin.zip \
     && unzip -qq /tmp/gradle.zip -d /opt \
-    && mkdir -p /opt/gradle/bin \
-    && cd /opt/gradle/bin       \
-    && /opt/gradle-5.6.4/bin/gradle wrapper \
+    && mv /opt/gradle-8.11.1 /opt/gradle \
     && rm -f /tmp/gradle.zip \
-    && rm -rf /opt/gradle-5.6.4 \
-    && cd - \
-    && curl -sSL https://dlcdn.apache.org/maven/maven-3/3.9.7/binaries/apache-maven-3.9.7-bin.tar.gz | tar xzf - -C /opt \
-    && mv /opt/apache-maven-3.9.7 /opt/maven
+    && curl -sSL https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz | tar xzf - -C /opt \
+    && mv /opt/apache-maven-3.9.9 /opt/maven
 ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
 ADD builders/java/pom.xml /opt/fabric-chaincode-java/
 
 RUN cd /opt/fabric-chaincode-java \
     && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \
-    && npm install --unsafe-perm -g fabric-shim@2.4.2 \
+    && npm install --unsafe-perm -g fabric-shim@2.5.7 \
     && rm -rf /tmp/gocache /tmp/goenv /tmp/go /tmp/maven /tmp/npm-cache /tmp/npm-devdir
 
 RUN chmod 666 /etc/passwd

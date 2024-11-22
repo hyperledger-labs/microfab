@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -103,14 +102,14 @@ func start() error {
 		return errors.Wrapf(err, "Unable to create container")
 	}
 
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return errors.Wrapf(err, "Unable to start contianer")
 	}
 
 	log.Printf("Container ID %s\n", resp.ID)
 	log.Printf("Microfab is up and running\n")
 	if logs {
-		out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Follow: true})
+		out, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true, Follow: true})
 		if err != nil {
 			return err
 		}
