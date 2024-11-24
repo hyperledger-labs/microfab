@@ -60,10 +60,10 @@ RUN mkdir -p /opt/go /opt/node /opt/java   \
     && curl -sSL https://dl.google.com/go/go1.23.3.$TARGETOS-$TARGETARCH.tar.gz | tar xzf - -C /opt/go --strip-components=1
 
 RUN if [ "${TARGETARCH}" = "amd64" ]; then ARCH=x64 \
-    && curl -sSL https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.9%2B9/OpenJDK17U-jdk_${ARCH}_${TARGETOS}_hotspot_17.0.9_9.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
+    && curl -sSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jdk_${ARCH}_${TARGETOS}_hotspot_21.0.5_11.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
     && curl -sSL https://nodejs.org/download/release/v22.11.0/node-v22.11.0-${TARGETOS}-${ARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
     ; elif [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64 \
-    && curl -sSL https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.9%2B9/OpenJDK17U-jdk_${ARCH}_${TARGETOS}_hotspot_17.0.9_9.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
+    && curl -sSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jdk_${ARCH}_${TARGETOS}_hotspot_21.0.5_11.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
     && curl -sSL https://nodejs.org/download/release/v22.11.0/node-v22.11.0-${TARGETOS}-${TARGETARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
     ; fi
 
