@@ -3,7 +3,7 @@ module github.com/hyperledger-labs/microfab
 go 1.23.0
 
 require (
-	github.com/docker/docker v27.3.1+incompatible
+	github.com/docker/docker v28.0.0+incompatible
 	github.com/docker/go-connections v0.5.0
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0
 	github.com/gogo/protobuf v1.3.2
