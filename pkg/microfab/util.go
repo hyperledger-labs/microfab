@@ -62,7 +62,7 @@ func DownloadImage(microFabImage string) error {
 			var s PullStatus
 			json.Unmarshal(buf.Bytes(), &s)
 			if strings.HasPrefix(s.Status, "Status: Downloaded") {
-				log.Printf(s.Status)
+				log.Print(s.Status)
 			}
 
 		}
