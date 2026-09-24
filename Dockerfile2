@@ -2,27 +2,39 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-FROM debian:bookworm-slim AS builder
+ARG GO_VERSION=1.27.1
+ARG FABRIC_VERSION=2.5.16
+ARG FABRIC_CA_VERSION=1.5.22
+ARG COUCHDB_VERSION=3.5
+ARG NODE_VERSION=24.21.0
+ARG GRADLE_VERSION=9.8.0
+ARG MAVEN_VERSION=3.9.16
+ARG NODE_FABRIC_SHIM_VERSION=2.5.8
+
+FROM debian:trixie-slim AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG TARGETARCH
 ARG TARGETOS
 
+ARG GO_VERSION
+ARG FABRIC_VERSION
+ARG FABRIC_CA_VERSION
+
 # Build tools
 RUN apt-get update \
     && apt-get -y install build-essential gcc gzip \
-    && apt-get -y install python3 python3-distutils libpython3-dev software-properties-common \
     && apt-get -y install curl git jq unzip moreutils
 
-RUN curl -sL https://go.dev/dl/go1.23.3.${TARGETOS}-${TARGETARCH}.tar.gz | tar zxf - -C /usr/local
+RUN curl -sSL https://go.dev/dl/go${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz | tar zxf - -C /usr/local
 ENV PATH="/usr/local/go/bin:$PATH"
 
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/tmp/go
 
 WORKDIR $GOPATH/src/github.com/hyperledger
-RUN git clone --depth 1 --branch release-2.5 https://github.com/hyperledger/fabric.git \
-    && git clone --depth 1 --branch v1.5.13 https://github.com/hyperledger/fabric-ca.git
+RUN git clone --depth 1 --branch v${FABRIC_VERSION} https://github.com/hyperledger/fabric.git \
+    && git clone --depth 1 --branch v${FABRIC_CA_VERSION} https://github.com/hyperledger/fabric-ca.git
 WORKDIR $GOPATH/src/github.com/hyperledger/fabric
 ENV CGO_ENABLED=0
 RUN make orderer \
@@ -39,13 +51,19 @@ ADD . $GOPATH/src/github.com/hyperledger-labs/microfab
 RUN go build -o microfabd cmd/microfabd/main.go
 
 WORKDIR /fabric
-RUN curl -sSL https://github.com/hyperledger/fabric/releases/download/v2.5.10/hyperledger-fabric-linux-amd64-2.5.10.tar.gz | tar xzf - config
+RUN curl -sSL https://github.com/hyperledger/fabric/releases/download/v${FABRIC_VERSION}/hyperledger-fabric-linux-amd64-${FABRIC_VERSION}.tar.gz | tar xzf - config
 
-FROM couchdb:3.4
+FROM couchdb:${COUCHDB_VERSION}
 
 # Though they are populated by docker buildx, the ARG reference is required to make them available for use
 ARG TARGETARCH
 ARG TARGETOS
+
+ARG GO_VERSION
+ARG NODE_VERSION
+ARG GRADLE_VERSION
+ARG MAVEN_VERSION
+ARG NODE_FABRIC_SHIM_VERSION
 
 RUN apt-get update && apt-get install -y \
     jq xz-utils unzip vim \
@@ -57,16 +75,16 @@ RUN groupadd -g 7051 microfab \
     && chown -R microfab:microfab /home/microfab
 
 RUN mkdir -p /opt/go /opt/node /opt/java   \
-    && curl -sSL https://dl.google.com/go/go1.23.3.$TARGETOS-$TARGETARCH.tar.gz | tar xzf - -C /opt/go --strip-components=1
+    && curl -sSL https://go.dev/dl/go${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz | tar xzf - -C /opt/go --strip-components=1
 
 RUN if [ "${TARGETARCH}" = "amd64" ]; then ARCH=x64 \
-    && curl -sSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jdk_${ARCH}_${TARGETOS}_hotspot_21.0.5_11.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
-    && curl -sSL https://nodejs.org/download/release/v22.11.0/node-v22.11.0-${TARGETOS}-${ARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
+    && curl -sSL https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_${ARCH}_${TARGETOS}_hotspot_25.0.4.1_1.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
+    && curl -sSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${TARGETOS}-${ARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
     ; elif [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64 \
-    && curl -sSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jdk_${ARCH}_${TARGETOS}_hotspot_21.0.5_11.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
-    && curl -sSL https://nodejs.org/download/release/v22.11.0/node-v22.11.0-${TARGETOS}-${TARGETARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
+    && curl -sSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_${ARCH}_${TARGETOS}_hotspot_25.0.4.1_1.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
+    && curl -sSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${TARGETOS}-${TARGETARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
     ; fi
-
+    
 COPY docker/local.ini /opt/couchdb/etc/local.d/local.ini
 COPY docker/docker-entrypoint.sh /usr/local/bin
 COPY --from=builder /tmp/go/src/github.com/hyperledger/fabric/build/bin/* /usr/local/bin/
@@ -83,19 +101,18 @@ ENV FABRIC_CFG_PATH=/etc/hyperledger/fabric
 ENV MICROFAB_HOME=/home/microfab
 ENV PATH=/opt/go/bin:/opt/node/bin:/opt/java/bin:/opt/couchdb/bin:${PATH}
 
-
-RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.11.1-bin.zip \
+RUN curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
     && unzip -qq /tmp/gradle.zip -d /opt \
-    && mv /opt/gradle-8.11.1 /opt/gradle \
+    && mv /opt/gradle-${GRADLE_VERSION} /opt/gradle \
     && rm -f /tmp/gradle.zip \
-    && curl -sSL https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz | tar xzf - -C /opt \
-    && mv /opt/apache-maven-3.9.9 /opt/maven
+    && curl -sSL https://dlcdn.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz | tar xzf - -C /opt \
+    && mv /opt/apache-maven-${MAVEN_VERSION} /opt/maven
 ENV PATH=/opt/gradle/bin:/opt/maven/bin:${PATH}
 ADD builders/java/pom.xml /opt/fabric-chaincode-java/
 
 RUN cd /opt/fabric-chaincode-java \
     && mvn -q dependency:copy-dependencies -DoutputDirectory=/opt/fabric-chaincode-java/lib \
-    && npm install --unsafe-perm -g fabric-shim@2.5.7 \
+    && npm install --unsafe-perm -g fabric-shim@${NODE_FABRIC_SHIM_VERSION} \
     && rm -rf /tmp/gocache /tmp/goenv /tmp/go /tmp/maven /tmp/npm-cache /tmp/npm-devdir
 
 RUN chmod 666 /etc/passwd
