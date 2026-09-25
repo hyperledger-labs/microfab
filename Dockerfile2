@@ -11,7 +11,7 @@ ARG GRADLE_VERSION=9.8.0
 ARG MAVEN_VERSION=3.9.16
 ARG NODE_FABRIC_SHIM_VERSION=2.5.8
 
-FROM debian:trixie-slim AS builder
+FROM debian:trixie AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG TARGETARCH
@@ -23,8 +23,7 @@ ARG FABRIC_CA_VERSION
 
 # Build tools
 RUN apt-get update \
-    && apt-get -y install build-essential gcc gzip \
-    && apt-get -y install curl git jq unzip moreutils
+    && apt-get -y install build-essential curl git jq unzip
 
 RUN curl -sSL https://go.dev/dl/go${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz | tar zxf - -C /usr/local
 ENV PATH="/usr/local/go/bin:$PATH"
@@ -77,11 +76,11 @@ RUN groupadd -g 7051 microfab \
 RUN mkdir -p /opt/go /opt/node /opt/java   \
     && curl -sSL https://go.dev/dl/go${GO_VERSION}.${TARGETOS}-${TARGETARCH}.tar.gz | tar xzf - -C /opt/go --strip-components=1
 
+COPY --from=eclipse-temurin:25-jdk /opt/java/openjdk /opt/java
+
 RUN if [ "${TARGETARCH}" = "amd64" ]; then ARCH=x64 \
-    && curl -sSL https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_${ARCH}_${TARGETOS}_hotspot_25.0.4.1_1.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
     && curl -sSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${TARGETOS}-${ARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
     ; elif [ "${TARGETARCH}" = "arm64" ]; then ARCH=aarch64 \
-    && curl -sSL https://github.com/adoptium/temurin21-binaries/releases/download/jdk-25.0.4.1%2B1/OpenJDK25U-jdk_${ARCH}_${TARGETOS}_hotspot_25.0.4.1_1.tar.gz | tar xzf - -C /opt/java --strip-components=1 \
     && curl -sSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${TARGETOS}-${TARGETARCH}.tar.xz | tar xJf - -C /opt/node --strip-components=1 \
     ; fi
     
